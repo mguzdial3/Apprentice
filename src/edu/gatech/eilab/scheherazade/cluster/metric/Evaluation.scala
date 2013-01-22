@@ -89,15 +89,15 @@ package cluster.metric {
       }
 
     // this is the test case
-    def main(args: Array[String]) {
+    def main1(args: Array[String]) {
       //val storyFile = "movieHierarchical.txt"
 
       for (i <- 1 to 1) {
         //val tested = "robberyTotalManualClusters.txt"
         //val tested = "mv-cl-"+i+".txt" // cluster to be tested
-        val tested = "./data/new_movie/georgeClusters.txt"
-          
-        val clusterFile = "./data/new_movie/movieGold2.txt"
+        val tested = "./data/new_movie/georgePrelim/test.txt"
+
+        val clusterFile = "./data/new_movie/georgePrelim/gold.txt"
         //val clusterFile = "./data/robbery/robberyGold.txt"
 
         var results: List[Cluster] = SimpleParser.parseClusters(tested)
@@ -115,6 +115,137 @@ package cluster.metric {
         println("B Cubed: precision " + p2 + " recall " + r2 + " f1 " + 2 * p2 * r2 / (p2 + r2))
         println("purity: " + pr);
       }
+
+    }
+
+    def main(args: Array[String]) {
+      //val storyFile = "movieHierarchical.txt"
+
+      //val tested = "robberyTotalManualClusters.txt"
+      //val tested = "mv-cl-"+i+".txt" // cluster to be tested
+      val tested = "./data/new_movie/georgePrelim/test.txt"
+
+      val clusterFile = "./data/new_movie/georgePrelim/gold.txt"
+      //val clusterFile = "./data/robbery/robberyGold.txt"
+
+      var results: List[Cluster] = SimpleParser.parseClusters(tested)
+      results = results.filter(c => c.members.size >= 4);
+
+      println("using cluster file: " + clusterFile)
+      val clusterList: List[Cluster] = SimpleParser.parseClusters(clusterFile).filter(c => c.members.size >= 4)
+
+      results foreach {
+        gold =>
+          var best = 0
+          var bestMatch: Cluster = null
+          var best2nd = 0
+          var bestMatch2nd: Cluster = null
+          var cnt = 0
+          
+          clusterList foreach {
+            gg =>
+              gold.members foreach { s1 =>
+                gg.members foreach {
+                  s2 => if (s1.id == s2.id) cnt += 1
+                }
+              }
+              
+             if (cnt > best)
+             {
+               best2nd = best
+               bestMatch2nd = bestMatch
+               best = cnt
+               bestMatch = gg
+             }
+             else if (cnt > best2nd)
+             {
+               best2nd = cnt
+               bestMatch2nd = gg
+             }
+              
+          }
+          
+          gold.members foreach {
+            s =>
+              if (bestMatch != null && !bestMatch.members.exists(m => m.id == s.id))
+                println("not matched: " + s.toSimpleString())
+          }
+          
+          
+      }
+      
+      //val results = storyList.map(s => new Cluster("a", s.members.toList))
+      val (r1, p1) = muc(clusterList, results)
+      val (r2, p2) = bCubed(clusterList, results)
+      val pr = purity(clusterList, results)
+      println("MUC: precision " + p1 + " recall " + r1 + " f1 " + 2 * p1 * r1 / (p1 + r1))
+
+      println("B Cubed: precision " + p2 + " recall " + r2 + " f1 " + 2 * p2 * r2 / (p2 + r2))
+      println("purity: " + pr);
+
+    }
+
+    def main2(args: Array[String]) {
+      import scala.collection.mutable.ListBuffer
+      //val storyFile = "movieHierarchical.txt"
+
+      val tested = "./data/new_movie/georgePrelim/test.txt"
+      val clusterFile = "./data/new_movie/georgePrelim/gold.txt"
+      val realClusters = "./data/new_movie/movieGold2.txt"
+
+      var results: List[Cluster] = SimpleParser.parseClusters(tested)
+      results = results.filter(c => c.members.size >= 4);
+
+      println("using cluster file: " + clusterFile)
+      val georgeGold: List[Cluster] = SimpleParser.parseClusters(clusterFile).filter(c => c.members.size >= 4)
+
+      val realGold: List[Cluster] = SimpleParser.parseClusters(realClusters).filter(c => c.members.size >= 4)
+
+      /** adapt gold **/
+
+      def depthEqual(s1: Sentence, s2: Sentence): Boolean =
+        {
+          if (s1.tokens.length != s2.tokens.length)
+            return false
+          else {
+            for (i <- 0 until s1.tokens.length) {
+              if (s1.tokens(i).word != s2.tokens(i).word)
+                return false
+            }
+          }
+
+          true
+        }
+
+      var idx = georgeGold.flatMap(_.members).map(_.id).max
+      var adaptedGold = ListBuffer[Cluster]()
+      realGold foreach {
+        g =>
+          var best = 0
+          var bestCluster: Cluster = null
+          var best2nd = 0
+          var bestCluster2nd: Cluster = null
+          var cnt = 0
+          georgeGold foreach {
+
+            gg =>
+              g.members foreach { s1 =>
+                gg.members foreach {
+                  s2 => if (depthEqual(s1, s2)) cnt += 1
+                }
+              }
+
+          }
+      }
+
+      //val results = storyList.map(s => new Cluster("a", s.members.toList))
+      val (r1, p1) = muc(georgeGold, results)
+      val (r2, p2) = bCubed(georgeGold, results)
+      val pr = purity(georgeGold, results)
+      println("MUC: precision " + p1 + " recall " + r1 + " f1 " + 2 * p1 * r1 / (p1 + r1))
+
+      println("B Cubed: precision " + p2 + " recall " + r2 + " f1 " + 2 * p2 * r2 / (p2 + r2))
+      println("purity: " + pr);
 
     }
 
