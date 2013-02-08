@@ -84,7 +84,7 @@ package graph {
       hashmap += (("original", (compactGraph, avg)))
 
       // improve the graph
-      val improvedGraph = updateBadPaths(errorChecker.getBadPaths, compactGraph, allRelations)
+      val improvedGraph = updateBadPaths2(errorChecker.getBadPaths, compactGraph, allRelations)
       avg = errorChecker.checkErrors(storyList, improvedGraph)._2
       errorAfter = avg
       hashmap += (("improved", (improvedGraph, avg)))
