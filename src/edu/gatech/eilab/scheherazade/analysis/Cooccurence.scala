@@ -2,7 +2,7 @@ package edu.gatech.eilab.scheherazade
 import data._
 import main._
 import graph._
-//import org.apache.commons.math3.stat.inference.ChiSquareTest
+
 
 package analysis {
   object Cooccurence extends App {
@@ -30,7 +30,7 @@ package analysis {
       val mi = mutualInfo(c1, c2, stories)
       val pmi = ptMutualInfo(c1, c2, stories)
       //val sizeEntropy = clusterSizeDifference(c1, c2, stories)
-      //val chisquare = 0 //computeChi(c1, c2, stories)
+      //val chisquare = computeChi(c1, c2, stories)
       //println(c1.name + ", " + c2.name + ", " + count + ", " + max + ", " + count.toDouble / max + ", " + (mi._1 + mi._2) + ", " + mi._1 + ", " + mi._2)
       //if ((mi._1 + mi._2) > 0.05 && mi._2 > 0)
       if (c1.size >= 0 && c2.size >= 0)
