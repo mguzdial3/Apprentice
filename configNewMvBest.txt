@@ -1,5 +1,5 @@
-storyFile = ./data/new_movie/movieStories.txt
-clusterFile = ./data/new_movie/movieGold.txt
+storyFile = ./data/new_movie/movieStories.story
+clusterFile = ./data/new_movie/movieGold.gold
 parameters = probThresholds, minClusterSize, miThresholds
 probThresholds = 0.70
 minClusterSize = 4

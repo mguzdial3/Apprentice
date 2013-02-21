@@ -1,5 +1,5 @@
-storyFile = ./data/robbery/robberyStories.txt
-clusterFile = ./data/robbery/robberyGold2.txt
+storyFile = ./data/robbery/robberyStories.story
+clusterFile = ./data/robbery/robberyGold2.gold
 parameters = probThresholds, minClusterSize, miThresholds
 probThresholds = 0.75
 minClusterSize = 4

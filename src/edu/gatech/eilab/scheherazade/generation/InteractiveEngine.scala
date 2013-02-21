@@ -82,7 +82,7 @@ package generation {
          */
 
       } while (playAgain)
-      println("Thank you for playing the game! \n Copyright 2012 Entertainment Intelligence Lab, Georgia Tech.")
+      println("Thank you for playing the game! \n Copyright 2012-2013 Entertainment Intelligence Lab, Georgia Tech.")
     }
 
     def makeChoice(choices: List[Cluster], desc: List[TextDescription], actor: String): Cluster = {
