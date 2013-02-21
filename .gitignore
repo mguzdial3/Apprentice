@@ -14,9 +14,6 @@
 
 Thumbs.db
 
-!*.gold
-!*.story
-!data/movie/*.gold
-!data/movie/*.story
-
-data/
+data/**/*
+!data/**/*.gold
+!data/**/*.story
