@@ -17,3 +17,5 @@ Thumbs.db
 data/**/*
 !data/**/*.gold
 !data/**/*.story
+
+bin/

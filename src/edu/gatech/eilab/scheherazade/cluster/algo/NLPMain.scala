@@ -17,7 +17,7 @@ import scala.collection.mutable.Queue
 import edu.stanford.nlp.trees.semgraph.SemanticGraph
 import edu.stanford.nlp.ling.IndexedWord;
 
-package nlp {
+package cluster.algo {
   object NLPMain {
 
     var configFile = ""
@@ -26,36 +26,36 @@ package nlp {
     var locationFile = ""
     var allFile = ""
 
-    var dataSet = "Airport"
+    //var dataSet = "Airport"
 
     def main(args: Array[String]) {
-      cluster()
+      internalCluster("Airport")
     }
 
     /**
      * set the corresponding files according to the data set we are running
      *
      */
-    def switchDataSet(name: String) {
-      if (dataSet == "Robbery") {
+    def switchDataSet(dataset: String) {
+      if (dataset == "Robbery") {
         configFile = "configRob.txt"
         parseFile = "RobParse.txt"
         semanticFile = "RobSemantic.txt"
         locationFile = "RobLocation.txt"
         allFile = "RobSimilarity.txt"
-      } else if (dataSet == "Movie") {
+      } else if (dataset == "Movie") {
         configFile = "configNewMv.txt"
         parseFile = "MvParse.txt"
         semanticFile = "MvSemantic.txt"
         locationFile = "MvLocation.txt"
         allFile = "MvSimilarity.txt"
-      } else if (dataSet == "Restaurant") {
+      } else if (dataset == "Restaurant") {
         configFile = "configRt.txt"
         parseFile = "RtParse.txt"
         semanticFile = "RtSemantic.txt"
         locationFile = "RtLocation.txt"
         allFile = "RtSimilarity.txt"
-      } else if (dataSet == "Airport") {
+      } else if (dataset == "Airport") {
         configFile = "configAir.txt"
         parseFile = "AirParse.txt"
         semanticFile = "AirSemantic.txt"
@@ -145,54 +145,41 @@ package nlp {
       evaluate(rtClusters, rtGold)
 
     }
+    
+    def cluster(stories:List[Story], minCluster:Int):List[Cluster] = {
+      val parser = new StoryNLPParser(stories, parseFile, true)
 
-    def cluster() {
-      switchDataSet("Airport")
+      def sentFn: () => List[Sentence] = () => parser().storyList.flatMap(_.members)
+
+      val simi = new DSDSimilarity(sentFn, semanticFile)
+      val local = new SimpleLocation(sentFn, 0.6, locationFile)
+      var addition = new MatrixAddition(() => simi(), () => local(), 0.25, allFile)      
+      var matrix = addition()
+      
+
+      matrix = mutualKNN(matrix, 7);
+      val (distance, max) = similarityToDistance(matrix)
+
+      OPTICS.visualized = false
+      OPTICS.cluster(distance, max, minCluster, stories.flatMap(_.members.toList))
+    }
+
+    def internalCluster(dataset:String) {
+      switchDataSet(dataset)
       val reader = new ConfigReader(configFile)
       var (stories, gold) = reader.initData()
       val minCluster = 4
       gold = gold.filter(_.members.size >= minCluster)
 
       val parser = new StoryNLPParser(stories, parseFile, true)
-      // val zero = s.storyList(0)
-      //    println(zero)
-      //    println(zero.members.mkString("\n"))
 
       def sentFn: () => List[Sentence] = () => parser().storyList.flatMap(_.members)
 
-      /*
-      val sentences = sentFn()
-      //      val verbs = sentences.flatMap(_.tokens.collect{case s:Token if s.pos == "VBD" => s.word}).distinct.sortWith(_<_)
-      //      //println(verbs.mkString("\n")); println(verbs.size + "\n***************************")
-      //      val nouns = sentences.flatMap(_.tokens.collect{case s:Token if s.pos == "NN" || s.pos == "NNS" => s.word}).distinct.sortWith(_<_)
-      //      //println(nouns.mkString("\n") + "\n" + nouns.size); 
-      //      
-      //      val allwords = sentences.flatMap(_.tokens).map(_.word).distinct.filterNot(s => verbs.contains(s) || nouns.contains(s))
-      //      println(allwords.mkString("\n"))
-      //      
-      sentences.foreach(s =>
-        println(s.toShortString()))
-      System.exit(0)
-      // end of temp */
-
       val simi = new DSDSimilarity(sentFn, semanticFile)
-      /* temp code here
-      var simiMatrix = simi()
-      val pw = new java.io.PrintWriter(new FileOutputStream(new File("simMatrix.txt")))
-          utils.Matrix.prettyPrintTo(pw,simiMatrix, 6)
-          pw.close();
-          System.exit(0)
-        */
       val local = new SimpleLocation(sentFn, 0.6, locationFile)
-
-      var addition = new MatrixAddition(() => simi(), () => local(), 0.25, allFile)
-
-      //val matrix = simi()
+      var addition = new MatrixAddition(() => simi(), () => local(), 0.25, allFile)      
       var matrix = addition()
-      //utils.Matrix.prettyPrint(matrix)
-      //        println("sents = " + sentList.length)
-      //        println("matrix length = " + matrix.length)
-
+      
       //no-link constraints
       //    var count = 0
       //    for (story <- stories) {

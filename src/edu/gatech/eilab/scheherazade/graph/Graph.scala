@@ -220,10 +220,9 @@ package graph {
         for (e <- events) {
           val predecessors = newLinks.filter(l => l.target == e).map(_.source)
           val successors = newLinks.filter(l => l.source == e).map(_.target)
-          for (p <- predecessorsOf(e); s <- successors)
-           {
-            newLinks += new Link(p, s)            
-           }
+          for (p <- predecessorsOf(e); s <- successors) {
+            newLinks += new Link(p, s)
+          }
         }
 
         new Graph(nodes, newLinks.toList, this.mutualExcls)
@@ -313,8 +312,7 @@ package graph {
 
       var parentTrack = Array.fill[Int](length)(-1)
 
-      def runOneComponent(init: Int)
-      {
+      def runOneComponent(init: Int) {
         stack.push(init)
 
         while (!stack.isEmpty) {
@@ -343,14 +341,13 @@ package graph {
                 loopList = loop :: loopList
               } else if (!visited(end)) {
                 stack.push(end)
-                parentTrack(end) = start                
+                parentTrack(end) = start
               }
           }
         }
       }
-      
-      for(i <- 0 until length)
-      {
+
+      for (i <- 0 until length) {
         if (!visited(i))
           runOneComponent(i)
       }
@@ -716,6 +713,27 @@ package graph {
       */
 
       println(loopGraph3.allLoops())
+    }
+  }
+
+  object Graph {
+    def nodesAfter(cluster: Cluster, links: List[Link]) : List[Cluster] = {
+      val after = ListBuffer(cluster)
+      var added = ListBuffer(cluster)
+
+      while (added != Nil) {
+        val newAdded = ListBuffer[Cluster]()
+        added foreach { c =>
+          links foreach { link =>
+            if (link.source == c)
+              newAdded += link.target
+          }
+        }
+        after ++= newAdded
+        added = newAdded
+      }
+      
+      after.toList      
     }
   }
 }

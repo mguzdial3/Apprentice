@@ -19,6 +19,12 @@ case class Sentence(
   var cluster: Cluster = null) extends XStreamable {
 
   //var location:Double = 0
+  def bagOfWords(): Array[String] = tokens.map(t => regularize(t.word)).filter(_ != "")
+
+  protected def regularize(word: String): String =
+    {
+      word.toLowerCase().replace(".", "").replace("?", "").replace("\"", "").replace(",", "").trim
+    }
 
   override def toString(): String =
     "(S" + id + ") " + tokens.map { t => t.word + "/" + t.pos }.mkString(" ")
@@ -28,10 +34,9 @@ case class Sentence(
     {
       "(S" + id + ") " + tokens.map { _.word }.mkString(" ")
     }
-    
-  def toSimpleString() = 
-    id + " " + tokens.map{ _.word }.mkString(" ")
-  
+
+  def toSimpleString() =
+    id + " " + tokens.map { _.word }.mkString(" ")
 
   // these two override methods are only temporary. Should delete after Mar 15
   override def equals(o: Any) = o match {
@@ -53,15 +58,22 @@ class Cluster(
 
   def size(): Int = members.size
 
-  def coherence(matrix: Array[Array[Double]]): Double = {
+  def contains(s: Sentence) = members.contains(s)
+
+  /**
+   * average similarity of a cluster, computed from a given similarity matrix
+   *
+   */
+  def coherence(similarity: Array[Array[Double]]): Double = {
     var sum = 0.0
     val combinations = members.combinations(2).toArray
     for (comb <- combinations) {
-      val sim = matrix(comb(0).id)(comb(1).id)
+      val sim = similarity(comb(0).id)(comb(1).id)
       sum += sim
     }
     sum / combinations.size
   }
+
   override def toString(): String =
     {
       "Cluster \"" + name + "\": [" + members.map(_.id).mkString(",") + "]"

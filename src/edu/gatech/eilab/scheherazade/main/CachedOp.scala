@@ -118,14 +118,17 @@ package main {
   }
 
   class StoryNLPParser(val storyList: List[Story], cacheFile: String, overWrite: Boolean = true) extends CachedOp[StorySet](cacheFile, cacheFile, overWrite) {
+    
+    protected val properEnding = List(".", "?\"", ".\"", "!\"")
+    
     def compute(): StorySet = {
 
       storyList foreach { s =>
         s.members foreach {
           sent =>
             val lastword = sent.tokens.last.word
-            if (!lastword.endsWith("."))
-              throw new RuntimeException("sentence \"" + sent.toSimpleString() + " \" does not end with a period.")
+            if (!properEnding.exists(end => lastword.endsWith(end)))
+              throw new RuntimeException("sentence \"" + sent.toSimpleString() + " \" does not end with a proper ending")
         }
       }
 

@@ -7,7 +7,7 @@ class ILPOptimizer {
   var factory = new SolverFactoryLpSolve(); // use lp_solve
   var problem = new Problem();
   var varName = "Z";
-  var vS: Array[Array[Double]] = null;
+  var vS: Array[Array[Int]] = null;
   var vP: Array[Array[Double]] = null;
 
   /*
@@ -15,7 +15,7 @@ class ILPOptimizer {
    * P: cluster property, number of clusters * vocabulary size
    * Objective: \sum_i \sum_j \sum_k Z_{ik} log(P_{kj}) S_{ij}
    */
-  def setParameters(S: Array[Array[Double]], P: Array[Array[Double]]) = {
+  def setParameters(S: Array[Array[Int]], P: Array[Array[Double]]) = {
     vS = S;
     vP = P;
     factory.setParameter(Solver.VERBOSE, 0);
@@ -25,7 +25,6 @@ class ILPOptimizer {
       for (j <- 0 until S(i).length) {
         for (k <- 0 until P.length) {
           objective.add(log(P(k)(j)) * S(i)(j), varName + i + k);
-
         }
       }
     }
@@ -37,7 +36,7 @@ class ILPOptimizer {
   * 
   * 
   * */
-  def addConstraint(Z: Array[Array[Double]]) = {
+  def addConstraint(Z: Array[Array[Int]]) = {
     for (i <- 0 until Z.length) {
       var sumc = new Linear();
       for (j <- 0 until Z(i).length) {
@@ -88,11 +87,11 @@ object ILPOptimizer {
 
   def main(args: Array[String]) {
 
-    var factory = new SolverFactoryLpSolve(); // use lp_solve
+    val factory = new SolverFactoryLpSolve(); // use lp_solve
     factory.setParameter(Solver.VERBOSE, 0);
     factory.setParameter(Solver.TIMEOUT, 100); // set timeout to 100 seconds
 
-    var problem = new Problem();
+    val problem = new Problem();
     var linear = new Linear();
     linear.add(143, "x");
     linear.add(60, "y");
@@ -120,8 +119,8 @@ object ILPOptimizer {
     problem.setVarType("x", classOf[Integer]);
     problem.setVarType("y", classOf[Integer]);
 
-    var solver = factory.get(); // you should use this solver only once for one problem
-    var result = solver.solve(problem);
+    val solver = factory.get(); // you should use this solver only once for one problem
+    val result = solver.solve(problem);
 
     println(result);
 
