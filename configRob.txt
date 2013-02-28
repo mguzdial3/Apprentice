@@ -1,6 +1,6 @@
 storyFile = ./data/robbery/robberyStories.story
 clusterFile = ./data/robbery/robberyGold2.gold
 parameters = probThresholds, minClusterSize, miThresholds
-probThresholds = 0.75
-minClusterSize = 4
+probThresholds = 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9
+minClusterSize = 2, 3, 4
 miThresholds = 0.05

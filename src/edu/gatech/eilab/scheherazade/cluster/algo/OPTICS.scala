@@ -1,5 +1,5 @@
 package edu.gatech.eilab.scheherazade {
-  
+
   import io._
   import data._
   import scala.collection.mutable.PriorityQueue
@@ -9,6 +9,8 @@ package edu.gatech.eilab.scheherazade {
   package cluster.algo {
 
     object OPTICS {
+
+      var visualized: Boolean = false
 
       var loose = false
       final val MAX_DISTANCE = Double.PositiveInfinity
@@ -122,10 +124,12 @@ package edu.gatech.eilab.scheherazade {
           points(i).previous = points(i - 1)
           points(i).next = points(i + 1)
         }
-        
+
         val larray = points.toArray
-        plot = new ReachPlot(larray)
-        plot.show
+        if (visualized) {
+          plot = new ReachPlot(larray)
+          plot.show
+        }
         val root = interpret(larray, minPts)
 
         //markLeaves(root, sentences)
@@ -235,13 +239,16 @@ package edu.gatech.eilab.scheherazade {
         println("**************************")
          */
         val larray = list.toArray
-        plot = new ReachPlot(larray)
-        plot.show
+
+        if (visualized) {
+          plot = new ReachPlot(larray)
+          plot.show
+        }
         val root = interpret(larray, minPts)
 
         //markLeaves(root, sentences)
         //println("required: (555, 613) = " + similarity(555)(613) + " (485, 613) = " + similarity(485)(613) )
-
+        		/*
         val pw1 = new PrintWriter(new FileOutputStream("simMatrix.txt"))
         val pw2 = new PrintWriter(new FileOutputStream("sentences.txt"))
 
@@ -257,7 +264,7 @@ package edu.gatech.eilab.scheherazade {
           pw2.println(str)
         }
         pw1.close()
-        pw2.close()
+        pw2.close() */
         inferClusters(root, sentences)
 
         //Nil
@@ -303,14 +310,14 @@ package edu.gatech.eilab.scheherazade {
             val reach = pts.map(_.reachability)
 
             val valid =
-              reach.sliding(minClusterSize + 1).exists(l => l.head * 0.98 > l.tail.min) && // head is greater than min movie = 0.98
-                reach.sliding(minClusterSize).exists(l => l.max < l.min * 1.4) // a relative flat area bestRobbery = 1.05, best movie = 1.4
+              reach.sliding(minClusterSize + 1).exists(l => l.head * 0.9 > l.tail.min) && // head is greater than min movie = 0.98
+                reach.sliding(minClusterSize).exists(l => l.max < l.min * 1.05) // a relative flat area bestRobbery = 1.05, best movie = 1.4
 
             if (valid) {
               val max = reach.max
               val min = reach.min
               //val portion = if (loose) 0.35 else 0.3
-              var goodPortion = pts.filter { x => x.reachability < (min + (max - min) * 0.5) }.toList // 0.5(in acs paper)-0.6 for movie 0.4 for robbery
+              var goodPortion = pts.filter { x => x.reachability < (min + (max - min) * 0.4) }.toList // 0.5(in acs paper)-0.6 for movie 0.4 for robbery
               // divide the portions into continuous parts
               var additional = List[Point]()
               var separation = List[(Int, Int)]()
@@ -367,8 +374,9 @@ package edu.gatech.eilab.scheherazade {
         //println(minClusterSize)
         findLeaves(root)
         //plot.unmarkAll()
-        plot.markRegionalPoints(regions.map { _.map { _.plotId } })
-
+        if (visualized) {
+          plot.markRegionalPoints(regions.map { _.map { _.plotId } })
+        }
         var clusterList = List[Cluster]()
 
         for (r <- regions) {
@@ -414,7 +422,9 @@ package edu.gatech.eilab.scheherazade {
         }
         //println("leaves: " + r)
 
-        plot.markRegions(r)
+        if (visualized) {
+          plot.markRegions(r)
+        }
       }
 
       protected def update(neighbors: List[Point], p: Point, seeds: PriorityQueue[Point], eps: Double, minPts: Int, similarity: Array[Array[Double]]): PriorityQueue[Point] = {
@@ -558,13 +568,18 @@ package edu.gatech.eilab.scheherazade {
 
         val id1 = n.rArray.head.plotId
         val id2 = n.rArray.last.plotId
-        plot.markRegions(List((id1, id2)))
-        plot.sendMessage("processing a node: " + id1 + " - " + id2)
-        plot.unmarkRegions(List((id1, id2)))
+
+        if (visualized) {
+          plot.markRegions(List((id1, id2)))
+          plot.sendMessage("processing a node: " + id1 + " - " + id2)
+          plot.unmarkRegions(List((id1, id2)))
+        }
 
         if (n.localMaxima.isEmpty) {
           //println("no local maxima in this region")
-          plot.disableRegions(List((id1, id2)))
+          if (visualized) {
+            plot.disableRegions(List((id1, id2)))
+          }
           parent.children = n :: parent.children
           return
         }
@@ -604,9 +619,12 @@ package edu.gatech.eilab.scheherazade {
         var l = List[(Int, Int)]()
         if (!n1.isEmpty) l = (n1.head.plotId, n1.last.plotId) :: l
         if (!n2.isEmpty) l = (n2.head.plotId, n2.last.plotId) :: l
-        plot.markRegions(l)
-        plot.sendMessage("split")
-        plot.unmarkRegions(List((id1, id2)))
+
+        if (visualized) {
+          plot.markRegions(l)
+          plot.sendMessage("split")
+          plot.unmarkRegions(List((id1, id2)))
+        }
 
         // average reachability of the left region
         val (leftAvg, leftDev: Double) = {

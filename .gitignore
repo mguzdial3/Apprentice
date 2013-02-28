@@ -10,5 +10,12 @@
 
 *.zip
 *.7z
+*.lzma
 
 Thumbs.db
+
+data/**/*
+!data/**/*.gold
+!data/**/*.story
+
+bin/
