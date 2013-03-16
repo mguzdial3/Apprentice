@@ -21,6 +21,7 @@ package cluster.algo {
       val reader = new ConfigReader("configRobBest.txt")
       var (stories, gold) = reader.initData()
 
+      stories = stories.take(20)
       val sentences = stories.flatMap(_.members)
       val (wordBags, words) = initSentencesAndWords(stories)
       val sentFreq = sentenceFreq(wordBags.values, words)
@@ -30,7 +31,7 @@ package cluster.algo {
 
       val i = 1
       NLPMain.switchDataSet("Robbery")
-      val clusters = NLPMain.cluster(stories, 4)
+      val clusters = NLPMain.cluster(stories, 2)
       val clusFreq = clusterFreq(clusters, wordBags, words)
 
       val optimizer = new ILPOptimizer()
@@ -41,7 +42,8 @@ package cluster.algo {
 
       // constraints: sentences that cannot belong to certain clusters
       val disallowed = constrainMembership(validLinks, stories, clusters)
-
+      println("sentences  = " + sentences.length)
+      println("size = " + disallowed.length + ", " + disallowed(0).length)
       optimizer.addConstraint(disallowed)
       println("start solving...")
       val results = optimizer.solve

@@ -4,7 +4,7 @@ import net.sf.javailp._
 import scala.math._
 
 class ILPOptimizer {
-  var factory = new SolverFactoryLpSolve(); // use lp_solve
+var factory = new SolverFactoryGLPK(); // use lp_solve
   var problem = new Problem();
   var varName = "Z";
   var vS: Array[Array[Int]] = null;
@@ -18,8 +18,8 @@ class ILPOptimizer {
   def setParameters(S: Array[Array[Int]], P: Array[Array[Double]]) = {
     vS = S;
     vP = P;
-    factory.setParameter(Solver.VERBOSE, 0);
-    factory.setParameter(Solver.TIMEOUT, 1000); // set timeout to 1000 seconds
+    //factory.setParameter(Solver.VERBOSE, 0);
+    factory.setParameter(Solver.TIMEOUT, 100000); // set timeout to 1000 seconds
     var objective = new Linear();
     for (i <- 0 until S.length) {
       for (j <- 0 until S(i).length) {
@@ -41,22 +41,27 @@ class ILPOptimizer {
       var sumc = new Linear();
       for (j <- 0 until Z(i).length) {
         sumc.add(1, varName + i + j);
-        if (Z(i)(j) == 0) {
-          var c1 = new Linear();
-          c1.add(1, varName + i + j);
-          problem.add(c1, "==", 1);
+        if (Z(i)(j) == 1) {
+//          var c1 = new Linear();
+//          c1.add(1, varName + i + j);
+          problem.setVarLowerBound(varName + i + j, 1);
+          problem.setVarUpperBound(varName + i + j, 1);
+          
+//          problem.add(c1, "=", 1);
         } else {
 
-          var c1 = new Linear();
-          c1.add(1, varName + i + j);
-          problem.add(c1, "<=", 1);
-          var c2 = new Linear();
-          c2.add(1, varName + i + j);
-          problem.add(c1, ">=", 0);
+//          var c1 = new Linear();
+//          c1.add(1, varName + i + j);
+//          problem.add(c1, "<=", 1);
+//          var c2 = new Linear();
+//          c2.add(1, varName + i + j);
+//          problem.add(c1, ">=", 0);
+          problem.setVarLowerBound(varName + i + j, 0);
+          problem.setVarUpperBound(varName + i + j, 1);          
           problem.setVarType(varName + i + j, classOf[Integer]);
         }
       }
-      problem.add(sumc, "==", 1);
+      problem.add(sumc, "=", 1);
     }
   }
 
@@ -80,6 +85,7 @@ class ILPOptimizer {
 
     Z;
   }
+
 
 }
 
