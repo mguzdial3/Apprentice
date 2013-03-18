@@ -70,7 +70,7 @@ object HierarchicalClusterer {
 
         var pairs = productNonEqual(list, list).filter { x => x._1 != x._2 }.map { x => (x._1, x._2, averageLink(x._1, x._2, similarity)) }
         //println(pairs)
-        var sorted = pairs.sort { (x, y) => x._3 > y._3 }
+        var sorted = pairs.sortWith { (x, y) => x._3 > y._3 }
         //println(sorted(0) + " " + sorted(1))
         merge = sorted(0)
         list = (merge._1 ::: merge._2) :: (list - merge._1 - merge._2)

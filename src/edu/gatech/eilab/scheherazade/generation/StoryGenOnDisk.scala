@@ -107,7 +107,7 @@ package generation {
           if (n.hasMoreSteps) {
             //print(".")
             //readLine()
-            q ++= (n.oneStep(me, optionals))
+            q pushAll (n.oneStep(me, optionals))
           } else {
             println("WARNING: CANNOT REACH AN ENDING. \n" + n)
             //println("WARNING: CANNOT REACH AN ENDING. \n" + n)

@@ -550,7 +550,8 @@ package graph {
         }
 
         // delete other sources, and add the new source
-        usedNodes = usedNodes -- sources + newSource
+        usedNodes --= sources 
+        usedNodes += newSource
       }
 
       // the same logic applied to sources also applies to sinks
@@ -563,7 +564,8 @@ package graph {
             l
         }
 
-        usedNodes = usedNodes -- sinks + newSink
+        usedNodes --= sinks 
+        usedNodes += newSink
       }
 
       new EfficientGraph(usedNodes.toList, newLinks)
