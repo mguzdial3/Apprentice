@@ -4,7 +4,7 @@ import main._
 import graph._
 import data._
 import scala.collection.mutable.ListBuffer
-import utils.ilp.ILPOptimizer
+import utils.ilp.ILPProblem
 import utils.Matrix
 
 package cluster.algo {
@@ -29,26 +29,22 @@ package cluster.algo {
       //for (i <- 1 to 10) {
       //clusters = initClusters
 
-      val i = 1
-      NLPMain.switchDataSet("Robbery")
-      val clusters = NLPMain.cluster(stories, 2)
-      val clusFreq = clusterFreq(clusters, wordBags, words)
-
-      val optimizer = new ILPOptimizer()
-      optimizer.setParameters(transpose(sentFreq), transpose(clusFreq))
-
-      var links = GraphGenerator.computeRelations(stories, clusters)
-      val validLinks = links.sortWith { case (l1, l2) => l1.confidence > l2.confidence }.take(i)
-
-      // constraints: sentences that cannot belong to certain clusters
-      val disallowed = constrainMembership(validLinks, stories, clusters)
-      println("sentences  = " + sentences.length)
-      println("size = " + disallowed.length + ", " + disallowed(0).length)
-      optimizer.addConstraint(disallowed)
-      println("start solving...")
-      val results = optimizer.solve
-
-      Matrix.prettyPrint(results)
+//      val i = 1
+//      NLPMain.switchDataSet("Robbery")
+//      val clusters = NLPMain.cluster(stories, 2)
+//      val clusFreq = clusterFreq(clusters, wordBags, words)
+//
+//      val problem = new ILPProblem()
+//      optimizer.setParameters(transpose(sentFreq), transpose(clusFreq))
+//
+//      var links = GraphGenerator.computeRelations(stories, clusters)
+//      val validLinks = links.sortWith { case (l1, l2) => l1.confidence > l2.confidence }.take(i)
+//
+//      // constraints: sentences that cannot belong to certain clusters
+//
+//      val results = optimizer.solve
+//
+//      Matrix.prettyPrint(results)
 
     }
 

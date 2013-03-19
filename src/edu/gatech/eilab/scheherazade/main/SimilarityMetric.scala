@@ -11,7 +11,7 @@ package main {
 
     var simHash = HashMap.empty[(String, String), Double]
 
-    System.setProperty("wordnet.database.dir", "../../WordNet/dict/")
+    System.setProperty("wordnet.database.dir", "./wordnet/dict/")
     var wordnet = edu.smu.tspell.wordnet.WordNetDatabase.getFileInstance();
 
     def normalize() {

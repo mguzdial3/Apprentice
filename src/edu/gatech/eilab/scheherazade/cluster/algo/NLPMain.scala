@@ -29,7 +29,7 @@ package cluster.algo {
     //var dataSet = "Airport"
 
     def main(args: Array[String]) {
-      internalCluster("Airport")
+      internalCluster("Robbery")
     }
 
     /**
@@ -176,8 +176,8 @@ package cluster.algo {
       def sentFn: () => List[Sentence] = () => parser().storyList.flatMap(_.members)
 
       val simi = new DSDSimilarity(sentFn, semanticFile)
-      val local = new SimpleLocation(sentFn, 0.6, locationFile)
-      var addition = new MatrixAddition(() => simi(), () => local(), 0.25, allFile)      
+      val local = new SimpleLocation(sentFn, 0.3, locationFile)
+      var addition = new MatrixAddition(() => simi(), () => local(), 0, allFile)      
       var matrix = addition()
       
       //no-link constraints
@@ -191,7 +191,7 @@ package cluster.algo {
       //      count = storyLen
       //    }
 
-      matrix = mutualKNN(matrix, 7);
+      matrix = mutualKNN(matrix, 5);
       val (distance, max) = similarityToDistance(matrix)
 
       var clusterList = OPTICS.cluster(distance, max, minCluster, stories.flatMap(_.members.toList))
@@ -199,6 +199,41 @@ package cluster.algo {
       evaluate(clusterList, gold)
       
       
+    }
+    
+    def spectralCluster (dataset:String) {
+      switchDataSet(dataset)
+      val reader = new ConfigReader(configFile)
+      var (stories, gold) = reader.initData()
+      val minCluster = 4
+      gold = gold.filter(_.members.size >= minCluster)
+
+      val parser = new StoryNLPParser(stories, parseFile, true)
+
+      def sentFn: () => List[Sentence] = () => parser().storyList.flatMap(_.members)
+
+      val simi = new DSDSimilarity(sentFn, semanticFile)
+      val local = new SimpleLocation(sentFn, 0.3, locationFile)
+      var addition = new MatrixAddition(() => simi(), () => local(), 0, allFile)      
+      var matrix = addition()
+      
+      //no-link constraints
+      //    var count = 0
+      //    for (story <- stories) {
+      //      val storyLen = story.members.length
+      //      for (i <- 0 until storyLen; j <- i + 1 until storyLen) {
+      //        matrix(i + count)(j + count) = 0
+      //        matrix(j + count)(i + count) = 0
+      //      }
+      //      count = storyLen
+      //    }
+
+      matrix = mutualKNN(matrix, 5);
+      val (distance, max) = similarityToDistance(matrix)
+
+      var clusterList = OPTICS.cluster(distance, max, minCluster, stories.flatMap(_.members.toList))
+      //iterativeRestrain(clusterList, stories, simi())
+      evaluate(clusterList, gold)
     }
 
     def mutualKNN(matrix: Array[Array[Double]], k: Int): Array[Array[Double]] =

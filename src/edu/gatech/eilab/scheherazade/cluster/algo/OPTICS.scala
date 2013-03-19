@@ -10,7 +10,7 @@ package edu.gatech.eilab.scheherazade {
 
     object OPTICS {
 
-      var visualized: Boolean = false
+      var visualized: Boolean = true
 
       var loose = false
       final val MAX_DISTANCE = Double.PositiveInfinity
@@ -310,8 +310,8 @@ package edu.gatech.eilab.scheherazade {
             val reach = pts.map(_.reachability)
 
             val valid =
-              reach.sliding(minClusterSize + 1).exists(l => l.head * 0.9 > l.tail.min) && // head is greater than min movie = 0.98
-                reach.sliding(minClusterSize).exists(l => l.max < l.min * 1.05) // a relative flat area bestRobbery = 1.05, best movie = 1.4
+              reach.sliding(minClusterSize).exists(l => l.head * 0.9 > l.tail.min) && // head is greater than min movie = 0.98
+                reach.sliding(minClusterSize-1).exists(l => l.max < l.min * 1.05) // a relative flat area bestRobbery = 1.05, best movie = 1.4
 
             if (valid) {
               val max = reach.max
