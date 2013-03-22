@@ -137,6 +137,8 @@ package main {
       //println("parsing: ************************************")
       //println(text)
       //println("parsed: ************************************")
+      var count = 0
+      
       nlp.getParsed(text)
       val newStories = storyList map { story =>
         val newSents = story.members map { sent =>
@@ -159,13 +161,14 @@ package main {
             val graph = nlp.getSemanticGraph()
 
             val relations = graphToRelations(graph, tokens)
-            println("parsed: " + sent.id + " " + tokens.map(x => x.word).mkString(" "))
+            //println("parsed: " + sent.id + " " + tokens.map(x => x.word).mkString(" "))
+            count += 1
             Sentence(sent.id, tokens, null, relations, sent.location)
           } else throw new RuntimeException("empty sentence " + sent.id)
         }
         new Story(newSents)
       }
-
+      println(count + " sentences parsed successfully.")
       new StorySet(cacheFile, newStories)
     }
 

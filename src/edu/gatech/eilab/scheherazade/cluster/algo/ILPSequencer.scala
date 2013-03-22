@@ -6,6 +6,7 @@ import data._
 import scala.collection.mutable.ListBuffer
 import utils.ilp.ILPProblem
 import utils.Matrix
+import scala.collection.immutable.Traversable
 
 package cluster.algo {
 
@@ -18,33 +19,63 @@ package cluster.algo {
 
     def main(args: Array[String]) {
       // load the sentences and the gold
-      val reader = new ConfigReader("configRobBest.txt")
+      val reader = new ConfigReader("configRob.txt")
       var (stories, gold) = reader.initData()
 
-      stories = stories.take(20)
       val sentences = stories.flatMap(_.members)
-      val (wordBags, words) = initSentencesAndWords(stories)
-      val sentFreq = sentenceFreq(wordBags.values, words)
+      val (allWordBags, allWords) = initSentencesAndWords(sentences)
+      //val sentFreq = sentenceFreq(wordBags.values, words)
 
       //for (i <- 1 to 10) {
-      //clusters = initClusters
 
-//      val i = 1
-//      NLPMain.switchDataSet("Robbery")
-//      val clusters = NLPMain.cluster(stories, 2)
-//      val clusFreq = clusterFreq(clusters, wordBags, words)
-//
-//      val problem = new ILPProblem()
-//      optimizer.setParameters(transpose(sentFreq), transpose(clusFreq))
-//
-//      var links = GraphGenerator.computeRelations(stories, clusters)
-//      val validLinks = links.sortWith { case (l1, l2) => l1.confidence > l2.confidence }.take(i)
-//
-//      // constraints: sentences that cannot belong to certain clusters
-//
-//      val results = optimizer.solve
-//
-//      Matrix.prettyPrint(results)
+      //      val i = 1
+      OPTICS.visualized = false
+      NLPMain.switchDataSet("Robbery")
+      val clusters = NLPMain.cluster(stories, 2)
+
+      for (story <- stories) {
+        val sents = story.members
+        println("processing cluster = ")
+        println(sents.map(_.toSimpleString).mkString("\n"))
+
+        val (wordBags, words) = initSentencesAndWords(sents.toList)
+        println("words" + words)
+        val clusFreq = clusterFreq(clusters, allWordBags, words)
+        val sentFreq = sentenceFreq(story.members.map { s => wordBags(s.id) }, words)
+
+        println("sentence frequency: ")
+        Matrix.prettyPrint(sentFreq)
+        println("cluster frequency: ")
+        Matrix.prettyPrint(clusFreq)
+        readLine()
+
+        val problem = new ILPProblem(sentFreq, clusFreq, Nil)
+        val membership = problem.solve
+
+        // output results
+        var i = 0
+        for (sent <- story.members) {
+          println(sent.toSimpleString)
+          println("-> " + membership(i))
+          if (membership(i) != -1)
+            println(clusters(membership(i)).toHexSeparatedString)
+
+          i += 1
+        }
+        readLine()
+      }
+      //
+      //      val problem = new ILPProblem()
+      //      optimizer.setParameters(transpose(sentFreq), transpose(clusFreq))
+      //
+      //      var links = GraphGenerator.computeRelations(stories, clusters)
+      //      val validLinks = links.sortWith { case (l1, l2) => l1.confidence > l2.confidence }.take(i)
+      //
+      //      // constraints: sentences that cannot belong to certain clusters
+      //
+      //      val results = optimizer.solve
+      //
+      //      Matrix.prettyPrint(results)
 
     }
 
@@ -110,33 +141,35 @@ package cluster.algo {
         answer
       }
 
-    def clusterFreq(clusters: List[Cluster], sentences: Map[Int, Array[String]], words: List[String]): Array[Array[Double]] =
+    def clusterFreq(clusters: List[Cluster], sent2Words: Map[Int, Array[String]], words: List[String]): Array[Array[Int]] =
       {
-        val n = words.size
-        val m = clusters.size
+        val numWords = words.size
+        val numClusters = clusters.size
 
-        println(n + " " + m)
-        val freq = Array.ofDim[Double](n, m)
+        //println(n + " " + m)
+        val freq = Array.ofDim[Int](numClusters, numWords)
 
-        var j = 0
-        for (c <- clusters) {
-          val myWords = ListBuffer[String]()
+        var clist = clusters
+
+        for (i <- 0 until numClusters) {
+          // for a given cluster
+          val c = clist.head
+          clist = clist.tail
 
           // collect all words from all sentences in a cluster
-          c.members.map { s => myWords ++= sentences(s.id) }
+          val myWords = c.members.flatMap { s => sent2Words(s.id) }
 
-          var i = 0
-          var count = 0
-          words foreach { w =>
+          var wlist = words
+          //println("my words = " + myWords)
+          for (j <- 0 until numWords) {
+            val w = wlist.head
+            wlist = wlist.tail
+            // for each possible word
+
             val wordCount = myWords.count(_ == w)
             freq(i)(j) = wordCount
-            count += wordCount
-            i += 1 // next word, increment index
-          }
-
-          // normalize word count
-          for (k <- 0 until n) {
-            freq(k)(j) = freq(k)(j) / count
+            //println("for word " + w + " = " + wordCount)
+            //readLine()
           }
 
           /*** debug info: printing all words present in the current cluster ***/
@@ -148,20 +181,23 @@ package cluster.algo {
           //          }
           //println()
           /*** debugging info ends ***/
-          j += 1
         }
 
         freq
       }
 
-    def initSentencesAndWords(stories: List[Story]): (Map[Int, Array[String]], List[String]) =
+    /**
+     * returns a hashmap (sentence_id -> Array of words in that sentence) and a list of all used words
+     *
+     */
+    def initSentencesAndWords(sentences: List[Sentence]): (Map[Int, Array[String]], List[String]) =
       {
         val stopwords = loadStopWords()
         var words = scala.collection.mutable.ListBuffer[String]()
 
-        // extract the sentence id and words that have been regularized
+        // extract the sentence id and words that have been properly tokenized (performed in sent.bagOfWords)
         // stop words are removed
-        val wordBags = stories.flatMap(_.members).map {
+        val wordBags = sentences.map {
           sent =>
             (sent.id,
               sent.bagOfWords.filterNot(w => stopwords.contains(w)))
@@ -181,23 +217,25 @@ package cluster.algo {
         (wordBags, words.toList)
       }
 
-    def sentenceFreq(sentences: Iterable[Array[String]], words: List[String]): Array[Array[Int]] =
+    /**
+     * count the words from the sentences
+     * @return a matrix of number-of-sentences by number-of-words. Each cell
+     * contains the number of times the word occurs in that sentence
+     */
+    def sentenceFreq(sentences: Array[Array[String]], allWords: List[String]): Array[Array[Int]] =
       {
 
-        val m = words.size // m is the height of the matrix
-        val n = sentences.size // n is the width of the matrix
-        val freq = Array.ofDim[Int](m, n)
+        val numWords = allWords.size // m is the height of the matrix
+        val numSents = sentences.size // n is the width of the matrix
+        val freq = Array.ofDim[Int](numSents, numWords)
 
-        var i = 0;
-        var j = 0;
-
-        words foreach { w =>
-          sentences foreach { s =>
+        for (i <- 0 until numSents) {
+          val s = sentences(i)
+          var j = 0
+          for (w <- allWords) {
             freq(i)(j) = s.count(_ == w)
             j += 1
           }
-          j = 0
-          i += 1
         }
 
         freq

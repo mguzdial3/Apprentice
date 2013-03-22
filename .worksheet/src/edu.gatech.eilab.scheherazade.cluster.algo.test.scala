@@ -16,5 +16,9 @@ object test {;import org.scalaide.worksheet.runtime.library.WorksheetSupport._; 
   
   val m2 = matrix.getMatrix(0, 0, 0, 4);System.out.println("""m2  : Jama.Matrix = """ + $show(m2 ));$skip(17); 
   m2.print(5, 3);$skip(26); val res$4 = 
-	m2.getColumnPackedCopy();System.out.println("""res4: Array[Double] = """ + $show(res$4))}
+	m2.getColumnPackedCopy();System.out.println("""res4: Array[Double] = """ + $show(res$4));$skip(15); 
+	
+	val a = 1.0;System.out.println("""a  : Double = """ + $show(a ));$skip(14); val res$5 = 
+	(a*10).toInt;System.out.println("""res5: Int = """ + $show(res$5))}
+	
 }

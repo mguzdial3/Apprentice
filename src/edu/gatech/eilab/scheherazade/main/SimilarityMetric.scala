@@ -189,10 +189,10 @@ package main {
         for (rel <- nnRelations) {
           val word = rel.dep.word + " " + rel.gov.word
           val lemma = rel.dep.lemma + " " + rel.gov.lemma
-          //println("nn word: " + word)
+          
           if (wordnet.getSynsets(word).length > 0) {
             // this is a word
-            println("we found a word: " + word)
+            //println("we found a noun phrase: " + word)
             result = result filterNot (_ == rel) map { r =>
               if (r.dep.word == rel.gov) {
                 val newDep = Token(r.gov.id, word, r.dep.pos, lemma, "")
@@ -203,7 +203,9 @@ package main {
               } else r
             }
           }
-          else println("word does not exist: " + word)
+          else {
+            //println("noun phrase does not exist in WordNet: " + word)
+          }
         }
 
         result

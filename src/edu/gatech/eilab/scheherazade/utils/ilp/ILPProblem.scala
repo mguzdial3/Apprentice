@@ -12,52 +12,66 @@ class ILPProblem(val sentVocab: Array[Array[Int]], val clusterVocab: Array[Array
 
   require(sentVocab(0).length == clusterVocab(0).length)
   protected var problem = new Problem();
-  protected var varName = "Z";
 
   protected val numSents = sentVocab.length
   protected val numClusters = clusterVocab.length
   protected val numWords = sentVocab(0).length
-  
+
   var verbose = false
 
+  /** provide a variable name
+   *  
+   */
+  protected def variable(i:Int, j:Int) = "Z" + i + "s" + j
+  
   /**
    * solve the corresponding binary integer problem
    * @return Z:  number of sentences * number of clusters
    */
-  def solve(): Array[Array[Double]] = {
+  def solve(): Array[Int] = {
 
     /* computing the probability of each word in each cluster
      * For each cluster, the probabilities are normalized so they sum to one
      */
+    val verySmall = 1E-6
     val clusterProb = Array.ofDim[Double](numClusters, numWords)
     for (i <- 0 until numClusters) {
       val total: Double = clusterVocab(i).sum
       for (j <- 0 until numWords) {
-        clusterProb(i)(j) = clusterVocab(i)(j) / total + 1E-6 
+        if (total == 0) {
+          clusterProb(i)(j) = 1E-6 // when total = 0, the probability is uniformly distributed
+        } else {
+          clusterProb(i)(j) = clusterVocab(i)(j) / total + 1E-6
+        }
         // add a small constant so it does not become zero
       }
     }
 
     //println("probabilities")
     //Matrix.prettyPrint(clusterProb)
-    
+
     setParameters(sentVocab, clusterProb)
 
     addClusterOrder(orders)
 
     var solver = ILPProblem.factory.get();
     var result = solver.solve(problem);
-    
+
     if (verbose) println(result)
     // return Z
-    var Z = Array.ofDim[Double](numSents, numClusters);
+    var Z = Array.fill[Int](numSents)(-1) // default value is -1, not belonging to any clusters
     for (i <- 0 until numSents) {
       for (j <- 0 until numClusters) {
-        Z(i)(j) = result.get(varName + i + j).doubleValue();
+        val answer = result.get(variable(i, j)).doubleValue();
+        if (answer == 1)
+        {
+          println("answer :" + i + " -> " + j)
+          Z(i) = j
+        }
       }
     }
 
-    Z;
+    Z
   }
 
   /**
@@ -103,26 +117,30 @@ class ILPProblem(val sentVocab: Array[Array[Int]], val clusterVocab: Array[Array
       for (k <- 0 until numClusters) {
         var coeff = headCoeff
         for (j <- 0 until numWords) {
-          println(log(P(k)(j)) * S(i)(j))
+          //println("coeff = " + log(P(k)(j)) * S(i)(j))
           coeff += log(P(k)(j)) * S(i)(j)
         }
-        
+
         // the variables are named Z + (sentence index) + (cluster index)
-        val payoff = pow(math.E, coeff)
-        objective.add(payoff, varName + i + k)
-        //println("payoff for " + i + " " + k + " = " + pow(math.E, coeff))
+        val payoff = pow(math.E, coeff) * 1E10
+        objective.add(payoff, variable(i, k))
+        println("payoff for " + i + " " + k + " = " + payoff)
+        if (Double.NaN equals payoff)
+        {
+          println("warning payoff is NaN")
+        }
 
         // set ranges of variables 
-        problem.setVarLowerBound(varName + i + k, 0);
-        problem.setVarUpperBound(varName + i + k, 1);
-        problem.setVarType(varName + i + k, classOf[Integer]);
+        problem.setVarLowerBound(variable(i, k), 0);
+        problem.setVarUpperBound(variable(i, k), 1);
+        problem.setVarType(variable(i, k), classOf[Integer]);
 
         // sum of an entire row
-        sumc.add(1, varName + i + k)
+        sumc.add(1, variable(i, k))
       }
 
       // a sentence belongs to at most one cluster
-      problem.add(sumc, "<=", 1)
+      problem.add(new Constraint("constraint"+i, sumc, "<=", 1))
 
     }
     problem.setObjective(objective, OptType.MAX);
@@ -139,17 +157,17 @@ class ILPProblem(val sentVocab: Array[Array[Int]], val clusterVocab: Array[Array
     for (pair <- orders) {
       val first = pair._1
       val second = pair._2
-      
+
       for (i <- 1 until numClusters; j <- 0 until i) {
-        val name1 = varName + i + pair._1
-        val name2 = varName + j + pair._2
+        val name1 = variable(i, pair._1)
+        val name2 = variable(j, pair._2)
         //val name3 = varName + j + pair._1
-        
+
         val mutex = new Linear()
         mutex.add(1, name1)
         mutex.add(1, name2)
         problem.add(mutex, "<=", 1)
-        
+
         println("added mutex " + name1 + " " + name2)
       }
     }
@@ -163,8 +181,8 @@ class ILPProblem(val sentVocab: Array[Array[Int]], val clusterVocab: Array[Array
    */
   protected def addMutexConstraint(constraints: List[Array[Int]]) {
     for (c <- constraints) {
-      val name1 = varName + c(0) + c(1)
-      val name2 = varName + c(2) + c(3)
+      val name1 = variable(c(0),c(1))
+      val name2 = variable(c(2),c(3))
 
       val mutex = new Linear()
       mutex.add(1, name1)
@@ -183,24 +201,24 @@ class ILPProblem(val sentVocab: Array[Array[Int]], val clusterVocab: Array[Array
     for (i <- 0 until Z.length) {
       var sumc = new Linear();
       for (j <- 0 until Z(i).length) {
-        sumc.add(1, varName + i + j);
+        sumc.add(1, variable(i, j));
         if (Z(i)(j) == 1) {
 
-          problem.setVarLowerBound(varName + i + j, 1);
-          problem.setVarUpperBound(varName + i + j, 1);
+          problem.setVarLowerBound(variable(i, j), 1);
+          problem.setVarUpperBound(variable(i, j), 1);
 
           //          problem.add(c1, "=", 1);
         } else {
 
           //          var c1 = new Linear();
-          //          c1.add(1, varName + i + j);
+          //          c1.add(1, variable(i, j));
           //          problem.add(c1, "<=", 1);
           //          var c2 = new Linear();
-          //          c2.add(1, varName + i + j);
+          //          c2.add(1, variable(i, j));
           //          problem.add(c1, ">=", 0);
-          problem.setVarLowerBound(varName + i + j, 0);
-          problem.setVarUpperBound(varName + i + j, 1);
-          problem.setVarType(varName + i + j, classOf[Integer]);
+          problem.setVarLowerBound(variable(i, j), 0);
+          problem.setVarUpperBound(variable(i, j), 1);
+          problem.setVarType(variable(i, j), classOf[Integer]);
         }
       }
       problem.add(sumc, "=", 1);
@@ -217,9 +235,10 @@ object ILPProblem {
   def main(args: Array[String]) {
     testILPProblem()
   }
-  
-  /** testing the class ILPProblem for real
-   *  
+
+  /**
+   * testing the class ILPProblem for real
+   *
    */
   def testILPProblem() {
     val cVocab = Array.fill[Int](3, 3)(1)
@@ -233,14 +252,14 @@ object ILPProblem {
     sVocab(1)(0) = 5
     sVocab(2)(2) = 3
     val orders = List((0, 1), (1, 2))
-    
+
     val p = new ILPProblem(sVocab, cVocab, orders)
     val z = p.solve
     println()
     println(z)
     println("hello")
-    Matrix.prettyPrint(z)
-    
+    println(z.toList.toString)
+
   }
 
   /**

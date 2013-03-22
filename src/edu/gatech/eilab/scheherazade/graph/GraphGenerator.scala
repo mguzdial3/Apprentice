@@ -56,7 +56,7 @@ package graph {
       var errorBefore = -1.0
       var errorAfter = -1.0
 
-      val allRelations: List[ObservedLink] = GraphGenerator.computeRelations(storyList, clusterList).filter(_.totalObservations > 0)
+      val allRelations: List[ObservedLink] = GraphGenerator.computeRelations(storyList, clusterList)
 
       // create the graph that contains every link
       val links = allRelations filter thresholdFilter
@@ -635,9 +635,10 @@ package graph {
     
     def computeRelations(storyList: List[Story], clusterList: List[Cluster]): List[ObservedLink] =
       {
-        var relations = List[ObservedLink]()
+        
         val linkTable = new HashMap[(Cluster, Cluster), Int]
 
+        // a helper function to increment the count in LinkTable robustly
         def increment(source: Cluster, target: Cluster) {
           if (linkTable.contains((source, target))) {
             // increment the count
@@ -648,6 +649,7 @@ package graph {
             linkTable += { (source, target) -> 1 }
         }
 
+        // count everything and put them into the link table
         storyList foreach {
           story =>
             for (i <- 0 to story.members.length - 2) {
@@ -663,7 +665,8 @@ package graph {
             }
         }
 
-        var linkList = List[(Cluster, Cluster, Int)]()
+        var relations = List[ObservedLink]()
+        //var linkList = List[(Cluster, Cluster, Int)]()
         //val clusterArray = clusterList.toArray // efficiency increase? should refactor to use lists
 
         var sourceList = clusterList
@@ -679,6 +682,8 @@ package graph {
             target = targetList.head
             targetList = targetList.tail
 
+            // a unique pair of clusters: (source, target) 
+            
             val forward = linkTable.getOrElse((source, target), 0)
             val backward = linkTable.getOrElse((target, source), 0)
             //println("forward: " + forward + " backward: " + backward)
@@ -688,7 +693,7 @@ package graph {
           }
         }
 
-        relations
+        relations.filter(_.totalObservations > 0)
       }
   }
 }
