@@ -318,7 +318,7 @@ package main {
 
     def cluster() {
 
-      val dataSet = "Movie"
+      val dataSet = "Robbery"
       var configFile = ""
       var parseFile = ""
       var semanticFile = ""
@@ -375,9 +375,9 @@ package main {
       //var simiMatrix = simi()
       //    utils.Matrix.prettyPrint(matrix1)
       //    System.exit(0)
-      val local = new SimpleLocation(sentFn, 0.6, locationFile)
+      val local = new SimpleLocation(sentFn, 0.3, locationFile)
 
-      var addition = new MatrixAddition(() => simi(), () => local(), 0.25, allFile)
+      var addition = new MatrixAddition(() => simi(), () => local(), 0.1, allFile)
 
       //val matrix = simi()
       var matrix = addition()
