@@ -1,5 +1,4 @@
-package edu.gatech.eilab.scheherazade.utils.ilp
-
+package edu.gatech.eilab.scheherazade.cluster.algo
 import net.sf.javailp._
 import scala.math._
 import edu.gatech.eilab.scheherazade.utils.Matrix
@@ -54,7 +53,8 @@ class ILPProblem(val sentVocab: Array[Array[Int]], val clusterVocab: Array[Array
 
     addClusterOrder(orders)
 
-    var solver = ILPProblem.factory.get();
+    var solver = ILPProblem.factory.get()
+
     var result = solver.solve(problem);
 
     if (verbose) println(result)
@@ -65,7 +65,7 @@ class ILPProblem(val sentVocab: Array[Array[Int]], val clusterVocab: Array[Array
         val answer = result.get(variable(i, j)).doubleValue();
         if (answer == 1)
         {
-          println("answer :" + i + " -> " + j)
+          //println("answer :" + i + " -> " + j)
           Z(i) = j
         }
       }
@@ -124,7 +124,7 @@ class ILPProblem(val sentVocab: Array[Array[Int]], val clusterVocab: Array[Array
         // the variables are named Z + (sentence index) + (cluster index)
         val payoff = pow(math.E, coeff) * 1E10
         objective.add(payoff, variable(i, k))
-        println("payoff for " + i + " " + k + " = " + payoff)
+        //println("payoff for " + i + " " + k + " = " + payoff)
         if (Double.NaN equals payoff)
         {
           println("warning payoff is NaN")
@@ -168,7 +168,7 @@ class ILPProblem(val sentVocab: Array[Array[Int]], val clusterVocab: Array[Array
         mutex.add(1, name2)
         problem.add(mutex, "<=", 1)
 
-        println("added mutex " + name1 + " " + name2)
+        //println("added mutex " + name1 + " " + name2)
       }
     }
   }
@@ -231,7 +231,14 @@ object ILPProblem {
 
   val factory = new SolverFactoryGLPK()
   factory.setParameter(Solver.TIMEOUT, 100000); // set timeout to 1000 seconds
-
+  factory.setParameter(Solver.VERBOSE, 0);
+  
+  def verbose(v:Boolean)
+  {
+    if (v) factory.setParameter(Solver.VERBOSE, 1)
+    else factory.setParameter(Solver.VERBOSE, 0);
+  }
+  
   def main(args: Array[String]) {
     testILPProblem()
   }

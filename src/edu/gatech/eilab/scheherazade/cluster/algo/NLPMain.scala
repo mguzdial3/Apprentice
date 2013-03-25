@@ -152,12 +152,12 @@ package cluster.algo {
       def sentFn: () => List[Sentence] = () => parser().storyList.flatMap(_.members)
 
       val simi = new DSDSimilarity(sentFn, semanticFile)
-      val local = new SimpleLocation(sentFn, 0.6, locationFile)
-      var addition = new MatrixAddition(() => simi(), () => local(), 0.25, allFile)      
+      val local = new SimpleLocation(sentFn, 0.3, locationFile)
+      var addition = new MatrixAddition(() => simi(), () => local(), 0.1, allFile)      
       var matrix = addition()
       
 
-      matrix = mutualKNN(matrix, 7);
+      //matrix = mutualKNN(matrix, 7);
       val (distance, max) = similarityToDistance(matrix)
 
       OPTICS.visualized = false

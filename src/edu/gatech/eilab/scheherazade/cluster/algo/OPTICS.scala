@@ -381,13 +381,13 @@ package edu.gatech.eilab.scheherazade {
 
         for (r <- regions) {
           var members = List[Sentence]()
-          println("@ a")
+          //println("@ a")
           for (pt <- r) {
             val text = sentences(pt.id).toShortString().replaceAll("\\(S", "").replaceAll("\\)", "")
-            println(text) // + " : " + sentences(pt.id).location)
+            //println(text) // + " : " + sentences(pt.id).location)
             members = sentences(pt.id) :: members
           }
-          println("###")
+          //println("###")
           val name = members.last.tokens.map(_.word).mkString(" ")
           val c = new Cluster(name, members)
           members.foreach(_.cluster = c)

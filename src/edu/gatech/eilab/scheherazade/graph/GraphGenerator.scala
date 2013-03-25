@@ -666,7 +666,7 @@ package graph {
         }
 
         var relations = List[ObservedLink]()
-        //var linkList = List[(Cluster, Cluster, Int)]()
+        var linkList = List[(Cluster, Cluster, Int)]()
         //val clusterArray = clusterList.toArray // efficiency increase? should refactor to use lists
 
         var sourceList = clusterList

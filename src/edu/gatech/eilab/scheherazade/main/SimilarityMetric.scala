@@ -187,9 +187,10 @@ package main {
         // Preprocessing2: find nouns with two words.
         val nnRelations = result.filter { _.relation == "nn" }
         for (rel <- nnRelations) {
+          println(rel)
           val word = rel.dep.word + " " + rel.gov.word
           val lemma = rel.dep.lemma + " " + rel.gov.lemma
-          
+          println(word)
           if (wordnet.getSynsets(word).length > 0) {
             // this is a word
             //println("we found a noun phrase: " + word)

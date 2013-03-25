@@ -4,7 +4,6 @@ import main._
 import graph._
 import data._
 import scala.collection.mutable.ListBuffer
-import utils.ilp.ILPProblem
 import utils.Matrix
 import scala.collection.immutable.Traversable
 
@@ -26,44 +25,77 @@ package cluster.algo {
       val (allWordBags, allWords) = initSentencesAndWords(sentences)
       //val sentFreq = sentenceFreq(wordBags.values, words)
 
-      //for (i <- 1 to 10) {
-
-      //      val i = 1
-      OPTICS.visualized = false
       NLPMain.switchDataSet("Robbery")
-      val clusters = NLPMain.cluster(stories, 2)
+      var clusters = NLPMain.cluster(stories, 4)
+      val numClusters = clusters.length
 
-      for (story <- stories) {
-        val sents = story.members
-        println("processing cluster = ")
-        println(sents.map(_.toSimpleString).mkString("\n"))
+      println("Starting with OPTICS clusters: ")
+      NLPMain.evaluate(clusters, gold)
+      
+      for (repeat <- 1 to 20) {
+    	println("\nIteration " + repeat)
+        val temp1 = GraphGenerator.computeRelations(stories, clusters).filter(_.confidence > 0.5)
 
-        val (wordBags, words) = initSentencesAndWords(sents.toList)
-        println("words" + words)
-        val clusFreq = clusterFreq(clusters, allWordBags, words)
-        val sentFreq = sentenceFreq(story.members.map { s => wordBags(s.id) }, words)
+        println("All available constraints: " + temp1)
 
-        println("sentence frequency: ")
-        Matrix.prettyPrint(sentFreq)
-        println("cluster frequency: ")
-        Matrix.prettyPrint(clusFreq)
-        readLine()
+        val goodRelations = temp1.take(repeat)
+        val constraints = makeConstraints(goodRelations, clusters)
+        println("Selected constraints: " + constraints)
 
-        val problem = new ILPProblem(sentFreq, clusFreq, Nil)
-        val membership = problem.solve
+        val buffers = Array.fill[ListBuffer[Sentence]](numClusters)(ListBuffer[Sentence]())
 
-        // output results
-        var i = 0
-        for (sent <- story.members) {
-          println(sent.toSimpleString)
-          println("-> " + membership(i))
-          if (membership(i) != -1)
-            println(clusters(membership(i)).toHexSeparatedString)
+        for (story <- stories) {
+          val sents = story.members
+          print(".")
+          //println("processing story = ")
+          //println(sents.map(_.toSimpleString).mkString("\n"))
 
-          i += 1
+          val (wordBags, words) = initSentencesAndWords(sents.toList)
+          //println("words" + words)
+          val clusFreq = clusterFreq(clusters, allWordBags, words)
+          val sentFreq = sentenceFreq(story.members.map { s => wordBags(s.id) }, words)
+
+          //          println("sentence frequency: ")
+          //          Matrix.prettyPrint(sentFreq)
+          //          println("cluster frequency: ")
+          //          Matrix.prettyPrint(clusFreq)
+          //          readLine()
+
+          val problem = new ILPProblem(sentFreq, clusFreq, constraints)
+          val membership = problem.solve
+
+          // collect results
+          for (i <- 0 until story.members.length) {
+            val sent = story.members(i)
+            val index = membership(i)
+
+            //println(sent.toSimpleString)
+            //println("-> " + index)
+
+            if (index != -1) {
+              buffers(index) += sent
+              //println(clusters(membership(i)).toHexSeparatedString)
+            }
+          }
         }
-        readLine()
+
+        val clusterList = ListBuffer[Cluster]()
+
+        for (b <- buffers) {
+          clusterList += new Cluster(b(0).toSimpleString, b.toList)
+        }
+
+        clusters = clusterList.toList
+
+//        for (c <- clusters) {
+//          println(c.toHexSeparatedString)
+//        }
+        
+        
+        println("iteration " + repeat + " completed")
+        NLPMain.evaluate(clusters, gold)
       }
+
       //
       //      val problem = new ILPProblem()
       //      optimizer.setParameters(transpose(sentFreq), transpose(clusFreq))
@@ -79,11 +111,27 @@ package cluster.algo {
 
     }
 
+    def makeConstraints(links: List[ObservedLink], clusters: List[Cluster]): List[(Int, Int)] =
+      {
+        links.map {
+          l =>
+            val int1 = clusters.indexOf(l.source)
+            val int2 = clusters.indexOf(l.target)
+
+            if (int1 == -1 || int2 == -1) {
+              throw new RuntimeException("Warning: Cannot make constraints from non-existent clusters! \n" +
+                "The link in question is " + l.toString)
+            }
+
+            (int1, int2)
+        }
+      }
+
     def constrainMembership(links: List[ObservedLink], stories: List[Story], clusters: List[Cluster]): Array[Array[Int]] =
       {
         val n = stories.map(_.members.size).sum
         val m = clusters.size
-        val constraints = Array.ofDim[Int](n, m)
+        val constraints = Array.fill[Int](n, m)(0)
 
         var i = 0
         stories foreach { story =>
@@ -119,7 +167,7 @@ package cluster.algo {
       {
         val n = matrix.length
         val m = matrix(0).length
-        val answer = Array.ofDim[Double](m, n)
+        val answer = Array.fill[Double](m, n)(0)
 
         for (i <- 0 until n; j <- 0 until m) {
           answer(j)(i) = matrix(i)(j)
@@ -132,7 +180,7 @@ package cluster.algo {
       {
         val n = matrix.length
         val m = matrix(0).length
-        val answer = Array.ofDim[Int](m, n)
+        val answer = Array.fill[Int](m, n)(0)
 
         for (i <- 0 until n; j <- 0 until m) {
           answer(j)(i) = matrix(i)(j)
@@ -147,7 +195,7 @@ package cluster.algo {
         val numClusters = clusters.size
 
         //println(n + " " + m)
-        val freq = Array.ofDim[Int](numClusters, numWords)
+        val freq = Array.fill[Int](numClusters, numWords)(0)
 
         var clist = clusters
 
@@ -227,7 +275,7 @@ package cluster.algo {
 
         val numWords = allWords.size // m is the height of the matrix
         val numSents = sentences.size // n is the width of the matrix
-        val freq = Array.ofDim[Int](numSents, numWords)
+        val freq = Array.fill[Int](numSents, numWords)(0)
 
         for (i <- 0 until numSents) {
           val s = sentences(i)
