@@ -195,7 +195,10 @@ package generation {
 
     def readDescriptions(filename: String): List[TextDescription] = {
       val lines = CSVProcessor.readCSV(filename)
-      val answer = for (row <- lines) yield new TextDescription(row(0), row(1), row(2), row(3), row(4))
+      val answer = for (row <- lines) yield {
+        val nrow = row.map(_.replaceAll("\"\"", "\""))
+        new TextDescription(nrow(0), nrow(1), nrow(2), nrow(3), nrow(4))
+      }
       answer.toList.tail
     }
   }
