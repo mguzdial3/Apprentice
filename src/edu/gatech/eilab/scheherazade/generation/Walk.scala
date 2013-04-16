@@ -35,7 +35,7 @@ package generation {
         allExcluded = findTransitiveClosure(graph, allExcluded)
 
         // update newly excluded. These are used later
-        newlyExcluded = allExcluded -- excluded
+        newlyExcluded = allExcluded filterNot (excluded contains)
 
         // nodes cannot execute any more due to temporal constraints
         val expired = graph.links.filter(l => l.target == step).map(_.source)

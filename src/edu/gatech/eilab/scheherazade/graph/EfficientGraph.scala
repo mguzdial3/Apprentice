@@ -257,7 +257,7 @@ package graph {
           }
 
           // replace the first source, and delete other sources
-          newNodes = source :: newNodes -- sources.map(num2Node(_))
+          newNodes = source :: newNodes filterNot (sources.map(num2Node(_)) contains)
         }
 
         var sink: Cluster = num2Node(sinks.head)
@@ -273,7 +273,7 @@ package graph {
           }
 
           // replace the first source, and delete other sources
-          newNodes = sink :: newNodes -- sinks.map(num2Node(_))
+          newNodes = sink :: newNodes filterNot (sinks.map(num2Node(_)) contains)
         }
 
         val reGraph = new EfficientGraph(newNodes, newLinks) // the graph with the new source and/or new sink
@@ -550,7 +550,7 @@ package graph {
         }
 
         // delete other sources, and add the new source
-        usedNodes = usedNodes -- sources + newSource
+        usedNodes = usedNodes.filterNot(sources contains) += newSource
       }
 
       // the same logic applied to sources also applies to sinks
@@ -563,7 +563,7 @@ package graph {
             l
         }
 
-        usedNodes = usedNodes -- sinks + newSink
+        usedNodes = usedNodes.filterNot(sinks contains) += newSink
       }
 
       new EfficientGraph(usedNodes.toList, newLinks)
@@ -606,13 +606,13 @@ package graph {
     def removeIrregularSourceEnds(): EfficientGraph =
       {
         val realSource = sourceNodes().map(num2Node)
-        val fakeSource = nodes.filter(n => links.forall(l => l.target != n)) -- realSource
+        val fakeSource = nodes.filter(n => links.forall(l => l.target != n)).filterNot(realSource.contains)
 
         val realSinks = sinkNodes.map(num2Node)
-        val fakeSinks = nodes.filter(n => links.forall(l => l.source != n)) -- realSinks
+        val fakeSinks = nodes.filter(n => links.forall(l => l.source != n)).filterNot(realSinks.contains)
 
-        val fakes = fakeSource ::: fakeSinks
-        val realNodes = nodes -- fakes
+        val fakes = fakeSource.filterNot(fakeSinks contains)
+        val realNodes = nodes.filterNot(fakes contains)
         val realLinks = links.filterNot(l => fakes.contains(l.source) || fakes.contains(l.target))
 
         new EfficientGraph(realNodes, realLinks)

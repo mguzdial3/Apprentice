@@ -86,7 +86,7 @@ package graph {
           //println(early.map(_.name).mkString("(", ",", ")") + " => " + late.map(_.name).mkString("(", ",", ")") + ": " + max)
         }
 
-        val realCuts = verCuts -- mergedWith.values.toList
+        val realCuts = verCuts filterNot (mergedWith.values.toList contains)
         if (!realCuts.isEmpty) {
           allCuts ++= realCuts
           // remove these key cuts from the graph.

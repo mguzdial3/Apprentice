@@ -20,7 +20,7 @@ package main {
     }
 
     def generateGraphs() {
-      val reader = new ConfigReader("configRobBest.txt")
+      val reader = new ConfigReader("configNewMv.txt")
       // val (stories, clusters) = reader.initData()
       val (stories, clusters) = reader.initDataFiltered()
 

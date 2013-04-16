@@ -30,14 +30,14 @@ object Dependency {
 
       val queue = new Queue[(Dependency, Int)]()
       val firstLayer = deps.filter(_.gov == rootNode)
-      allDeps --= firstLayer
+      allDeps = allDeps filterNot (firstLayer contains)
       queue ++= (firstLayer.map{(_, 1)})
 
       while (!queue.isEmpty) {
         val (typedDep, depth) = queue.dequeue()
         listbuffer += new Dependency(typedDep.gov, typedDep.dep, typedDep.relation, typedDep.specific, depth)
         val nextLayer = allDeps.filter(_.gov == typedDep.dep)
-        allDeps = allDeps -- nextLayer
+        allDeps = allDeps filterNot (nextLayer contains)
         queue ++= nextLayer.map((_, depth + 1))
       }
 

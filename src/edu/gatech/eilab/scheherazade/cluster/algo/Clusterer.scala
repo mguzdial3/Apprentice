@@ -62,7 +62,7 @@ object HierarchicalClusterer {
     {
       var list = (0 to similarity.length - 1).map(List(_)).toList
       var singles = list.filter { l => !similarity(l(0)).exists(_ != 0) }
-      list = list -- singles
+      list = list filterNot( singles contains)
 
       println("single sentences: " + singles.flatten.mkString(" "))
       var merge = (List(0), List(0), 0.0)
@@ -70,10 +70,10 @@ object HierarchicalClusterer {
 
         var pairs = productNonEqual(list, list).filter { x => x._1 != x._2 }.map { x => (x._1, x._2, averageLink(x._1, x._2, similarity)) }
         //println(pairs)
-        var sorted = pairs.sort { (x, y) => x._3 > y._3 }
+        var sorted = pairs.sortWith { (x, y) => x._3 > y._3 }
         //println(sorted(0) + " " + sorted(1))
         merge = sorted(0)
-        list = (merge._1 ::: merge._2) :: (list - merge._1 - merge._2)
+        list = (merge._1 ::: merge._2) :: (list filterNot(_ == merge._1) filterNot(_ == merge._2))
         //println("merged " + merge._1 + " and " + merge._2)
 
       } while (list.length > 68 && merge._3 > 0.6)
