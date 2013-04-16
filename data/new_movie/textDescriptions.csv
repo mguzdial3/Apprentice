@@ -12,7 +12,7 @@ buy popcorn,John,Buy popcorn,You couldn't resist the popcorn smell and bought so
 buy drinks,John,Buy some drinks,You bought some drinks just in case you feel thirsty later.,None
 buy refreshments,John,Buy some refreshments,You bought some refreshments from the theater. ,None
 show tickets,John,Show your tickets to the employee,You showed tickets to the theater employee and he let you in.,None
-enter theater,John,Enter the auditorium,"You entered the auditorium with the big sign ""Theater 4A""",None
+enter theater,John,Enter the theater,You entered the movie theater.,None
 find seats,John,Find seats in the dark room,You find the seats as indicated on your movie ticket.,None
 sit down,John,Sit down at your seats,You sat comfortably in your seats. ,None
 talk,John,Talk with Sally,You and Sally discussed the movie until the guy sitting next to you tried to cover his ears.,None
