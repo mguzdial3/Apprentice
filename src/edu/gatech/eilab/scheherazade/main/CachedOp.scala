@@ -219,7 +219,7 @@ package main {
     def compute(): Array[Array[Double]] = {
 
       val sentList: List[Sentence] = sentFn()
-      val sim = new SimilarityMetric()
+      val sim = new Similarity2()
       val matrix = Array.fill(sentList.length, sentList.length)(0.0)
       // do the preprocessing once and for all
       val sents = sentList.map { s =>

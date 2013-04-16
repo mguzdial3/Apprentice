@@ -5,48 +5,51 @@ import scala.collection.mutable.Queue
 import scala.collection.mutable.HashMap
 import similarity._
 package main {
-  class SimilarityMetric {
 
-    val ruler: SimilarityMeasure = Resnik
+  /**
+   * similarity for distributional
+   *
+   */
+  class Similarity2 {
 
     var simHash = HashMap.empty[(String, String), Double]
+    //
+    //       
+    //
+        def normalize() {
+//          var min = Double.PositiveInfinity
+//          var max = 0.0
+//          simHash.foreach { x =>
+//            if (x._2 < min) min = x._2
+//            if (x._2 > max) max = x._2
+//          }
+//    
+//          simHash = simHash.map { x =>
+//            val value = (x._2 - min) / (max - min) * 0.8
+//            (x._1 -> value)
+//          }
+        }
 
-    System.setProperty("wordnet.database.dir", "./wordnet/dict/")
-    var wordnet = edu.smu.tspell.wordnet.WordNetDatabase.getFileInstance();
-
-    def normalize() {
-      var min = Double.PositiveInfinity
-      var max = 0.0
-      simHash.foreach { x =>
-        if (x._2 < min) min = x._2
-        if (x._2 > max) max = x._2
-      }
-
-      simHash = simHash.map { x =>
-        val value = (x._2 - min) / (max - min) * 0.8
-        (x._1 -> value)
-      }
-    }
-
-    def wordSimilarity(word1: Token, word2: Token): Double =
+    def wordSimilarity(token1: Token, token2: Token): Double =
       {
-        if (word1 == word2) 1
+        if (token1 == token2 || token1.word == token2.word) 1
         else {
-          val lemma1 = word1.lemma
-          val lemma2 = word2.lemma
-          val order1 = simHash.get(lemma1, lemma2)
+          val word1 = token1.word
+          val word2 = token2.word
+          val order1 = simHash.get(word1, word2)
           if (order1.isDefined) return order1.get
           else {
-            val order2 = simHash.get(lemma2, lemma1)
+            val order2 = simHash.get(word2, word1)
             if (order2.isDefined) return order2.get
+            else {
+              var value = DistributionalSim.similarity(word1, word2)
+              //if (value > 1) throw new Exception(lemma1 + " " + lemma2 + " = " + value)
+              //println(lemma1 + ", " + lemma2 + " = " + value)
+              if (value < 0) value = 0
+              simHash.put((word1, word2), value)
+              value
+            }
           }
-
-          var value = if (lemma1 == lemma2) 1 else ruler.similarity(lemma1, lemma2)
-          //if (value > 1) throw new Exception(lemma1 + " " + lemma2 + " = " + value)
-          //println(lemma1 + ", " + lemma2 + " = " + value)
-          if (value < 0) value = 0
-          simHash.put((lemma1, lemma2), value)
-          value
         }
       }
 
@@ -190,22 +193,24 @@ package main {
           //println(rel)
           val word = rel.dep.word + " " + rel.gov.word
           val lemma = rel.dep.lemma + " " + rel.gov.lemma
+
           //println(word)
-          if (wordnet.getSynsets(word).length > 0) {
+          if (DistributionalSim.hasWord(word)) {
             // this is a word
-            //println("we found a noun phrase: " + word)
+            println("we found a noun phrase: " + word)
+
+            val id = rel.gov.id
+            val pos = rel.dep.pos
+            val newToken = Token(id, word, pos, lemma, "")
             result = result filterNot (_ == rel) map { r =>
               if (r.dep.word == rel.gov) {
-                val newDep = Token(r.gov.id, word, r.dep.pos, lemma, "")
-                Dependency(r.gov, newDep, r.relation, r.specific, r.depth)
+                Dependency(r.gov, newToken, r.relation, r.specific, r.depth)
               } else if (r.gov.word == rel.gov) {
-                val newGov = Token(r.gov.id, word, r.gov.pos, lemma, "")
-                Dependency(newGov, r.dep, r.relation, r.specific, r.depth)
+                Dependency(newToken, r.dep, r.relation, r.specific, r.depth)
               } else r
             }
-          }
-          else {
-            println("noun phrase does not exist in WordNet: " + word)
+          } else {
+            println("noun phrase does not exist in NGram: " + word)
           }
         }
 

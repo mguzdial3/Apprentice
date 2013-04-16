@@ -320,7 +320,7 @@
 294 John grabbed a coffee filter.
 295 John grabbed a coffee scoop.
 296 John put the filter in the coffee maker.
-297 John plugged in the coffee maker
+297 John plugged in the coffee maker.
 298 John added 3 cups of water to the coffee maker.
 299 John put 3 scoops of coffee in the filter.
 300 John closed the lid of the coffee pot.
