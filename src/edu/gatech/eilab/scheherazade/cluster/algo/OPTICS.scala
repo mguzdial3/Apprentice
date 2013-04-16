@@ -310,14 +310,14 @@ package edu.gatech.eilab.scheherazade {
             val reach = pts.map(_.reachability)
 
             val valid =
-              reach.sliding(minClusterSize+1).exists(l => l.head * 0.9 > l.tail.min) && // head is greater than min movie = 0.98
-                reach.sliding(minClusterSize).exists(l => l.max < l.min * 1.05) // a relative flat area bestRobbery = 1.05, best movie = 1.4
+              reach.sliding(minClusterSize).exists(l => l.head * 0.98 > l.tail.min) && // head is greater than min movie = 0.98, robbery = 0.9, aiport = 0.98
+                reach.sliding(minClusterSize-1).exists(l => l.max < l.min * 1.05) // a relative flat area bestRobbery = 1.05, best movie = 1.4, airport = 1.05
 
             if (valid) {
               val max = reach.max
               val min = reach.min
               //val portion = if (loose) 0.35 else 0.3
-              var goodPortion = pts.filter { x => x.reachability < (min + (max - min) * 0.3) }.toList // 0.5(in acs paper)-0.6 for movie 0.4 for robbery
+              var goodPortion = pts.filter { x => x.reachability < (min + (max - min) * 0.3) }.toList // 0.5(in acs paper)-0.6 for movie 0.3-0.4 for robbery, airport = 0.3
               // divide the portions into continuous parts
               var additional = List[Point]()
               var separation = List[(Int, Int)]()
@@ -383,7 +383,7 @@ package edu.gatech.eilab.scheherazade {
           var members = List[Sentence]()
           //println("@ a")
           for (pt <- r) {
-            val text = sentences(pt.id).toShortString().replaceAll("\\(S", "").replaceAll("\\)", "")
+            //val text = sentences(pt.id).toShortString().replaceAll("\\(S", "").replaceAll("\\)", "")
             //println(text) // + " : " + sentences(pt.id).location)
             members = sentences(pt.id) :: members
           }

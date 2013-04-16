@@ -17,15 +17,18 @@ package cluster.algo {
   object ILPSequencer {
 
     def main(args: Array[String]) {
+      //TODO: have a global configuration object that indicates which file is associated with what purposes
+      
+      NLPMain.switchDataSet("Movie")
       // load the sentences and the gold
-      val reader = new ConfigReader("configRob.txt")
+      val reader = new ConfigReader(NLPMain.configFile)
       var (stories, gold) = reader.initData()
 
       val sentences = stories.flatMap(_.members)
       val (allWordBags, allWords) = initSentencesAndWords(sentences)
       //val sentFreq = sentenceFreq(wordBags.values, words)
 
-      NLPMain.switchDataSet("Robbery")
+      
       var clusters = NLPMain.cluster(stories, 4)
       val numClusters = clusters.length
 

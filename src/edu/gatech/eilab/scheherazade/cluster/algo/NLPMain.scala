@@ -29,7 +29,7 @@ package cluster.algo {
     //var dataSet = "Airport"
 
     def main(args: Array[String]) {
-      internalCluster("Robbery")
+      internalCluster("Airport")
     }
 
     /**
@@ -61,7 +61,14 @@ package cluster.algo {
         semanticFile = "AirSemantic.txt"
         locationFile = "AirLocation.txt"
         allFile = "AirSimilarity.txt"
+      } else if (dataset == "Coffee") {
+        configFile = "configCof.txt"
+        parseFile = "CofParse.txt"
+        semanticFile = "CofSemantic.txt"
+        locationFile = "CofLocation.txt"
+        allFile = "CofSimilarity.txt"
       }
+      
     }
 
     def clusterAll() {
@@ -147,13 +154,14 @@ package cluster.algo {
     }
     
     def cluster(stories:List[Story], minCluster:Int):List[Cluster] = {
+     
       val parser = new StoryNLPParser(stories, parseFile, true)
 
       def sentFn: () => List[Sentence] = () => parser().storyList.flatMap(_.members)
 
       val simi = new DSDSimilarity(sentFn, semanticFile)
-      val local = new SimpleLocation(sentFn, 0.3, locationFile)
-      var addition = new MatrixAddition(() => simi(), () => local(), 0.1, allFile)      
+      val local = new SimpleLocation(sentFn, 0.6, locationFile) // robbery: 0.3. movie: 0.6
+      var addition = new MatrixAddition(() => simi(), () => local(), 0.25, allFile) // robbery: 0.1, movie: 0.25-0.3      
       var matrix = addition()
       
 
@@ -161,6 +169,7 @@ package cluster.algo {
       val (distance, max) = similarityToDistance(matrix)
 
       OPTICS.visualized = false
+      println("sentences = " + stories.flatMap(_.members.toList).size)
       OPTICS.cluster(distance, max, minCluster, stories.flatMap(_.members.toList))
     }
 
@@ -176,8 +185,8 @@ package cluster.algo {
       def sentFn: () => List[Sentence] = () => parser().storyList.flatMap(_.members)
 
       val simi = new DSDSimilarity(sentFn, semanticFile)
-      val local = new SimpleLocation(sentFn, 0.2, locationFile)
-      var addition = new MatrixAddition(() => simi(), () => local(), 0.1, allFile)      
+      val local = new SimpleLocation(sentFn, 0.6, locationFile)
+      var addition = new MatrixAddition(() => simi(), () => local(), 0.3, allFile)      
       var matrix = addition()
       
       //no-link constraints
@@ -193,9 +202,9 @@ package cluster.algo {
 
       //matrix = mutualKNN(matrix, 7);
       val (distance, max) = similarityToDistance(matrix)
-
+      println("sentences = " + stories.flatMap(_.members.toList).size)
       var clusterList = OPTICS.cluster(distance, max, minCluster, stories.flatMap(_.members.toList))
-      //iterativeRestrain(clusterList, stories, simi())
+      println(clusterList.map(_.toHexSeparatedString).mkString("\n"))
       evaluate(clusterList, gold)
       
       
