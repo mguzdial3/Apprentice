@@ -1,6 +1,6 @@
 storyFile = ./data/new_movie/movieStories.story
 clusterFile = ./data/new_movie/movieGold.gold
 parameters = probThresholds, minClusterSize, miThresholds
-probThresholds = 0.70
-minClusterSize = 4
-miThresholds = 0.05
+probThresholds = 0.75
+miThresholds = 0.04
+minClusterSize = 2

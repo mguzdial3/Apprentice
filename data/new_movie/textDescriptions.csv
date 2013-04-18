@@ -1,0 +1,34 @@
+Name,Actor,OptionText,SelfExecutionText,OtherExecutionText
+John drives to Sally's,John,Drive to Sally's,You arrived outside Sally's house in a Mercedes you rented for the day.,"Through the window, you see John parked his car outside your house."
+Sally enters car,Sally,Enter John's car,You entered John's car. It's a Mercedes. Smells like a rented car.,Sally finally came out of her house and entered your car.
+John meets Sally,John,Meet Sally at the theater,"When you got to the theater, Sally was already there waiting for you. ","When you got to the theater, John was already there waiting for you. "
+pick Sally up,John,Pick Sally up,You picked Sally up at her house. ,John picked you up at your house.
+drive to theater,John,Drive to the theater,You started the car and begin driving to the movie theater.,John started the car and begin driving to the movie theater.
+arrive at theater,John,Arrive at the theater,"After a while, you arrived at the movie theater just in time. ","After a while, you arrived at the movie theater just in time. "
+park car,John,Park the car,You drove into the parking lot and parked the car.,John drove into the parking lot and parked the car.
+buy tickets,John,Buy movie tickets,You bought a pair of movie tickets.,None
+buy popcorn and soda,John,Buy popcorn and soda,You bought some popcorns and soda. ,None
+buy popcorn,John,Buy popcorn,You couldn't resist the popcorn smell and bought some. ,None
+buy drinks,John,Buy some drinks,You bought some drinks just in case you feel thirsty later.,None
+buy refreshments,John,Buy some refreshments,You bought some refreshments from the theater. ,None
+show tickets,John,Show your tickets to the employee,You showed tickets to the theater employee and he let you in.,None
+enter theater,John,Enter the theater,You entered the movie theater.,None
+find seats,John,Find seats in the dark room,You find the seats as indicated on your movie ticket.,None
+sit down,John,Sit down at your seats,You sat comfortably in your seats. ,None
+talk,John,Talk with Sally,You and Sally discussed the movie until the guy sitting next to you tried to cover his ears.,None
+movie begins,Movie,Begin the movie,None,The light went out and the movie began.
+watch movie,John,Watch the movie,You focused on the movie.,None
+enjoy movie,John,Feel good,You really enjoyed this movie. ,None
+movie ends,Movie,Stop the movie when it ends,None,… the end. The credits started to roll. The light went back on. 
+eat popcorn,John,Eat some popcorn,You ate some popcorn. Certainly not as tasty as it smelt.,None
+drink sodas,John,Drink some sodas,You drank some soda. ,None
+use bathroom,John,Use the bathroom,"Just as the movie got interesting, you had to go the bathroom. You tried to make it quick.",None
+stand up,John,Stand up from your seats,You stood up from your seats.,None
+leave theater,John,Leave the theater,You left the theater.,None
+walk to car,John,Walk to you car,You walked to your car.,None
+go home,John,Go home,What a night! Now it's time to go home.,None
+kiss,John,Give Sally a kiss,You kissed Sally. She kissed you back.,None
+hold hands,John,Hold Sally's hand,You held Sally's hands.,None
+put arms around,John,Put your arms around Sally,You put your arms around Sally.,None
+hug,John,Give Sally a hug,You gave Sally a hug.,None
+say goodbye,John,Say goodbye to Sally,You said goodbye to Sally. She asked you to call her later.,None

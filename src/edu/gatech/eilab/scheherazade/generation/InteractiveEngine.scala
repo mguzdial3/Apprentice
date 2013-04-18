@@ -13,12 +13,28 @@ package generation {
   //TODO: Prompts for the time the engine waits for user input.
   object InteractiveEngine {
 
-    var graphIndex:GraphIndex = null
+    var graphIndex: GraphIndex = null
+    var desc: List[TextDescription] = null
+    var reader: ConfigReader = null
 
+    def loadData(dataset: String) {
+      dataset match {
+        case "movie" =>
+          desc = readDescriptions("../data/new_movie/textDescriptions.csv")
+          reader = new ConfigReader("../configNewMvBest.txt")
+        case "robbery" =>
+          desc = readDescriptions("./data/robbery/textDescriptions.csv")
+          reader = new ConfigReader("configRobBest.txt")
+        case _ =>
+          System.err.println("Unknown data set: " + dataset)
+          System.exit(1)
+      }
+    }
+    
     def main(args: Array[String]) {
-      val desc = readDescriptions("./data/robbery/textDescriptions.csv")
+      
+      loadData("movie")
 
-      val reader = new ConfigReader("configRobBest.txt")
       var (stories, clusters) = reader.initDataFiltered()
 
       val para = reader.properties.allParameters()(0)
@@ -27,17 +43,18 @@ package generation {
       val insideClusters = clusters.filterNot(c => c.members.size < minimumSize)
       val insideStories = reader.filterUnused(stories, insideClusters)
 
+//      println(insideClusters.map(_.name).mkString("\n"))
+//      System.exit(10)
       val gen = new GraphGenerator(insideStories, insideClusters)
       var graph: Graph = gen.generate(para)("mutualExcl")._1
 
       graph.draw("abcdefg.png")
       var walk = Walk(graph)
 
-
       execute(walk, desc)
     }
 
-    def execute(walk:Walk, desc: List[TextDescription]) {
+    def execute(walk: Walk, desc: List[TextDescription]) {
       var playAgain = true
       do {
         var stroll = walk
@@ -178,7 +195,10 @@ package generation {
 
     def readDescriptions(filename: String): List[TextDescription] = {
       val lines = CSVProcessor.readCSV(filename)
-      val answer = for (row <- lines) yield new TextDescription(row(0), row(1), row(2), row(3), row(4))
+      val answer = for (row <- lines) yield {
+        
+        new TextDescription(row(0), row(1), row(2), row(3), row(4))
+      }
       answer.toList.tail
     }
   }

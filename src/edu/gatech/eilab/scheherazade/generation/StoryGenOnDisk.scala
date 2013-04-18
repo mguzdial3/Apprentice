@@ -272,7 +272,7 @@ package generation {
           var excl = excluded ::: exclList
           excl = findTransitiveClosure(selfGraph, excl)
           //println(excl.map(_.name).mkString("closure mutex: ", ", ", ""))
-          excluded = excl -- exclList
+          excluded = excl filterNot (exclList contains)
           val expired = selfGraph.links.filter(l => l.target == step).map(_.source)
           val newGraph = selfGraph.addSkipLinks(excluded).removeNodes(excluded ::: expired)
 
