@@ -5,8 +5,14 @@ import data._
 import scala.collection.mutable.HashMap
 package cluster.metric {
 
+  /** contains methods to evaluate cluster quality
+   *  
+   */
   object ClusterMetric {
 
+    /**
+     * @return average purity for all clusters 
+     */
     def purity(gold: List[Cluster], actual: List[Cluster]): Double = {
       val count: Double = actual.flatMap(_.members).size
       var total = 0
@@ -22,6 +28,9 @@ package cluster.metric {
       total / count
     }
 
+    /** @return recall and precision using the B cubed method
+     *  
+     */
     def bCubed(gold: List[Cluster], actual: List[Cluster]): (Double, Double) =
       {
         val recall = computeBCubedPartition(gold, actual)
@@ -55,6 +64,12 @@ package cluster.metric {
         1 - sum / allSents.length
       }
 
+    /** Evaluates the clustering results against the gold using the MUC method. 
+     *  @param gold the gold standard of clusters
+     *  @param actual the actual clustering results
+     *  
+     *  @return recall and precision using the MUC method
+     */
     def muc(gold: List[Cluster], actual: List[Cluster]): (Double, Double) =
       {
         //println("computing recall")

@@ -8,7 +8,7 @@ package object data {
   import com.thoughtworks.xstream.mapper._
   import com.thoughtworks.xstream.io._
   import com.thoughtworks.xstream.annotations._
-  import sevenzip.SevenZip
+  import sevenzip.{SevenZip => SZip}
 
   val XStream = new XStream()
   ListConverter.configureXStream(XStream)
@@ -17,7 +17,7 @@ package object data {
   XStream.alias("Token", classOf[Token]);
   XStream.alias("Dependency", classOf[Dependency]);
   
-  val SevenZip = new SevenZip()
+  val SevenZip = new SZip()
 }
 
 package data {
