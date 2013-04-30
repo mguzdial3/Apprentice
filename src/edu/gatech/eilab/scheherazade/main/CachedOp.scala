@@ -3,7 +3,7 @@ import data._
 import java.io._
 import javanlp._
 import scala.collection.mutable.ListBuffer
-import edu.stanford.nlp.trees.semgraph.SemanticGraph
+import edu.stanford.nlp.semgraph.SemanticGraph
 import edu.stanford.nlp.ling.IndexedWord;
 
 package main {
