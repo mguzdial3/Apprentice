@@ -14,7 +14,7 @@ import java.util.Properties
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.ListBuffer
 import scala.collection.mutable.Queue
-import edu.stanford.nlp.trees.semgraph.SemanticGraph
+import edu.stanford.nlp.semgraph.SemanticGraph
 import edu.stanford.nlp.ling.IndexedWord;
 
 package cluster.algo {
