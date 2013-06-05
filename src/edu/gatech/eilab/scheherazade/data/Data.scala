@@ -1,6 +1,7 @@
 package edu.gatech.eilab.scheherazade.data
 
 import edu.stanford.nlp.trees._
+//import edu.gatech.eilab.scheherazade.data.XStreamable
 
 case class Token(
   val id: Int, val word: String, val pos: String, val lemma: String, val ner: String) extends XStreamable
@@ -45,6 +46,11 @@ case class Sentence(
   }
 
   override def hashCode() = id.hashCode()
+  
+  def commonAncestor(token1:Token, token2:Token) =
+  {
+    val tree1 = parse.getNodeNumber(token1.id)
+  }
 }
 
 object Sentence {
@@ -126,14 +132,6 @@ class Story(
 
   def size(): Int = members.length
 }
-
-//class ClusterLink(val source: Cluster, val target: Cluster, var count: Int = 0) extends Ordered[ClusterLink] with XStreamable {
-//
-//  override def equals(that: Any): Boolean =
-//    that match {
-//      case link: ClusterLink => this.source == link.source && this.target == link.target
-//      case _ => false
-//    }
 //
 //  def increment() {
 //    count += 1
