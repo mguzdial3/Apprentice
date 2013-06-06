@@ -1,6 +1,6 @@
-package edu.gatech.eilab.scheherazade
+package edu.gatech.eilab.scheherazade.data
 
-package object data {
+package object serialize {
 
   import com.thoughtworks.xstream.converters._
   import com.thoughtworks.xstream.converters.collections._
@@ -17,10 +17,10 @@ package object data {
   XStream.alias("Token", classOf[Token]);
   XStream.alias("Dependency", classOf[Dependency]);
   
-  val SevenZip = new SZip()
+  //val SevenZip = new SZip()
 }
 
-package data {
+package serialize {
   import com.thoughtworks.xstream.converters._
   import com.thoughtworks.xstream.converters.collections._
   import com.thoughtworks.xstream._

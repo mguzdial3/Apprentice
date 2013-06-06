@@ -2,6 +2,7 @@ package edu.gatech.eilab.scheherazade
 
 import io._
 import data._
+import data.serialize._
 import java.io._
 import javanlp._
 import scala.collection.mutable.ListBuffer
@@ -23,13 +24,13 @@ package main {
             {
               val plainFile = new File(cacheFile)
               if (plainFile.exists()) {
-                if (cacheFile.endsWith(".lzma")) read7z(plainFile)
+                if (cacheFile.endsWith(".lzma")) SevenZip.read(plainFile)
                 else
                   scala.io.Source.fromFile(plainFile).mkString
               } else {
                 val lzmaFile = new File(cacheFile + ".lzma")
                 if (lzmaFile.exists()) {
-                  read7z(lzmaFile)
+                  SevenZip.read(lzmaFile)
                 } else
                   return None
               }
@@ -79,42 +80,42 @@ package main {
           }
 
           if (compression == COMPRESSED || compression == BOTH) {
-            write7z(save + ".lzma", str)
+            SevenZip.write(new File(save + ".lzma"), str)
           }
         }
         result
       } else compute()
     }
 
-    def read7z(file: File): String = {
-      val byteStream = new FileInputStream(file)
-      println("reading lzma stream from : " + file.getName())
-      val length = byteStream.available()
-      val b = new Array[Byte](length)
-      byteStream.read(b)
-      byteStream.close()
-      val string = data.SevenZip.decode(b)
-      string
-    }
-
-    def read7z(filename: String): String = {
-      val byteStream = new FileInputStream(filename)
-      val length = byteStream.available()
-      val b = new Array[Byte](length)
-      byteStream.read(b)
-      byteStream.close()
-      val string = data.SevenZip.decode(b)
-      string
-    }
-
-    def write7z(filename: String, text: String) {
-      val out = new BufferedOutputStream(new FileOutputStream(filename))
-      val bytes = data.SevenZip.encode(text)
-      //    println(bytes.mkString(" "))
-      println("writing to " + filename)
-      out.write(bytes)
-      out.close()
-    }
+//    def read7z(file: File): String = {
+//      val byteStream = new FileInputStream(file)
+//      println("reading lzma stream from : " + file.getName())
+//      val length = byteStream.available()
+//      val b = new Array[Byte](length)
+//      byteStream.read(b)
+//      byteStream.close()
+//      val string = SevenZip.decode(b)
+//      string
+//    }
+//
+//    def read7z(filename: String): String = {
+//      val byteStream = new FileInputStream(filename)
+//      val length = byteStream.available()
+//      val b = new Array[Byte](length)
+//      byteStream.read(b)
+//      byteStream.close()
+//      val string = SevenZip.decode(b)
+//      string
+//    }
+//
+//    def write7z(filename: String, text: String) {
+//      val out = new BufferedOutputStream(new FileOutputStream(filename))
+//      val bytes = SevenZip.encode(text)
+//      //    println(bytes.mkString(" "))
+//      println("writing to " + filename)
+//      out.write(bytes)
+//      out.close()
+//    }
   }
 
   class StoryNLPParser(val storyList: List[Story], cacheFile: String, overWrite: Boolean = true) extends CachedOp[StorySet](cacheFile, cacheFile, overWrite) {

@@ -29,7 +29,7 @@ package cluster.algo {
     //var dataSet = "Airport"
 
     def main(args: Array[String]) {
-      internalCluster("Airport")
+      internalCluster("Robbery")
     }
 
     /**

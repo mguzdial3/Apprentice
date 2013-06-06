@@ -1,10 +1,11 @@
 package edu.gatech.eilab.scheherazade.data
 
 import edu.stanford.nlp.trees._
+import edu.gatech.eilab.scheherazade.data.serialize.XStreamable
 //import edu.gatech.eilab.scheherazade.data.XStreamable
 
 case class Token(
-  val id: Int, val word: String, val pos: String, val lemma: String, val ner: String) extends XStreamable
+  val id: Int, val word: String, val pos: String, val lemma: String, val ner: String) extends XStreamable[Token]
 
 object Token {
   def apply(word: String, pos: String): Token = new Token(0, word, pos, "", "")
@@ -17,7 +18,7 @@ case class Sentence(
   var deps: List[Dependency],
   var location: Double,
   var next: Sentence = null,
-  var cluster: Cluster = null) extends XStreamable {
+  var cluster: Cluster = null) extends XStreamable[Sentence] {
 
   //var location:Double = 0
   def bagOfWords(): Array[String] = tokens.map(t => regularize(t.word)).filter(_ != "")
@@ -60,7 +61,7 @@ object Sentence {
 
 class Cluster(
   val name: String,
-  val members: List[Sentence]) extends XStreamable {
+  val members: List[Sentence]) extends XStreamable[Cluster] {
 
   def size(): Int = members.size
 
@@ -106,7 +107,7 @@ class Cluster(
 }
 
 class Story(
-  val members: Array[Sentence]) extends XStreamable {
+  val members: Array[Sentence]) extends XStreamable[Story] {
   override def toString(): String =
     {
       if (members.isEmpty)
@@ -132,10 +133,6 @@ class Story(
 
   def size(): Int = members.length
 }
-//
-//  def increment() {
-//    count += 1
-//  }
 //
 //  override def toString() = source.name + ", " + target.name + ", " + count
 //

@@ -2,7 +2,7 @@ package edu.gatech.eilab.scheherazade
 
 import data.Sentence
 import data.Token
-import edu.gatech.eilab.scheherazade.data.XStreamable
+import data.serialize.XStreamable
 
 import java.util.StringTokenizer
 import java.sql.Connection;
@@ -12,13 +12,13 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.PreparedStatement
 
-package ngramizer {
+package cluster.ngram {
 
   class NGramData( //protected[NGramData] var text: String, 
     val sentence: Sentence,
     protected[NGramData] var ngrams: List[List[Token]],
     protected[NGramData] var used: Int,
-    val tokens: Array[Token]) extends Ordered[NGramData] with XStreamable {
+    val tokens: Array[Token]) extends Ordered[NGramData] with XStreamable[NGramData] {
 
     def this(sent: Sentence) = this(sent, List[List[Token]](), 0, sent.tokens)
 

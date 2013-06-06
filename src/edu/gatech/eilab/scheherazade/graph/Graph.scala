@@ -5,10 +5,10 @@ import java.io._
 import scala.collection.immutable.HashMap
 import scala.collection.mutable.ListBuffer
 import scala.collection.mutable.Stack
-import edu.gatech.eilab.scheherazade.data.XStreamable
+import edu.gatech.eilab.scheherazade.data.serialize.XStreamable
 
 package graph {
-  class Graph(val nodes: List[Cluster], val links: List[Link], val mutualExcls: List[MutualExcl]) extends XStreamable {
+  class Graph(val nodes: List[Cluster], val links: List[Link], val mutualExcls: List[MutualExcl]) extends XStreamable[Graph] {
 
     def this(nodes: List[Cluster], links: List[Link]) = this(nodes, links, List[MutualExcl]())
     // this is used in XStreamable

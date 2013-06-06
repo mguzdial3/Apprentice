@@ -4,6 +4,8 @@ import data._
 import collection.mutable.HashMap
 import main._
 import java.io._
+import data.serialize._
+
 package graph {
   object Branching {
 

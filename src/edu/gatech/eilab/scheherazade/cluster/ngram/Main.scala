@@ -4,7 +4,7 @@ import cluster.algo.NLPMain
 import data._
 import main._
 
-package ngramizer {
+package cluster.ngram {
   object NGramizer {
 
     def main(args: Array[String]) {
