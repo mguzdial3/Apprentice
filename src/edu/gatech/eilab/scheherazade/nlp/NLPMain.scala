@@ -17,58 +17,11 @@ import scala.collection.mutable.Queue
 import edu.stanford.nlp.semgraph.SemanticGraph
 import edu.stanford.nlp.ling.IndexedWord;
 
-package cluster.algo {
+package nlp {
   object NLPMain {
-
-    var configFile = ""
-    var parseFile = ""
-    var semanticFile = ""
-    var locationFile = ""
-    var allFile = ""
-
-    //var dataSet = "Airport"
 
     def main(args: Array[String]) {
       internalCluster("Robbery")
-    }
-
-    /**
-     * set the corresponding files according to the data set we are running
-     *
-     */
-    def switchDataSet(dataset: String) {
-      if (dataset == "Robbery") {
-        configFile = "configRob.txt"
-        parseFile = "RobParse.txt"
-        semanticFile = "RobSemantic.txt"
-        locationFile = "RobLocation.txt"
-        allFile = "RobSimilarity.txt"
-      } else if (dataset == "Movie") {
-        configFile = "configNewMv.txt"
-        parseFile = "MvParse.txt"
-        semanticFile = "MvSemantic.txt"
-        locationFile = "MvLocation.txt"
-        allFile = "MvSimilarity.txt"
-      } else if (dataset == "Restaurant") {
-        configFile = "configRt.txt"
-        parseFile = "RtParse.txt"
-        semanticFile = "RtSemantic.txt"
-        locationFile = "RtLocation.txt"
-        allFile = "RtSimilarity.txt"
-      } else if (dataset == "Airport") {
-        configFile = "configAir.txt"
-        parseFile = "AirParse.txt"
-        semanticFile = "AirSemantic.txt"
-        locationFile = "AirLocation.txt"
-        allFile = "AirSimilarity.txt"
-      } else if (dataset == "Coffee") {
-        configFile = "configCof.txt"
-        parseFile = "CofParse.txt"
-        semanticFile = "CofSemantic.txt"
-        locationFile = "CofLocation.txt"
-        allFile = "CofSimilarity.txt"
-      }
-      
     }
 
     def clusterAll() {
@@ -152,18 +105,17 @@ package cluster.algo {
       evaluate(rtClusters, rtGold)
 
     }
-    
-    def cluster(stories:List[Story], minCluster:Int):List[Cluster] = {
-     
-      val parser = new StoryNLPParser(stories, parseFile, true)
+
+    def cluster(stories: List[Story], minCluster: Int): List[Cluster] = {
+
+      val parser = new StoryNLPParser(stories, Global.parseFile, true)
 
       def sentFn: () => List[Sentence] = () => parser().storyList.flatMap(_.members)
 
-      val simi = new DSDSimilarity(sentFn, semanticFile)
-      val local = new SimpleLocation(sentFn, 0.6, locationFile) // robbery: 0.3. movie: 0.6
-      var addition = new MatrixAddition(() => simi(), () => local(), 0.25, allFile) // robbery: 0.1, movie: 0.25-0.3      
+      val simi = new DSDSimilarity(sentFn, Global.semanticFile)
+      val local = new SimpleLocation(sentFn, 0.6, Global.locationFile) // robbery: 0.3. movie: 0.6
+      var addition = new MatrixAddition(() => simi(), () => local(), 0.25, Global.allFile) // robbery: 0.1, movie: 0.25-0.3      
       var matrix = addition()
-      
 
       //matrix = mutualKNN(matrix, 7);
       val (distance, max) = similarityToDistance(matrix)
@@ -173,22 +125,22 @@ package cluster.algo {
       OPTICS.cluster(distance, max, minCluster, stories.flatMap(_.members.toList))
     }
 
-    def internalCluster(dataset:String) {
-      switchDataSet(dataset)
-      val reader = new ConfigReader(configFile)
+    def internalCluster(dataset: String) {
+      Global.switchDataSet(dataset)
+      val reader = new ConfigReader(Global.configFile)
       var (stories, gold) = reader.initData()
       val minCluster = 4
       gold = gold.filter(_.members.size >= minCluster)
 
-      val parser = new StoryNLPParser(stories, parseFile, true)
+      val parser = new StoryNLPParser(stories, Global.parseFile, true)
 
       def sentFn: () => List[Sentence] = () => parser().storyList.flatMap(_.members)
 
-      val simi = new DSDSimilarity(sentFn, semanticFile)
-      val local = new SimpleLocation(sentFn, 0.6, locationFile)
-      var addition = new MatrixAddition(() => simi(), () => local(), 0.3, allFile)      
+      val simi = new DSDSimilarity(sentFn, Global.semanticFile)
+      val local = new SimpleLocation(sentFn, 0.6, Global.locationFile)
+      var addition = new MatrixAddition(() => simi(), () => local(), 0.3, Global.allFile)
       var matrix = addition()
-      
+
       //no-link constraints
       //    var count = 0
       //    for (story <- stories) {
@@ -206,26 +158,25 @@ package cluster.algo {
       var clusterList = OPTICS.cluster(distance, max, minCluster, stories.flatMap(_.members.toList))
       println(clusterList.map(_.toHexSeparatedString).mkString("\n"))
       evaluate(clusterList, gold)
-      
-      
+
     }
-    
-    def spectralCluster (dataset:String) {
-      switchDataSet(dataset)
-      val reader = new ConfigReader(configFile)
+
+    def spectralCluster(dataset: String) {
+      Global.switchDataSet(dataset)
+      val reader = new ConfigReader(Global.configFile)
       var (stories, gold) = reader.initData()
       val minCluster = 4
       gold = gold.filter(_.members.size >= minCluster)
 
-      val parser = new StoryNLPParser(stories, parseFile, true)
+      val parser = new StoryNLPParser(stories, Global.parseFile, true)
 
       def sentFn: () => List[Sentence] = () => parser().storyList.flatMap(_.members)
 
-      val simi = new DSDSimilarity(sentFn, semanticFile)
-      val local = new SimpleLocation(sentFn, 0.3, locationFile)
-      var addition = new MatrixAddition(() => simi(), () => local(), 0, allFile)      
+      val simi = new DSDSimilarity(sentFn, Global.semanticFile)
+      val local = new SimpleLocation(sentFn, 0.3, Global.locationFile)
+      var addition = new MatrixAddition(() => simi(), () => local(), 0, Global.allFile)
       var matrix = addition()
-      
+
       //no-link constraints
       //    var count = 0
       //    for (story <- stories) {

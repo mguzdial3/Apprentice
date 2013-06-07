@@ -3,6 +3,7 @@ package edu.gatech.eilab.scheherazade
 import main._
 import graph._
 import data._
+import nlp._
 import scala.collection.mutable.ListBuffer
 import utils.Matrix
 import scala.collection.immutable.Traversable
@@ -19,9 +20,9 @@ package cluster.algo {
     def main(args: Array[String]) {
       //TODO: have a global configuration object that indicates which file is associated with what purposes
       
-      NLPMain.switchDataSet("Movie")
+      Global.switchDataSet("Movie")
       // load the sentences and the gold
-      val reader = new ConfigReader(NLPMain.configFile)
+      val reader = new ConfigReader(Global.configFile)
       var (stories, gold) = reader.initData()
 
       val sentences = stories.flatMap(_.members)

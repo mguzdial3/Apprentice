@@ -1,6 +1,6 @@
 package edu.gatech.eilab.scheherazade
 
-import cluster.algo.NLPMain
+import nlp.NLPMain
 import data._
 import main._
 
@@ -10,9 +10,9 @@ package cluster.ngram {
     def main(args: Array[String]) {
       NGramData.createReadConnection()
 
-      NLPMain.switchDataSet("Robbery")
-      val configFile = NLPMain.configFile
-      val parseFile = NLPMain.parseFile
+      Global.switchDataSet("Robbery")
+      val configFile = Global.configFile
+      val parseFile = Global.parseFile
 
       val reader = new ConfigReader(configFile)
       var (stories, _) = reader.initData()
