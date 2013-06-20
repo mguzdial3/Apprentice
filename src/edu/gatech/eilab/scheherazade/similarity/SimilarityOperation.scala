@@ -4,53 +4,64 @@ import utils.HungarianAlgo
 import scala.collection.mutable.Queue
 import scala.collection.mutable.HashMap
 import similarity._
-package main {
-  class SimilarityMetric {
+import io.KBConnection
 
-    val ruler: SimilarityMeasure = Resnik
+package similarity {
+  class SimilarityOperation(val ruler: BasicSimilarity, val KB:KBConnection) {
 
-    var simHash = HashMap.empty[(String, String), Double]
 
-    System.setProperty("wordnet.database.dir", "./wordnet/dict/")
-    var wordnet = edu.smu.tspell.wordnet.WordNetDatabase.getFileInstance();
 
-    def normalize() {
-      var min = Double.PositiveInfinity
-      var max = 0.0
-      simHash.foreach { x =>
-        if (x._2 < min) min = x._2
-        if (x._2 > max) max = x._2
+    var min = Double.PositiveInfinity
+    var max = 0.0
+    
+    def getSimMatrix(sentList: List[Sentence]) = 
+    {      
+      val matrix = Array.fill(sentList.length, sentList.length)(0.0)
+      // do the preprocessing once and for all
+      val sents = sentList.map { s =>
+        new Sentence(s.id, s.tokens, s.parse, preprocess(s.deps), s.location)        
       }
 
-      simHash = simHash.map { x =>
-        val value = (x._2 - min) / (max - min) * 0.8
-        (x._1 -> value)
+      // compute the unnormalized similarity for all sentences
+      for (i <- 0 until sents.length) {
+        for (j <- i + 1 to sents.length - 1) {
+          matrix(i)(j) = sentenceSimilarity(sents(i), sents(j))._1
+        }
+      }      
+
+      for (i <- 0 until sents.length) {
+        for (j <- i + 1 to sents.length - 1) {
+          // normalize the similarities
+          matrix(i)(j) = normalize(matrix(i)(j))
+          // do the symmetry
+          matrix(j)(i) = matrix(i)(j)
+          //if (matrix(i)(j) > 1) throw new Exception(sents(i).toString() + " " + sents(j).toString + " " + matrix(i)(j)) 
+        }
       }
+
+      matrix
     }
 
-    def wordSimilarity(word1: Token, word2: Token): Double =
+    protected def normalize(value:Double):Double = 
+    {
+      (value - min) / (max - min)
+    }
+    
+    protected def wordSimilarity(word1: Token, word2: Token): Double =
       {
         if (word1 == word2) 1
         else {
           val lemma1 = word1.lemma
           val lemma2 = word2.lemma
-          val order1 = simHash.get(lemma1, lemma2)
-          if (order1.isDefined) return order1.get
-          else {
-            val order2 = simHash.get(lemma2, lemma1)
-            if (order2.isDefined) return order2.get
-          }
-
-          var value = if (lemma1 == lemma2) 1 else ruler.similarity(lemma1, lemma2)
-          //if (value > 1) throw new Exception(lemma1 + " " + lemma2 + " = " + value)
-          //println(lemma1 + ", " + lemma2 + " = " + value)
+          var value = ruler.similarity(lemma1, lemma2)
           if (value < 0) value = 0
-          simHash.put((lemma1, lemma2), value)
+          if (value < min) min = value
+          if (value > max) max = value
           value
         }
       }
 
-    def dependencySimilarity(dep1: Dependency, dep2: Dependency): Double =
+    protected def dependencySimilarity(dep1: Dependency, dep2: Dependency): Double =
       {
         if (dep1.longName != dep2.longName) 0
         else {
@@ -105,11 +116,11 @@ package main {
       }
 
     /**
-     * return (Similarity, Dissimilarity). Sentence similarity is a maximum flow problem.
-     * We implement the Ford-Fulkerson's Algorithm
+     * return (Similarity, Dissimilarity). 
+     * Sentence similarity is an assignment problem solved by the Hungarian algorithm
      *
      */
-    def sentenceSimilarity(sent1: Sentence, sent2: Sentence): (Double, Double) =
+    protected def sentenceSimilarity(sent1: Sentence, sent2: Sentence): (Double, Double) =
       {
         //println("comparing sentences: " + sent1.id + " " + sent2.id)
 
@@ -166,7 +177,7 @@ package main {
 
       }
 
-    def preprocess(deps: List[Dependency]): List[Dependency] =
+    protected def preprocess(deps: List[Dependency]): List[Dependency] =
       {
         var result = deps
 
@@ -190,10 +201,10 @@ package main {
           //println(rel)
           val word = rel.dep.word + " " + rel.gov.word
           val lemma = rel.dep.lemma + " " + rel.gov.lemma
-          //println(word)
-          if (wordnet.getSynsets(word).length > 0) {
+          
+          if (KB.isWord(word)) {
             // this is a word
-            //println("we found a noun phrase: " + word)
+
             result = result filterNot (_ == rel) map { r =>
               if (r.dep.word == rel.gov) {
                 val newDep = Token(r.gov.id, word, r.dep.pos, lemma, "")
@@ -203,8 +214,7 @@ package main {
                 Dependency(newGov, r.dep, r.relation, r.specific, r.depth)
               } else r
             }
-          }
-          else {
+          } else {
             println("noun phrase does not exist in WordNet: " + word)
           }
         }

@@ -1,46 +1,67 @@
-package edu.gatech.eilab.scheherazade.similarity
+package edu.gatech.eilab.scheherazade.io
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.PreparedStatement
-import java.io.IOException
-import java.util.Properties;
+abstract class KBConnection {
 
-object DistributionalSim extends SimilarityMeasure {
+  def isWord(word: String): Boolean
+
+}
+
+/**
+ * provides a wordnet instance
+ *
+ */
+class WordNetConnection() extends KBConnection {
+  System.setProperty("wordnet.database.dir", "./wordnet/dict/")
+  val wordnet = edu.smu.tspell.wordnet.WordNetDatabase.getFileInstance();
+
+  def isWord(word: String): Boolean = wordnet.getSynsets(word).length > 0
+}
+
+/**
+ * provide connection to the database
+ *
+ */
+class DistDBConnection() extends KBConnection {
+  import java.sql.Connection;
+  import java.sql.DriverManager;
+  import java.sql.ResultSet;
+  import java.sql.SQLException;
+  import java.sql.Statement;
+  import java.sql.PreparedStatement
+
   var pst: PreparedStatement = null
   var con: Connection = null
+  createReadConnection()
 
-  def similarity(word1: String, word2: String): Double = {
-    if (con == null) createReadConnection()
+  protected def createReadConnection() = {
+    val url = "jdbc:mysql://localhost:3306/phrasal";
+    val user = "phrasalUser";
+    val password = "123ewq";
 
-    try {
-      val ng1 = search(word1)
-      val ng2 = search(word2)
-      ng1.cosineSimilarity(ng2)
-    } catch {
-      case ne: NotFoundException => 0
-    }
+    con = DriverManager.getConnection(url, user, password)
+
+    pst = con.prepareStatement("select word, dimension, val from ngram join dimension on id = idngram where word = ?")
+
+    val st = con.createStatement()
+    st.execute("SET SESSION wait_timeout = 120;")
+    st.close
   }
 
-  def hasWord(word: String): Boolean =
+  def isWord(word: String): Boolean =
     {
-      if (con == null) createReadConnection()
+      if (con == null || con.isClosed()) createReadConnection()
       try {
         pst.setString(1, word.trim)
         val result = pst.executeQuery()
         result.next
-      }
-      catch {
-        case e:Exception =>
+      } catch {
+        case e: Exception =>
           println(e.getMessage())
           false
       }
     }
 
-  protected def search(word: String): NGram =
+  def search(word: String): NGram =
     {
       val w = word.trim
       pst.setString(1, w)
@@ -56,24 +77,10 @@ object DistributionalSim extends SimilarityMeasure {
       if (list == Nil) throw new NotFoundException()
       NGram(w, list.reverse)
     }
-
-  protected def createReadConnection() = {
-    val url = "jdbc:mysql://localhost:3306/phrasal";
-    val user = "phrasalUser";
-    val password = "123ewq";
-
-    con = DriverManager.getConnection(url, user, password)
-
-    pst = con.prepareStatement("select word, dimension, val from ngram join dimension on id = idngram where word = ?")
-
-    val st = con.createStatement()
-    st.execute("SET SESSION wait_timeout = 120;")
-    st.close
-  }
 }
-
 class NotFoundException extends Exception("not found")
 
+// todo: the membership variable should be a sparse vector
 case class NGram(val phrase: String, val membership: List[(Int, Double)]) {
 
   override def equals(obj: Any) = obj match {
@@ -182,4 +189,3 @@ case class NGram(val phrase: String, val membership: List[(Int, Double)]) {
   }
 }
 
-  

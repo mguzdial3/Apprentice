@@ -118,6 +118,7 @@ package main {
 //    }
   }
 
+  /*
   class StoryNLPParser(val storyList: List[Story], cacheFile: String, overWrite: Boolean = true) extends CachedOp[StorySet](cacheFile, cacheFile, overWrite) {
     
     protected val properEnding = List(".", "?\"", ".\"", "!\"")
@@ -215,41 +216,41 @@ package main {
       relations.toList
     }
   }
-
-  class DSDSimilarity(sentFn: () => List[Sentence], cacheFile: String, overWrite: Boolean = true) extends CachedOp[Array[Array[Double]]](cacheFile, cacheFile, overWrite) {
-    def compute(): Array[Array[Double]] = {
-
-      val sentList: List[Sentence] = sentFn()
-      val sim = new Similarity2()
-      val matrix = Array.fill(sentList.length, sentList.length)(0.0)
-      // do the preprocessing once and for all
-      val sents = sentList.map { s =>
-        val n = new Sentence(s.id, s.tokens, s.parse, sim.preprocess(s.deps), s.location)
-        //      val v = sim.preprocess(s.deps)
-        //      if (v != s.deps) println(s.toShortString + "\n" + v.mkString("\n") + "\n\n")
-        n
-      }
-
-      //System.exit(-0)
-      for (i <- 0 until sents.length) {
-        for (j <- i + 1 to sents.length - 1) {
-          sim.sentenceSimilarity(sents(i), sents(j))._1
-        }
-      }
-
-      sim.normalize()
-
-      for (i <- 0 until sents.length) {
-        for (j <- i + 1 to sents.length - 1) {
-          matrix(i)(j) = sim.sentenceSimilarity(sents(i), sents(j))._1
-          matrix(j)(i) = matrix(i)(j)
-          //if (matrix(i)(j) > 1) throw new Exception(sents(i).toString() + " " + sents(j).toString + " " + matrix(i)(j)) 
-        }
-      }
-
-      matrix
-    }
-  }
+ */
+//  class DSDSimilarity(sentFn: () => List[Sentence], cacheFile: String, overWrite: Boolean = true) extends CachedOp[Array[Array[Double]]](cacheFile, cacheFile, overWrite) {
+//    def compute(): Array[Array[Double]] = {
+//
+//      val sentList: List[Sentence] = sentFn()
+//      val sim = new Similarity2()
+//      val matrix = Array.fill(sentList.length, sentList.length)(0.0)
+//      // do the preprocessing once and for all
+//      val sents = sentList.map { s =>
+//        val n = new Sentence(s.id, s.tokens, s.parse, sim.preprocess(s.deps), s.location)
+//        //      val v = sim.preprocess(s.deps)
+//        //      if (v != s.deps) println(s.toShortString + "\n" + v.mkString("\n") + "\n\n")
+//        n
+//      }
+//
+//      //System.exit(-0)
+//      for (i <- 0 until sents.length) {
+//        for (j <- i + 1 to sents.length - 1) {
+//          sim.sentenceSimilarity(sents(i), sents(j))._1
+//        }
+//      }
+//
+//      sim.normalize()
+//
+//      for (i <- 0 until sents.length) {
+//        for (j <- i + 1 to sents.length - 1) {
+//          matrix(i)(j) = sim.sentenceSimilarity(sents(i), sents(j))._1
+//          matrix(j)(i) = matrix(i)(j)
+//          //if (matrix(i)(j) > 1) throw new Exception(sents(i).toString() + " " + sents(j).toString + " " + matrix(i)(j)) 
+//        }
+//      }
+//
+//      matrix
+//    }
+//  }
 
   class SimpleLocation(sentFn: () => List[Sentence], locWeights: Double, cacheFile: String, cached: Boolean = true, overWrite: Boolean = true) extends CachedOp[Array[Array[Double]]](cacheFile, cacheFile, overWrite, 0, cached) {
     //final val LOC_WTS = 0.8
