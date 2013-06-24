@@ -4,6 +4,8 @@ import main._
 import graph._
 import data._
 import nlp._
+import io._
+
 import scala.collection.mutable.ListBuffer
 import utils.Matrix
 import scala.collection.immutable.Traversable

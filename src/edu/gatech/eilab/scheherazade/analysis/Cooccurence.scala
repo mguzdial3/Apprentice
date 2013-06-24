@@ -2,7 +2,7 @@ package edu.gatech.eilab.scheherazade
 import data._
 import main._
 import graph._
-
+import io._
 
 package analysis {
   object Cooccurence extends App {

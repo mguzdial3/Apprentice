@@ -133,31 +133,31 @@ package graph {
       }
     }
 
-    def main(args: Array[String]) {
-
-      val storage = new File("graph.xml")
-      var graph = if (storage.exists()) {
-        println("reading from file " + storage.getAbsolutePath() + "...")
-        val str = scala.io.Source.fromFile(storage).mkString
-        XStream.fromXML(str).asInstanceOf[Graph]
-      } else {
-        val reader = new ConfigReader("configRobBest.txt")
-        //var (stories, clusters) = reader.initOldDataFiltered()
-        var (stories, clusters) = reader.initDataFiltered()
-        val para = reader.properties.allParameters()(0)
-        val gen = new GraphGenerator(stories, clusters)
-        val g = gen.generate(para)("improved")._1
-        val str = XStream.toXML(g)
-        val pl = new PrintWriter(new BufferedOutputStream(new FileOutputStream(storage)))
-        pl.println(str)
-        pl.close()
-        g
-      }
-
-      graph = graph.makeEfficient
-      //graph.draw("robBest")
-      discover(graph)
-      //Thread.sleep(2000)
-    }
+//    def main(args: Array[String]) {
+//
+//      val storage = new File("graph.xml")
+//      var graph = if (storage.exists()) {
+//        println("reading from file " + storage.getAbsolutePath() + "...")
+//        val str = scala.io.Source.fromFile(storage).mkString
+//        XStream.fromXML(str).asInstanceOf[Graph]
+//      } else {
+//        val reader = new ConfigReader("configRobBest.txt")
+//        //var (stories, clusters) = reader.initOldDataFiltered()
+//        var (stories, clusters) = reader.initDataFiltered()
+//        val para = reader.properties.allParameters()(0)
+//        val gen = new GraphGenerator(stories, clusters)
+//        val g = gen.generate(para)("improved")._1
+//        val str = XStream.toXML(g)
+//        val pl = new PrintWriter(new BufferedOutputStream(new FileOutputStream(storage)))
+//        pl.println(str)
+//        pl.close()
+//        g
+//      }
+//
+//      graph = graph.makeEfficient
+//      //graph.draw("robBest")
+//      discover(graph)
+//      //Thread.sleep(2000)
+//    }
   }
 }

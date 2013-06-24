@@ -3,6 +3,7 @@ package edu.gatech.eilab.scheherazade
 import nlp.NLPMain
 import data._
 import main._
+import io._
 
 package cluster.ngram {
   object NGramizer {

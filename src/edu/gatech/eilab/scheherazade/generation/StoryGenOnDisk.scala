@@ -3,9 +3,10 @@ package edu.gatech.eilab.scheherazade
 import data._
 import graph._
 import analysis._
+import io._
 import scala.collection.mutable.ListBuffer
 import java.io._
-import main._
+
 
 /** TODO: Refactor this to use Walk or a subclass of Walk
  * 

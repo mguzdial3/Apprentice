@@ -1,42 +1,26 @@
-//package edu.gatech.eilab.scheherazade.temp
-//
-///** playing with the Breeze library
-// * 
-// */
-//import breeze.linalg._
-//import breeze.serialization._
+package edu.gatech.eilab.scheherazade.temp
+
+/** playing with the Breeze library
+ * 
+ */
+import breeze.linalg._
+
 //import breeze.io._
 //import breeze.io.TextWriter._
-//import java.io._
-//object Play {
-//
-//  def main(args: Array[String]) {
-//
-//    var dm = DenseMatrix.zeros[Double](6, 6);
-//    dm(5, 5) = 3
-//    println(dm)
-//
-//    val psw = new PrintStreamWriter(new PrintStream(new FileOutputStream("../play.txt")))
-//    //	val table = new DMTabulizer(dm)
-//    //	CSVTableSerialization.write[DMTabulizer[Double]](psw, table);
-//
-//    val table = new TextTableWriter(psw, ',', '"');
-//    for (i <- 0 until dm.rows) {
-//      val row = table.next()
-//      for (j <- 0 until dm.cols) {
-//        val cell = row.next()
-//        cell.append(dm(i, j).toString)
-//        cell.finish()
-//      }
-//      row.finish()
-//    }
-//    table.finish()
-//    
-//    
-//  }
-//
-//}
-//
+import java.io._
+object Play {
+
+  def main(args: Array[String]) {
+
+	  var m = DenseMatrix.tabulate[Double](3, 3)((i,j) => (i+1)*(j+1))
+	  val factor = 0.85
+	  val n = m * factor + (1-factor) * DenseMatrix.fill(3, 3)(1/3.0)
+      println(n.toString)
+    
+  }
+
+}
+
 //class DMTabulizer[V](matrix: Matrix[V])(implicit man: ClassManifest[V]) extends TableWritable[Matrix[V]] {
 //  override def header: Option[List[String]] =
 //    Some(List("Matrix"))
