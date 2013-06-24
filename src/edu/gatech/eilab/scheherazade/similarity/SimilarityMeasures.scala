@@ -68,7 +68,7 @@ object Lin extends BasicSimilarity {
   WS4JConfiguration.getInstance().setMFS(true)
   val lin = new Lin(db)
 
-  def similarity(word1: String, word2: String): Double = {
+  def sim(word1: String, word2: String): Double = {
     lin.calcRelatednessOfWords(word1, word2)
   }
 }
@@ -79,7 +79,7 @@ object Resnik extends BasicSimilarity {
   WS4JConfiguration.getInstance().setMFS(true)
   val lin = new Resnik(db)
 
-  def similarity(word1: String, word2: String): Double = {
+  def sim(word1: String, word2: String): Double = {
     lin.calcRelatednessOfWords(word1, word2)
   }
 }
@@ -91,7 +91,7 @@ object Vector extends BasicSimilarity {
   WS4JConfiguration.getInstance().setMFS(true)
   val vec = new Vector(db)
 
-  def similarity(word1: String, word2: String): Double = {
+  def sim(word1: String, word2: String): Double = {
     vec.calcRelatednessOfWords(word1, word2)
   }
 }
@@ -102,7 +102,7 @@ object WuPalmer extends BasicSimilarity {
   WS4JConfiguration.getInstance().setMFS(true)
   val vec = new WuPalmer(db)
 
-  def similarity(word1: String, word2: String): Double = {
+  def sim(word1: String, word2: String): Double = {
     vec.calcRelatednessOfWords(word1, word2)
   }
 }
@@ -113,7 +113,7 @@ object JiangConrath extends BasicSimilarity {
   WS4JConfiguration.getInstance().setMFS(true)
   val vec = new JiangConrath(db)
 
-  def similarity(word1: String, word2: String): Double = {
+  def sim(word1: String, word2: String): Double = {
     vec.calcRelatednessOfWords(word1, word2)
   }
 }
@@ -124,7 +124,7 @@ object DistributionalSim extends BasicSimilarity {
 
   var kb: DistDBConnection = null
 
-  def similarity(word1: String, word2: String): Double = {
+  def sim(word1: String, word2: String): Double = {
     if (kb == null) kb = new DistDBConnection
 
     try {

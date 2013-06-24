@@ -11,8 +11,10 @@ import java.util.Properties
 import scala.collection.mutable.{HashMap, ListBuffer, Queue}
 
 package main {
-  class ConfigReader(val configFile: String) {
+  class ConfigReader(val configFile: java.io.File) {
 
+    def this(file:String) = this(new java.io.File(file))
+    
     val properties = new SuperProperties()
     val in = new FileInputStream(configFile)
     properties.load(in)

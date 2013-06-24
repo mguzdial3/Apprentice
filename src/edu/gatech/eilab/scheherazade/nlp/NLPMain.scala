@@ -6,6 +6,7 @@ import data._
 import xml._
 import javanlp._
 import graph._
+import similarity._
 import utils.SuperProperties
 import java.io._
 import cluster.algo.OPTICS
@@ -15,7 +16,8 @@ import scala.collection.mutable.HashMap
 import scala.collection.mutable.ListBuffer
 import scala.collection.mutable.Queue
 import edu.stanford.nlp.semgraph.SemanticGraph
-import edu.stanford.nlp.ling.IndexedWord;
+import edu.stanford.nlp.ling.IndexedWord
+import breeze.linalg.DenseMatrix
 
 package nlp {
   object NLPMain {
@@ -24,176 +26,209 @@ package nlp {
       internalCluster("Robbery")
     }
 
-    def clusterAll() {
-      //    val string = scala.io.Source.fromFile("movieParsed.txt").mkString    
-      //    val obj = XStream.fromXML(string).asInstanceOf[StorySet]
-      //    println(obj.storyList.mkString("\n"))
-      val reader = new ConfigReader("configNewMv.txt")
-      var (mvStories, mvGold) = reader.initData()
-      val minCluster = 5
-
-      var (robStories, robGold) = new ConfigReader("configRobP.txt").initData()
-      var (rtStories, rtGold) = new ConfigReader("configRtP.txt").initData()
-
-      val mvSize = mvStories.map(_.members.size).sum
-      val robSize = robStories.map(_.members.size).sum
-
-      robStories = robStories.map { story =>
-        val sents = story.members.map { s =>
-          Sentence(s.id + mvSize, s.tokens)
-        }
-        new Story(sents)
-      }
-
-      robGold = robGold.map { gold =>
-        val sents = gold.members.map { s =>
-          Sentence(s.id + mvSize, s.tokens)
-        }
-        new Cluster("a", sents)
-      }
-
-      rtStories = rtStories.map { story =>
-        val sents = story.members.map { s =>
-          Sentence(s.id + mvSize + robSize, s.tokens)
-        }
-        new Story(sents)
-      }
-
-      rtGold = rtGold.map { gold =>
-        val sents = gold.members.map { s =>
-          Sentence(s.id + mvSize + robSize, s.tokens)
-        }
-        new Cluster("a", sents)
-      }
-
-      val stories = mvStories ::: robStories ::: rtStories
-      val parser = new StoryNLPParser(stories, "AllParsed.txt", true)
-
-      def sentFn: () => List[Sentence] = () => parser().storyList.flatMap(_.members)
-
-      val simi = new DSDSimilarity(sentFn, "AllSemantic.txt")
-
-      var matrix = simi()
-
-      val (distance, max) = similarityToDistance(matrix)
-
-      var clusterList = OPTICS.cluster(distance, max, minCluster, stories.flatMap(_.members.toList))
-
-      val mvClusters = clusterList.map { c =>
-        val realMembers = c.members.filter(s => mvStories.exists(_.members.contains(s)))
-        new Cluster("a", realMembers)
-      }.filter(_.members.size > 0)
-
-      println("mv results: ")
-      println(mvClusters.map(_.members.map(_.toShortString()).mkString("\n")).mkString("\n###\n"))
-      evaluate(mvClusters, mvGold)
-
-      val robClusters = clusterList.map { c =>
-        val realMembers = c.members.filter(s => robStories.exists(_.members.contains(s)))
-        new Cluster("a", realMembers)
-      }.filter(_.members.size > 0)
-
-      println("rob results: ")
-      evaluate(robClusters, robGold)
-
-      val rtClusters = clusterList.map { c =>
-        val realMembers = c.members.filter(s => rtStories.exists(_.members.contains(s)))
-        new Cluster("a", realMembers)
-      }.filter(_.members.size > 0)
-
-      println("rt results: ")
-      evaluate(rtClusters, rtGold)
-
-    }
+    //    def clusterAll() {
+    //      //    val string = scala.io.Source.fromFile("movieParsed.txt").mkString    
+    //      //    val obj = XStream.fromXML(string).asInstanceOf[StorySet]
+    //      //    println(obj.storyList.mkString("\n"))
+    //      val reader = new ConfigReader("configNewMv.txt")
+    //      var (mvStories, mvGold) = reader.initData()
+    //      val minCluster = 5
+    //
+    //      var (robStories, robGold) = new ConfigReader("configRobP.txt").initData()
+    //      var (rtStories, rtGold) = new ConfigReader("configRtP.txt").initData()
+    //
+    //      val mvSize = mvStories.map(_.members.size).sum
+    //      val robSize = robStories.map(_.members.size).sum
+    //
+    //      robStories = robStories.map { story =>
+    //        val sents = story.members.map { s =>
+    //          Sentence(s.id + mvSize, s.tokens)
+    //        }
+    //        new Story(sents)
+    //      }
+    //
+    //      robGold = robGold.map { gold =>
+    //        val sents = gold.members.map { s =>
+    //          Sentence(s.id + mvSize, s.tokens)
+    //        }
+    //        new Cluster("a", sents)
+    //      }
+    //
+    //      rtStories = rtStories.map { story =>
+    //        val sents = story.members.map { s =>
+    //          Sentence(s.id + mvSize + robSize, s.tokens)
+    //        }
+    //        new Story(sents)
+    //      }
+    //
+    //      rtGold = rtGold.map { gold =>
+    //        val sents = gold.members.map { s =>
+    //          Sentence(s.id + mvSize + robSize, s.tokens)
+    //        }
+    //        new Cluster("a", sents)
+    //      }
+    //
+    //      val stories = mvStories ::: robStories ::: rtStories
+    //      val parser = new StoryNLPParser(stories, "AllParsed.txt", true)
+    //
+    //      def sentFn: () => List[Sentence] = () => parser().storyList.flatMap(_.members)
+    //
+    //      val simi = new DSDSimilarity(sentFn, "AllSemantic.txt")
+    //
+    //      var matrix = simi()
+    //
+    //      val (distance, max) = similarityToDistance(matrix)
+    //
+    //      var clusterList = OPTICS.cluster(distance, max, minCluster, stories.flatMap(_.members.toList))
+    //
+    //      val mvClusters = clusterList.map { c =>
+    //        val realMembers = c.members.filter(s => mvStories.exists(_.members.contains(s)))
+    //        new Cluster("a", realMembers)
+    //      }.filter(_.members.size > 0)
+    //
+    //      println("mv results: ")
+    //      println(mvClusters.map(_.members.map(_.toShortString()).mkString("\n")).mkString("\n###\n"))
+    //      evaluate(mvClusters, mvGold)
+    //
+    //      val robClusters = clusterList.map { c =>
+    //        val realMembers = c.members.filter(s => robStories.exists(_.members.contains(s)))
+    //        new Cluster("a", realMembers)
+    //      }.filter(_.members.size > 0)
+    //
+    //      println("rob results: ")
+    //      evaluate(robClusters, robGold)
+    //
+    //      val rtClusters = clusterList.map { c =>
+    //        val realMembers = c.members.filter(s => rtStories.exists(_.members.contains(s)))
+    //        new Cluster("a", realMembers)
+    //      }.filter(_.members.size > 0)
+    //
+    //      println("rt results: ")
+    //      evaluate(rtClusters, rtGold)
+    //
+    //    }
 
     def cluster(stories: List[Story], minCluster: Int): List[Cluster] = {
 
-      val parser = new StoryNLPParser(stories, Global.parseFile, true)
+      import data.serialize.CachedOperation
+      //import data.serialize.XStreamable._
+      // this function parses the textual sentences with the Stanford parser
+      def parsed() = CachedOperation {
+        SFParser.parse(stories)
+      }(Global.parseFile).flatMap(_.members)
 
-      def sentFn: () => List[Sentence] = () => parser().storyList.flatMap(_.members)
+      // this step computes the similarity
+      val simOp = new SimilarityOperation(similarity.Resnik, new WordNetConnection())
 
-      val simi = new DSDSimilarity(sentFn, Global.semanticFile)
-      val local = new SimpleLocation(sentFn, 0.6, Global.locationFile) // robbery: 0.3. movie: 0.6
-      var addition = new MatrixAddition(() => simi(), () => local(), 0.25, Global.allFile) // robbery: 0.1, movie: 0.25-0.3      
-      var matrix = addition()
+      def simMatrix() =
+        CachedOperation {
+          val m = simOp.getSimMatrix(parsed()).flatMap(x => x)
+          val length = m.length
+          val denseMat = new DenseMatrix(length, length, m)
+          denseMat
+        }(Global.semanticFile)
 
-      //matrix = mutualKNN(matrix, 7);
-      val (distance, max) = similarityToDistance(matrix)
+      def locMatrix() = CachedOperation {
+        locationDifference(parsed())
+      }(Global.allFile)
 
-      OPTICS.visualized = false
-      println("sentences = " + stories.flatMap(_.members.toList).size)
-      OPTICS.cluster(distance, max, minCluster, stories.flatMap(_.members.toList))
+      def getMatrix() = CachedOperation {
+    	  val semanticMatrix = simMatrix()
+    	  val locationMatrix = locMatrix()
+    	  
+    	  val filter = 0.1
+    	  val locM = locationMatrix.map(x => if (x < 0.1) 0 else x)
+    	  
+    	  locM * 0.3 + semanticMatrix
+      }(Global.allFile)
+
+      //      val parser = new StoryNLPParser(stories, Global.parseFile, true)
+      //
+      //      def sentFn: () => List[Sentence] = () => parser().storyList.flatMap(_.members)
+      //
+      //      val simi = new DSDSimilarity(sentFn, Global.semanticFile)
+      //      val local = new SimpleLocation(sentFn, 0.6, Global.locationFile) // robbery: 0.3. movie: 0.6
+      //      var addition = new MatrixAddition(() => simi(), () => local(), 0.25, Global.allFile) // robbery: 0.1, movie: 0.25-0.3      
+      //      var matrix = addition()
+      //
+      //      //matrix = mutualKNN(matrix, 7);
+      //      val (distance, max) = similarityToDistance(matrix)
+      //
+      //      OPTICS.visualized = false
+      //      println("sentences = " + stories.flatMap(_.members.toList).size)
+      //      OPTICS.cluster(distance, max, minCluster, stories.flatMap(_.members.toList))
+      Nil
     }
 
     def internalCluster(dataset: String) {
-      Global.switchDataSet(dataset)
-      val reader = new ConfigReader(Global.configFile)
-      var (stories, gold) = reader.initData()
-      val minCluster = 4
-      gold = gold.filter(_.members.size >= minCluster)
-
-      val parser = new StoryNLPParser(stories, Global.parseFile, true)
-
-      def sentFn: () => List[Sentence] = () => parser().storyList.flatMap(_.members)
-
-      val simi = new DSDSimilarity(sentFn, Global.semanticFile)
-      val local = new SimpleLocation(sentFn, 0.6, Global.locationFile)
-      var addition = new MatrixAddition(() => simi(), () => local(), 0.3, Global.allFile)
-      var matrix = addition()
-
-      //no-link constraints
-      //    var count = 0
-      //    for (story <- stories) {
-      //      val storyLen = story.members.length
-      //      for (i <- 0 until storyLen; j <- i + 1 until storyLen) {
-      //        matrix(i + count)(j + count) = 0
-      //        matrix(j + count)(i + count) = 0
-      //      }
-      //      count = storyLen
-      //    }
-
-      //matrix = mutualKNN(matrix, 7);
-      val (distance, max) = similarityToDistance(matrix)
-      println("sentences = " + stories.flatMap(_.members.toList).size)
-      var clusterList = OPTICS.cluster(distance, max, minCluster, stories.flatMap(_.members.toList))
-      println(clusterList.map(_.toHexSeparatedString).mkString("\n"))
-      evaluate(clusterList, gold)
+      //      Global.switchDataSet(dataset)
+      //      val reader = new ConfigReader(Global.configFile)
+      //      var (stories, gold) = reader.initData()
+      //      val minCluster = 4
+      //      gold = gold.filter(_.members.size >= minCluster)
+      //
+      //      val parser = new StoryNLPParser(stories, Global.parseFile, true)
+      //
+      //      def sentFn: () => List[Sentence] = () => parser().storyList.flatMap(_.members)
+      //
+      //      val simi = new DSDSimilarity(sentFn, Global.semanticFile)
+      //      val local = new SimpleLocation(sentFn, 0.6, Global.locationFile)
+      //      var addition = new MatrixAddition(() => simi(), () => local(), 0.3, Global.allFile)
+      //      var matrix = addition()
+      //
+      //      //no-link constraints
+      //      //    var count = 0
+      //      //    for (story <- stories) {
+      //      //      val storyLen = story.members.length
+      //      //      for (i <- 0 until storyLen; j <- i + 1 until storyLen) {
+      //      //        matrix(i + count)(j + count) = 0
+      //      //        matrix(j + count)(i + count) = 0
+      //      //      }
+      //      //      count = storyLen
+      //      //    }
+      //
+      //      //matrix = mutualKNN(matrix, 7);
+      //      val (distance, max) = similarityToDistance(matrix)
+      //      println("sentences = " + stories.flatMap(_.members.toList).size)
+      //      var clusterList = OPTICS.cluster(distance, max, minCluster, stories.flatMap(_.members.toList))
+      //      println(clusterList.map(_.toHexSeparatedString).mkString("\n"))
+      //      evaluate(clusterList, gold)
 
     }
 
     def spectralCluster(dataset: String) {
-      Global.switchDataSet(dataset)
-      val reader = new ConfigReader(Global.configFile)
-      var (stories, gold) = reader.initData()
-      val minCluster = 4
-      gold = gold.filter(_.members.size >= minCluster)
-
-      val parser = new StoryNLPParser(stories, Global.parseFile, true)
-
-      def sentFn: () => List[Sentence] = () => parser().storyList.flatMap(_.members)
-
-      val simi = new DSDSimilarity(sentFn, Global.semanticFile)
-      val local = new SimpleLocation(sentFn, 0.3, Global.locationFile)
-      var addition = new MatrixAddition(() => simi(), () => local(), 0, Global.allFile)
-      var matrix = addition()
-
-      //no-link constraints
-      //    var count = 0
-      //    for (story <- stories) {
-      //      val storyLen = story.members.length
-      //      for (i <- 0 until storyLen; j <- i + 1 until storyLen) {
-      //        matrix(i + count)(j + count) = 0
-      //        matrix(j + count)(i + count) = 0
-      //      }
-      //      count = storyLen
-      //    }
-
-      matrix = mutualKNN(matrix, 5);
-      val (distance, max) = similarityToDistance(matrix)
-
-      var clusterList = OPTICS.cluster(distance, max, minCluster, stories.flatMap(_.members.toList))
-      //iterativeRestrain(clusterList, stories, simi())
-      evaluate(clusterList, gold)
+      //      Global.switchDataSet(dataset)
+      //      val reader = new ConfigReader(Global.configFile)
+      //      var (stories, gold) = reader.initData()
+      //      val minCluster = 4
+      //      gold = gold.filter(_.members.size >= minCluster)
+      //
+      //      val parser = new StoryNLPParser(stories, Global.parseFile, true)
+      //
+      //      def sentFn: () => List[Sentence] = () => parser().storyList.flatMap(_.members)
+      //
+      //      val simi = new DSDSimilarity(sentFn, Global.semanticFile)
+      //      val local = new SimpleLocation(sentFn, 0.3, Global.locationFile)
+      //      var addition = new MatrixAddition(() => simi(), () => local(), 0, Global.allFile)
+      //      var matrix = addition()
+      //
+      //      //no-link constraints
+      //      //    var count = 0
+      //      //    for (story <- stories) {
+      //      //      val storyLen = story.members.length
+      //      //      for (i <- 0 until storyLen; j <- i + 1 until storyLen) {
+      //      //        matrix(i + count)(j + count) = 0
+      //      //        matrix(j + count)(i + count) = 0
+      //      //      }
+      //      //      count = storyLen
+      //      //    }
+      //
+      //      matrix = mutualKNN(matrix, 5);
+      //      val (distance, max) = similarityToDistance(matrix)
+      //
+      //      var clusterList = OPTICS.cluster(distance, max, minCluster, stories.flatMap(_.members.toList))
+      //      //iterativeRestrain(clusterList, stories, simi())
+      //      evaluate(clusterList, gold)
     }
 
     def mutualKNN(matrix: Array[Array[Double]], k: Int): Array[Array[Double]] =
@@ -418,5 +453,61 @@ package nlp {
       result
     }
 
+    def locationDifference(sentences: List[Sentence]): DenseMatrix[Double] =
+      {
+        val sentList = sentences
+        val length = sentList.length
+        val matrix = new DenseMatrix[Double](length, length)
+        for (
+          i <- 0 until length;
+          j <- i + 1 until length
+        ) {
+          val sent1 = sentList(i)
+          val sent2 = sentList(j)
+
+          /**
+           * This is the old code. I don't understand it now...
+           * //var value = (locWeights / 2) - locWeights * math.abs(sent1.location - sent2.location)
+           *
+           */
+          var value = math.abs(sent1.location - sent2.location)
+          if (value < 0.01) value = 0
+          matrix(i, j) = value
+          matrix(j, i) = value
+        }
+        matrix
+      }
+
+    //  def matrixAdd(m1:Array[Array[Double]], m2:Array[Array[Double]]): Array[Array[Double]] = {
+    //      
+    //	  if (m1.length != m2.length || m1(0).length != m2(0).length)
+    //	    throw new ArithmeticException("Matrix dimensions do not match: (" + m1.length + ", " + 
+    //	        m1(0).length + ") != (" + m2.length + ", " + m2(0).length + ")")
+    //      
+    //      val width = m1.length
+    //      val height = m1(0).length
+    //      
+    //      val result = Array.ofDim[Double](width, height)
+    //      
+    //      for (i <- 0 until width; j <- 0 until height) {
+    //        result(i)(j) = m1(i)(j) + m2(i)(j)        
+    //      }
+    //
+    //      result
+    //    }
+    //  
+    //   def matrixMap(matrix:Array[Array[Double]], fn: Double => Double) =
+    //   {
+    //     val width = matrix.length
+    //      val height = matrix(0).length
+    //      
+    //      val result = Array.ofDim[Double](width, height)
+    //      
+    //      for (i <- 0 until width; j <- 0 until height) {
+    //        result(i)(j) = fn(matrix(i)(j))   
+    //      }
+    //     
+    //     result
+    //   }
   }
 }

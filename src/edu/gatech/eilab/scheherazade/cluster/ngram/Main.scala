@@ -16,13 +16,13 @@ package cluster.ngram {
 
       val reader = new ConfigReader(configFile)
       var (stories, _) = reader.initData()
-      val parser = new StoryNLPParser(stories, parseFile, true)
-      val sents = parser().storyList.flatMap(_.members)
+      //val parser = new StoryNLPParser(stories, parseFile, true)
+      //val sents = parser().storyList.flatMap(_.members)
 
       //val string = "John took a piece of paper and made a paper plane" //"John opened the bank door"
-      sents.take(50).foreach{
-        x => ngramize(x)
-      }
+//      sents.take(50).foreach{
+//        x => ngramize(x)
+//      }
 
     }
 

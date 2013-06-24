@@ -16,6 +16,8 @@ package object serialize {
   XStream.alias("Story", classOf[Story]);
   XStream.alias("Token", classOf[Token]);
   XStream.alias("Dependency", classOf[Dependency]);
+  XStream.alias("XList", classOf[XStreamable.XStreamableList[Int]])
+  XStream.alias("XMatrix", classOf[XStreamable.XStreamableMatrix[Int]])
   
   //val SevenZip = new SZip()
 }

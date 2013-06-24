@@ -5,16 +5,24 @@ import scala.collection.mutable.Queue
 import scala.collection.mutable.HashMap
 import similarity._
 import io.KBConnection
+import data.serialize._
+import breeze.linalg.DenseMatrix
 
 package similarity {
+    
   class SimilarityOperation(val ruler: BasicSimilarity, val KB:KBConnection) {
+    
 
-
-
+    /** Variables for storing the min and max of each set of data.
+     *  
+     */
     var min = Double.PositiveInfinity
     var max = 0.0
     
-    def getSimMatrix(sentList: List[Sentence]) = 
+    /** computes the similarity matrix for all sentences
+     *  
+     */
+    def getSimMatrix(sentList: List[Sentence]):Array[Array[Double]] =
     {      
       val matrix = Array.fill(sentList.length, sentList.length)(0.0)
       // do the preprocessing once and for all
