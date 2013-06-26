@@ -16,105 +16,132 @@ object PageRank {
 
   def main(args: Array[String]) {
 
-    
-    var graph = SampleGraph.sample1 //getGraph()
-    graph = loopFromBottom(graph)
+    //var graph = SampleGraph.sample1 //getGraph()
+    var originalGraph = getGraph()
+    //originalGraph.draw("./pagerank")
+
+    val graph = loopFromBottom(originalGraph)
     val n = graph.nodes.length
     var matrix = simpleTransitionMatrix(graph)
     //println(matrix.toString(200, 200))
-    //graph.draw("./test1")
-    //Thread.sleep(5000)
+
     matrix = addDamping(matrix, 0.15)
     //println(matrix.toString(200, 200))
     val t1 = System.currentTimeMillis()
     val (a, b, c) = eig(matrix)
     val t2 = System.currentTimeMillis()
     println("computation time = " + (t2 - t1))
+
+    //println("a = " + a)
+    //println("a = " + c.toString(200, 200))
+    var events = List[(String, Double)]()
     
-    for (i <- 0 until n)
-    {
+    for (i <- 0 until n) {
       //println(a.valueAt(i))
-      if (a.valueAt(i) >= 0.9999)
-      {
-        for (j <- 0 until n)
-        {
-          print("weight for " + graph.nodes(j).name + ": ")
-          println(c(j, i))
+      
+      if (a.valueAt(i) >= 0.9999) {
+        for (j <- 0 until n) {
+          //print("weight for " + graph.nodes(j).name + ": ")
+          //println(c(j, i))
+    
+          events = (graph.nodes(j).name, math.abs(c(j, i))) :: events
         }
       }
-    }
-//    println(a)
-//    println(b)
-//    println(c.toString(300, 300))
+    }   
 
+    drawRankedGraph(events, originalGraph)
+
+    Thread.sleep(5000)
   }
-  
-  /** Adds links from the sink nodes to the source nodes.
+
+  def drawRankedGraph(events: List[(String, Double)], g: Graph) {
+    var smallest = 1.0
+
+    //println(events)
+    events foreach { pair =>
+      if (pair._2 < smallest) {
+        smallest = pair._2
+      }
+    }
+
+    val map = g.nodes.map {
+      node =>
+        val score = events.find(pair => pair._1 == node.name).get._2
+        val newName = node.name + " " + ("%1.2f" format (score / smallest))
+        node -> newName
+    }.toMap
+
+    g.drawWithNames("./pagerank", map)
+  }
+
+  /**
+   * Adds links from the sink nodes to the source nodes.
    *  That is, looping from the bottom of the graph to the top of the graph
    */
-  def loopFromBottom(graph:Graph):Graph =
-  {
-    val tops = graph.nodes.filter{n =>
-      !graph.links.exists(l => l.target == n)
+  def loopFromBottom(graph: Graph): Graph =
+    {
+      val tops = graph.nodes.filter { n =>
+        !graph.links.exists(l => l.target == n)
       }
-    
-    val bottoms = graph.nodes.filter{n =>
-      !graph.links.exists(l => l.source == n)
+
+      val bottoms = graph.nodes.filter { n =>
+        !graph.links.exists(l => l.source == n)
       }
-    
-    val newlinks = for (n1 <- tops; n2 <- bottoms) yield new Link(n2, n1)
-    
-    new Graph(graph.nodes, newlinks ::: graph.links)
-  }
-  
-  /** Add the damping factor in PageRank to the outdegree matrix
-   *  
+
+      val newlinks = for (n1 <- tops; n2 <- bottoms) yield new Link(n2, n1)
+
+      new Graph(graph.nodes, newlinks ::: graph.links)
+    }
+
+  /**
+   * Add the damping factor in PageRank to the outdegree matrix
+   *
    */
-  def addDamping(matrix:DenseMatrix[Double], damping:Double) =
-  {
-    val n = matrix.rows
-    matrix * (1 - damping) + DenseMatrix.fill(n,n)(damping/n) 
-  }
-  
-  /** builds a simple transition matrix based on a graph
+  def addDamping(matrix: DenseMatrix[Double], damping: Double) =
+    {
+      val n = matrix.rows
+      matrix * (1 - damping) + DenseMatrix.fill(n, n)(damping / n)
+    }
+
+  /**
+   * builds a simple transition matrix based on a graph
    *  For each node i, d = its outgoing degree
    *  For a link going from i to j, matrix (j)(i) = 1/d
    */
-  def simpleTransitionMatrix(graph:Graph):DenseMatrix[Double] =
-  {
-    val n = graph.nodes.length
-    val matrix = DenseMatrix.fill[Double](n, n)(0.0)
-    
-    for (i <- 0 until n)
+  def simpleTransitionMatrix(graph: Graph): DenseMatrix[Double] =
     {
-      // tail of the temporal link
-      val tail = graph.nodes(i)
-      
-      // for each outgoing link, record the heads
-      val outgoing = (0 until n).filter{
-        j => graph.links.exists(link => link.source == tail && link.target == graph.nodes(j))
-      }
-      
-      // out degree
-      val degree = outgoing.length
-      
-      for (j <- outgoing)
-      {
-        matrix(j, i) = 1.0 / degree
-      }
-    }
-    
-    matrix
-  }
+      val n = graph.nodes.length
+      val matrix = DenseMatrix.fill[Double](n, n)(0.0)
 
-  /** Generates a plot graph
-   *  
+      for (i <- 0 until n) {
+        // tail of the temporal link
+        val tail = graph.nodes(i)
+
+        // for each outgoing link, record the heads
+        val outgoing = (0 until n).filter {
+          j => graph.links.exists(link => link.source == tail && link.target == graph.nodes(j))
+        }
+
+        // out degree
+        val degree = outgoing.length
+
+        for (j <- outgoing) {
+          matrix(j, i) = 1.0 / degree
+        }
+      }
+
+      matrix
+    }
+
+  /**
+   * Generates a plot graph
+   *
    */
   def getGraph(): Graph =
     {
-      val reader = new ConfigReader("configRobBest.txt")
-      var (stories, clusters) = reader.initDataFiltered()
-
+      val reader = new ConfigReader("configNewMvBest.txt")
+      //var (stories, clusters) = reader.initDataFiltered()
+      var (stories, clusters) = reader.initData()
       val para = reader.properties.allParameters()(0)
 
       val minimumSize = para.intParam("minClusterSize")
@@ -123,7 +150,7 @@ object PageRank {
 
       val gen = new GraphGenerator(insideStories, insideClusters)
       var graph: Graph = gen.generate(para)("improved")._1
-      
+
       graph
     }
 }

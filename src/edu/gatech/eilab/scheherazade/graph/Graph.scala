@@ -230,8 +230,9 @@ package graph {
       }
 
     /**
-     * draws the diagram to disk
+     * draws the diagram as a png file
      *
+     * @param fn The filename of the png file to be saved
      */
     def draw(fn: String) {
 
@@ -243,6 +244,31 @@ package graph {
       //writer.println(causalLinks.map { l => "\"" + l.source.name + "\" -- \"" + l.target.name + "\" [style = \"dashed\"]" }.mkString("\n"))
       writer.println(mutualExcls.map { m => "\"" + m.c1.name + "\" -> \"" + m.c2.name + "\" [style=dashed, dir=none]" }.mkString(";\n"))
       writer.println(temporalLinks.map { l => "\"" + l.source.name + "\" -> \"" + l.target.name + "\"" }.mkString("\n"))
+      //writer.println(mutualExcls.map { m => "\"" + m.c1.name + """" -- [style = "dashed"]" """ + m.c2.name + "\""}.mkString(";\n"))      
+      writer.println("}")
+      writer.close()
+
+      println("writing graph to " + fn + ".png")
+      Runtime.getRuntime().exec("dot -Tpng -o" + fn + ".png " + filename)
+      file.deleteOnExit()
+    }
+
+    /**
+     * draws the diagram as a png file with supplied substitution for vertex names
+     *
+     * @param fn The filename of the png file to be saved
+     * @param dict The Map from the clusters to their new names
+     */
+    def drawWithNames(fn: String, dict:Map[Cluster,String]) {
+
+      val filename = fn + ".txt"
+      val file = new File(filename)
+      println(file.getCanonicalPath())
+      val writer = new PrintWriter(new BufferedOutputStream(new FileOutputStream(file)))
+      writer.println("digraph G {")
+      //writer.println(causalLinks.map { l => "\"" + l.source.name + "\" -- \"" + l.target.name + "\" [style = \"dashed\"]" }.mkString("\n"))
+      writer.println(mutualExcls.map { m => "\"" + dict(m.c1) + "\" -> \"" + dict(m.c2) + "\" [style=dashed, dir=none]" }.mkString(";\n"))
+      writer.println(temporalLinks.map { l => "\"" + dict(l.source) + "\" -> \"" + dict(l.target) + "\"" }.mkString("\n"))
       //writer.println(mutualExcls.map { m => "\"" + m.c1.name + """" -- [style = "dashed"]" """ + m.c2.name + "\""}.mkString(";\n"))      
       writer.println("}")
       writer.close()
@@ -536,7 +562,7 @@ package graph {
   }
 
   object Graph {
-    def nodesAfter(cluster: Cluster, links: List[Link]) : List[Cluster] = {
+    def nodesAfter(cluster: Cluster, links: List[Link]): List[Cluster] = {
       val after = ListBuffer(cluster)
       var added = ListBuffer(cluster)
 
@@ -551,8 +577,8 @@ package graph {
         after ++= newAdded
         added = newAdded
       }
-      
-      after.toList      
+
+      after.toList
     }
   }
 }
