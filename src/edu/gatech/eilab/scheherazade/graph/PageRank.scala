@@ -25,7 +25,13 @@ object PageRank {
     var matrix = simpleTransitionMatrix(graph)
     //println(matrix.toString(200, 200))
 
-    matrix = addDamping(matrix, 0.15)
+    val uniform = uniformProbMatrix(n)
+    val weightTransition = freqWeightMatrix(graph)
+    val mutexTransition = freqMtlExMatrix(graph)
+
+    //print(mutexTransition.toString(300,300))
+    matrix = 0.7 * matrix + 0.3 * mutexTransition //mutexTransition // + 0.005 * uniform 
+
     //println(matrix.toString(200, 200))
     val t1 = System.currentTimeMillis()
     val (a, b, c) = eig(matrix)
@@ -35,39 +41,155 @@ object PageRank {
     //println("a = " + a)
     //println("a = " + c.toString(200, 200))
     var events = List[(String, Double)]()
-    
+
+    var found = false
     for (i <- 0 until n) {
       //println(a.valueAt(i))
-      
-      if (a.valueAt(i) >= 0.9999) {
+
+      val value = a.valueAt(i)
+      if (value >= 0.9999 && value <= 1.0001) {
+        println("Successfully found stationary eigen distribution.")
+        found = true
         for (j <- 0 until n) {
           //print("weight for " + graph.nodes(j).name + ": ")
           //println(c(j, i))
-    
+
           events = (graph.nodes(j).name, math.abs(c(j, i))) :: events
         }
       }
-    }   
+    }
+
+    if (!found) {
+      println("Failed to find stationary eigen distribution.")
+      throw new ArithmeticException("Failed to find stationary eigen distribution.")
+    }
 
     drawRankedGraph(events, originalGraph)
 
     Thread.sleep(5000)
   }
 
-  def drawRankedGraph(events: List[(String, Double)], g: Graph) {
-    var smallest = 1.0
+  def freqMtlExMatrix(graph: Graph): DenseMatrix[Double] =
+    {
+      val nodes = graph.nodes
+      val n = nodes.length
+      val matrix = new DenseMatrix[Double](n, n)
 
-    //println(events)
-    events foreach { pair =>
-      if (pair._2 < smallest) {
-        smallest = pair._2
+      val freq = Array.ofDim[Int](n)
+
+      for (i <- 0 until n) {
+        freq(i) = nodes(i).members.length
+        for (j <- 0 until n) {
+          matrix(i, j) = freq(i)
+        }
       }
+
+      var total = Array.fill[Double](n)(0.0)
+//      for (j <- 0 until n; i <- 0 until n) {
+//        total(j) += matrix(i, j)
+//      }
+
+      //      for (melink <- graph.mutualExcls) {
+      //        val i = nodes.indexWhere(v => v == melink.c1)
+      //        val j = nodes.indexWhere(v => v == melink.c2)
+      //        matrix(i, j) = -0.5 * total(i) //-0.1 * math.min(total(i), total(j))
+      //        matrix(j, i) = -0.5 * total(j) //-0.1 * math.min(total(i), total(j))
+      //      }
+
+      for (i <- 0 until n) {
+        var list = List[Int]()
+        
+        for (melink <- graph.mutualExcls) {          
+          if (nodes(i) == melink.c1) {
+            val j = nodes.indexWhere(v => v == melink.c2)
+            list = j :: list
+          } else if (nodes(i) == melink.c2) {
+            val j = nodes.indexWhere(v => v == melink.c1)
+            list = j :: list
+          }
+        }
+
+        val cnt = list.length
+
+        for (j <- ((0 until n) filterNot (list contains)))
+        {
+          total(i) += matrix(j, i)
+        }
+        
+        for (j <- list) {
+          matrix(j, i) = -0.5 * total(i) / cnt
+        }
+
+      }
+
+      total = Array.fill[Double](n)(0.0)
+      for (j <- 0 until n; i <- 0 until n) {
+        total(j) += matrix(i, j)
+      }
+
+      for (j <- 0 until n) {
+        for (i <- 0 until n) {
+          matrix(i, j) = matrix(i, j) / total(j)
+        }
+      }
+
+      matrix
     }
+
+  def freqWeightMatrix(graph: Graph): DenseMatrix[Double] =
+    {
+      val nodes = graph.nodes
+      val n = nodes.length
+
+      val freq = Array.ofDim[Int](n)
+      var total = 0.0
+
+      for (i <- 0 until n) {
+        freq(i) = nodes(i).members.length
+        total += freq(i)
+      }
+
+      if (total == 0) throw new ArithmeticException("Total frequency equals zero. This will leads to division by zero.")
+
+      val matrix = new DenseMatrix[Double](n, n)
+
+      for (i <- 0 until n; j <- 0 until n) {
+        matrix(i, j) = freq(i) / total
+      }
+
+      matrix
+    }
+
+  def drawRankedGraph(events: List[(String, Double)], graph: Graph) {
+
+    val g = new Graph(graph.nodes, graph.links)
+    // find median
+    val allweights = events.map(_._2).sortWith(_ > _)
+    val n = allweights.length
+    println("n = " + n)
+
+    val median =
+      if (n % 2 == 0) {
+        // n is even
+        (allweights(n / 2) + allweights(n / 2 + 1)) / 2.0
+      } else {
+        // n is odd
+        allweights(n / 2)
+      }
+
+    //    var smallest = 1.0
+    //
+    //    //println(events)
+    //    events foreach { pair =>
+    //      if (pair._2 < smallest) {
+    //        smallest = pair._2
+    //      }
+    //    }
 
     val map = g.nodes.map {
       node =>
         val score = events.find(pair => pair._1 == node.name).get._2
-        val newName = node.name + " " + ("%1.2f" format (score / smallest))
+        val newName = node.name + " " + ("%1.2f" format (score / median))
         node -> newName
     }.toMap
 
@@ -90,17 +212,16 @@ object PageRank {
 
       val newlinks = for (n1 <- tops; n2 <- bottoms) yield new Link(n2, n1)
 
-      new Graph(graph.nodes, newlinks ::: graph.links)
+      new Graph(graph.nodes, newlinks ::: graph.links, graph.mutualExcls)
     }
 
   /**
    * Add the damping factor in PageRank to the outdegree matrix
    *
    */
-  def addDamping(matrix: DenseMatrix[Double], damping: Double) =
+  def uniformProbMatrix(n: Int): DenseMatrix[Double] =
     {
-      val n = matrix.rows
-      matrix * (1 - damping) + DenseMatrix.fill(n, n)(damping / n)
+      DenseMatrix.fill(n, n)(1.0 / n)
     }
 
   /**
@@ -149,7 +270,7 @@ object PageRank {
       val insideStories = reader.filterUnused(stories, insideClusters)
 
       val gen = new GraphGenerator(insideStories, insideClusters)
-      var graph: Graph = gen.generate(para)("improved")._1
+      var graph: Graph = gen.generate(para)("mutualExcl")._1
 
       graph
     }
