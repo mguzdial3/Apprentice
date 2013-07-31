@@ -55,6 +55,11 @@ object CachedOperation {
     }
 
     val t: T = fn
+//    if (!cacheFile.getName.endsWith(".lzma"))
+//    {
+//      println(cacheFile.getCanonicalPath())
+//      System.exit(1)
+//    }
     SevenZip.write(cacheFile, t.serialize)
     t
   }
@@ -65,14 +70,15 @@ object CachedOperation {
 
         val string: String =
           {
-            val fileName = file.getName()
-            if (file.getName().endsWith(".lzma")) {
-              // 7zip format data
-              SevenZip.read(file)
-            } else if (file.getName().endsWith(".txt")) {
-              // plain text file
-              scala.io.Source.fromFile(file).mkString
-            } else throw new IOException("Unrecognized file type when reading " + fileName)
+            //val fileName = file.getName()
+            SevenZip.read(file)
+//            if (file.getName().endsWith(".lzma")) {
+//              // 7zip format data
+//              SevenZip.read(file)
+//            } else if (file.getName().endsWith(".txt")) {
+//              // plain text file
+//              scala.io.Source.fromFile(file).mkString
+//            } else throw new IOException("Unrecognized file type when reading " + fileName)
           }
 
         val obj = XStreamable.deserialize[T](string)

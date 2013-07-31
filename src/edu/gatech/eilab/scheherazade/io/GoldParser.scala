@@ -9,7 +9,7 @@ package io {
   @ deprecated ("Use SimpleParser instead. GoldParser was intended for an old format of text files which" +
   		"are no longer in use", "2013")
   object GoldParser extends JavaTokenParsers {
-    protected def word: Parser[String] = """[-’\w\.,'’]+""".r
+    protected def word: Parser[String] = """[-\w\.,']+""".r
     protected def pos: Parser[String] = """[A-Z\$\.,]+""".r
     protected def token: Parser[Token] = word ~ "/" ~ pos ^^ {
       case word ~ "/" ~ pos => Token(word, pos)

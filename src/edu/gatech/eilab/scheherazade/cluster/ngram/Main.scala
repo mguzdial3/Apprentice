@@ -4,12 +4,25 @@ import nlp.NLPMain
 import data._
 import main._
 import io._
+import data.serialize._
+import nlp._
+import java.io.File
+import breeze.linalg.SparseVector
 
 package cluster.ngram {
+
+  /**
+   * keeps the ngrams data for one corpus
+   *  Each NGramData in the ngrams field is a decomposed ngram for a sentence in the corpus
+   *  For ngrams existing in the data, their corresponding vectors are stored in the vectors field
+   */
+  class NGramCorpus(val ngrams: List[NGramData], val vectors: Map[String, SparseVector[Float]]) extends XStreamable[NGramCorpus]
+
   object NGramizer {
 
     def main(args: Array[String]) {
-      NGramData.createReadConnection()
+
+      val ngramDB: NGramStore = new NGramMemory()
 
       Global.switchDataSet("Robbery")
       val configFile = Global.configFile
@@ -17,17 +30,50 @@ package cluster.ngram {
 
       val reader = new ConfigReader(configFile)
       var (stories, _) = reader.initData()
-      //val parser = new StoryNLPParser(stories, parseFile, true)
-      //val sents = parser().storyList.flatMap(_.members)
 
-      //val string = "John took a piece of paper and made a paper plane" //"John opened the bank door"
-//      sents.take(50).foreach{
-//        x => ngramize(x)
-//      }
+      def parser() = CachedOperation {
+        SFParser.parse(stories)
+      }(Global.parseFile).flatMap(_.members)
+
+      def ngramFunc() = CachedOperation {
+        val sents = parser()
+
+        ngramDB.init()
+        //val string = "John took a piece of paper and made a paper plane" //"John opened the bank door"
+        val list = sents.map {
+          x => ngramize(x, ngramDB)
+        }
+
+        val map = scala.collection.mutable.HashMap[String, SparseVector[Float]]()
+
+        for (n <- list) {
+          val ngrams = n.getNGramsString()
+          for (ng <- ngrams) {
+            if (!map.contains(ng)) {
+              map += ((ng -> ngramDB(ng)))
+            }
+          }
+        }
+
+        new NGramCorpus(list, map.toMap)
+
+      }(new File("RobNgram.lzma"))
+
+      val ngramCorpus = ngramFunc()
+
+      for (nd <- ngramCorpus.ngrams) {
+        val stringList = nd.getNGramsString
+        for (string <- stringList) {
+          val vector = ngramCorpus.vectors(string)
+          println(string + ", " + vector)
+        }
+        println
+        println("finished sentence " + nd.sentence.id)
+      }
 
     }
 
-    def ngramize(sentence:Sentence) {
+    def ngramize(sentence: Sentence, ngramDB: NGramStore): NGramData = {
       val queue = scala.collection.mutable.PriorityQueue[NGramData]()
       val root = NGramData.NGramDropOne(sentence)
       queue.enqueue(root)
@@ -38,11 +84,11 @@ package cluster.ngram {
       while (!found && !queue.isEmpty) {
         val s = queue.dequeue
         //println("visiting: " + s.solutionString + " , cost = " + s.cost)
-        if (s.complete) {
+        if (s.isComplete) {
           found = true
           solution = s
         } else {
-          val splits = s.nextSplit
+          val splits = s.nextSplit(ngramDB)
           //println("  nextSplits = ")
           for (sp <- splits) {
             //println("    " + sp.solutionString + " , cost = " + sp.cost)
@@ -54,11 +100,12 @@ package cluster.ngram {
       }
 
       if (!found) {
-        println("queue exhausted!")
+        throw new RuntimeException("queue exhausted!")
       } else {
         println("Solution = ")
         println(solution.solutionString)
 
+        /* this portion finds equally good solutions. May not be necessary
         val c = solution.cost
         while (found && !queue.isEmpty) {
           val k = queue.dequeue()
@@ -69,6 +116,10 @@ package cluster.ngram {
             found = false
           }
         }
+        
+        */
+
+        solution
       }
     }
   }
