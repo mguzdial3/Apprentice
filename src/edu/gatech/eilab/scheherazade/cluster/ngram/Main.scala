@@ -7,7 +7,8 @@ import io._
 import data.serialize._
 import nlp._
 import java.io.File
-import breeze.linalg.SparseVector
+import breeze.linalg._
+import breeze.stats.distributions._
 
 package cluster.ngram {
 
@@ -16,11 +17,22 @@ package cluster.ngram {
    *  Each NGramData in the ngrams field is a decomposed ngram for a sentence in the corpus
    *  For ngrams existing in the data, their corresponding vectors are stored in the vectors field
    */
-  class NGramCorpus(val ngrams: List[NGramData], val vectors: Map[String, SparseVector[Float]]) extends XStreamable[NGramCorpus]
+  class NGramCorpus(val ngrams: Array[Array[String]], val vectors: Map[String, DenseVector[Double]]) extends XStreamable[NGramCorpus]
 
   object NGramizer {
 
     def main(args: Array[String]) {
+      //      for (i <- 0 to 10) {
+      //        val v = math.random
+      //        println(v)
+      //      }
+      val corpus = produceNGrams()
+      //      val assignments = GenModel.train(corpus)
+    }
+
+    def produceNGrams() = {
+
+      val VERY_SMALL = 1e-8
 
       val ngramDB: NGramStore = new NGramMemory()
 
@@ -35,8 +47,9 @@ package cluster.ngram {
         SFParser.parse(stories)
       }(Global.parseFile).flatMap(_.members)
 
+      val sents = parser()
+
       def ngramFunc() = CachedOperation {
-        val sents = parser()
 
         ngramDB.init()
         //val string = "John took a piece of paper and made a paper plane" //"John opened the bank door"
@@ -44,33 +57,99 @@ package cluster.ngram {
           x => ngramize(x, ngramDB)
         }
 
-        val map = scala.collection.mutable.HashMap[String, SparseVector[Float]]()
+        val map = scala.collection.mutable.HashMap[String, DenseVector[Double]]()
+
+        val array = Array.ofDim[Array[String]](list.size)
+        var i = 0
 
         for (n <- list) {
-          val ngrams = n.getNGramsString()
-          for (ng <- ngrams) {
-            if (!map.contains(ng)) {
-              map += ((ng -> ngramDB(ng)))
+          val textList = n.getNGramsString()
+          var finalGrams = List[String]()
+          for (ng <- textList) {
+            if (ngramDB.textExists(ng)) {
+              finalGrams = ng :: finalGrams
+
+              if (!map.contains(ng)) {
+
+                var dense = ngramDB(ng).toDenseVector
+
+                dense = dense / dense.sum * (1 - 980*VERY_SMALL)
+
+                for (i <- 0 until dense.length) {
+                  if (dense(i) == 0)
+                    dense(i) = VERY_SMALL
+                }
+
+                //dense = dense / dense.sum
+
+                map += ((ng -> dense))
+              }
+
             }
           }
+          array(i) = finalGrams.toArray
+          i += 1
         }
 
-        new NGramCorpus(list, map.toMap)
+        new NGramCorpus(array, map.toMap)
 
       }(new File("RobNgram.lzma"))
 
+      println("reading ngram data...")
+
       val ngramCorpus = ngramFunc()
 
-      for (nd <- ngramCorpus.ngrams) {
-        val stringList = nd.getNGramsString
-        for (string <- stringList) {
-          val vector = ngramCorpus.vectors(string)
-          println(string + ", " + vector)
+      cluster(sents, ngramCorpus)
+
+    }
+
+    def testProbabilities(corpus: NGramCorpus) {
+      var list = List[Double]()
+      for (word <- corpus.vectors) {
+
+        //val word = ngramCorpus.vectors.head
+        println(word._1)
+        var text = word._2
+        //println(word._2)
+        //println(word._2.size)
+
+        text = text / text.sum
+
+        var v = DenseVector.rand(1000)
+        v = v / (v.sum * 0.002) // * 0.00066677) //* 0.00066)
+
+        if (text.sum == 0) {
+          println("Warning")
+          System.exit(1)
         }
-        println
-        println("finished sentence " + nd.sentence.id)
+        //println("v = " + v)
+        val p = new Dirichlet(v).logPdf(text)
+        println(p)
+        list = p :: list
       }
 
+      val mean = list.sum / list.size
+      println("min = " + list.min)
+      println("max = " + list.max)
+      println("average = " + mean)
+      println("deviation = " + (mean - list.min) + ", " + (list.max - mean) + ", " + (list.max - list.min))
+
+    }
+
+    def cluster(sents:List[Sentence], corpus: NGramCorpus) {
+      val clustering = GenModel.train(corpus)
+      val length = clustering.max
+
+      for (i <- 0 to length) {
+        println("Cluster: " + i)
+        for (s <- sents) {
+          if (clustering(s.id) == i) {
+            println(s.toSimpleString)
+          }
+        }
+
+        println("*****\n")
+      }
     }
 
     def ngramize(sentence: Sentence, ngramDB: NGramStore): NGramData = {

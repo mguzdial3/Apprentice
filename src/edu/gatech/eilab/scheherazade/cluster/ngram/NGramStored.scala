@@ -19,7 +19,8 @@ package cluster.ngram {
   abstract class NGramStore() {
     def ngramExists(ngrams: List[Token]): Boolean
     def init()
-    def apply(key: String): SparseVector[Float]
+    def apply(key: String): SparseVector[Double]
+    def textExists(key: String): Boolean
   }
 
   /**
@@ -32,7 +33,7 @@ package cluster.ngram {
     import java.io._
     import scala.collection.mutable.HashMap
 
-    protected var store: HashMap[String, SparseVector[Float]] = null
+    protected var store: HashMap[String, SparseVector[Double]] = null
 
     override def ngramExists(ngrams: List[Token]): Boolean =
       {
@@ -40,13 +41,18 @@ package cluster.ngram {
         store.contains(string)
       }
 
+    override def textExists(key: String): Boolean =
+      {
+        store.contains(key)
+      }
+
     override def apply(key: String) =
       {
-        if (store.contains(key)) {
-          store(key)
-        } else {
-          SparseVector.zeros[Float](1000)
-        }
+        //        if (store.contains(key)) {
+        store(key)
+        //        } else {
+        //          SparseVector.zeros[Double](1000)
+        //        }
 
       }
 
@@ -58,7 +64,7 @@ package cluster.ngram {
       //      if (storage.exists())
       //      {
       //        val string = SevenZip.read(storage)
-      //        store = XStream.fromXML(string).asInstanceOf[HashMap[String, SparseVector[Float]]]
+      //        store = XStream.fromXML(string).asInstanceOf[HashMap[String, SparseVector[Double]]]
       //      }
       //      else
       //      {
@@ -71,8 +77,8 @@ package cluster.ngram {
       println("[" + seconds + " sec]")
     }
 
-    protected def loadFiles(): HashMap[String, SparseVector[Float]] = {
-      val map = scala.collection.mutable.HashMap[String, SparseVector[Float]]()
+    protected def loadFiles(): HashMap[String, SparseVector[Double]] = {
+      val map = scala.collection.mutable.HashMap[String, SparseVector[Double]]()
 
       // length of the vector for each ngram
       val VECTOR_LENGTH = 20
@@ -94,16 +100,23 @@ package cluster.ngram {
           val array = line.split("\t")
           val name = array(0)
           val indices = Array.ofDim[Int](VECTOR_LENGTH)
-          val values = Array.ofDim[Float](VECTOR_LENGTH)
+          val values = Array.ofDim[Double](VECTOR_LENGTH)
 
           val length = math.min(VECTOR_LENGTH, array.length / 2)
+          
+          //val vector = DenseVector.zeros[Double](1000)
           for (i <- 0 until length) {
-            indices(i) = array(i * 2 + 1).toInt
-            values(i) = array(i * 2 + 2).toFloat
+            indices(i)= array(i * 2 + 1).toInt
+            values(i) = array(i * 2 + 2).toDouble
+            //vector(index) = value
           }
 
           val vector = SparseVector(1000)((indices zip values): _*)
-          map += ((name -> vector))
+          val sum = vector.sum
+          if (sum != 0) {
+            map += ((name -> vector))
+          }
+          //else println(name + " " + vector )
         }
         print(".")
         //        val av = map.head
@@ -142,6 +155,11 @@ package cluster.ngram {
     override def init() {
       createReadConnection()
     }
+
+    override def textExists(key: String): Boolean =
+      {
+        throw new UnsupportedOperationException()
+      }
     //    def tokenize(str: String) =
     //      {
     //        val t = str.trim
@@ -171,14 +189,15 @@ package cluster.ngram {
       }
 
     }
-    
-    /** TODO: write a real function
-     *  
+
+    /**
+     * TODO: write a real function
+     *
      */
-    override def apply(key:String)=
-    {
-      null
-    }
+    override def apply(key: String) =
+      {
+         throw new UnsupportedOperationException()
+      }
 
     protected def createReadConnection() {
       val url = "jdbc:mysql://localhost:3306/phrasal";

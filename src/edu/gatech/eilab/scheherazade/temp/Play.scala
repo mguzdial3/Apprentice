@@ -12,10 +12,15 @@ object Play {
 
   def main(args: Array[String]) {
 
-	  var m = DenseMatrix.tabulate[Double](3, 3)((i,j) => (i+1)*(j+1))
-	  val factor = 0.85
-	  val n = m * factor + (1-factor) * DenseMatrix.fill(3, 3)(1/3.0)
-      println(n.toString)
+//	  var m = DenseMatrix.tabulate[Double](3, 3)((i,j) => (i+1)*(j+1))
+//	  val factor = 0.85
+//	  val n = m * factor + (1-factor) * DenseMatrix.fill(3, 3)(1/3.0)
+//      println(n.toString)
+    
+    val a = 10
+    val b= math.log(a)
+    println(b)
+    println(math.exp(b))
     
   }
 
