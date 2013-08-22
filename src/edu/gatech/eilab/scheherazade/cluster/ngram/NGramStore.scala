@@ -5,7 +5,7 @@ import data._
 import data.serialize._
 import main._
 import io._
-import breeze.linalg.SparseVector
+import breeze.linalg._
 
 package cluster.ngram {
 
@@ -60,22 +60,66 @@ package cluster.ngram {
       print("loading distributional ngram clusters ... ")
       val time = System.currentTimeMillis()
       store = loadFiles()
-      //      val storage = new File("ngramStore.lzma")      
-      //      if (storage.exists())
-      //      {
-      //        val string = SevenZip.read(storage)
-      //        store = XStream.fromXML(string).asInstanceOf[HashMap[String, SparseVector[Double]]]
-      //      }
-      //      else
-      //      {
-      //        store = loadFiles()
-      //        val text = XStream.toXML(store)
-      //        SevenZip.write(storage, text)
-      //      }
 
       val seconds = (System.currentTimeMillis() - time) / 1000.0
       println("[" + seconds + " sec]")
     }
+
+    /**
+     * load the column vectors of the huge matrix of ngram data
+     *
+     */
+    def loadSparseMatrix(): Array[SparseVector[Double]] =
+      {
+        val totalNgrams = 9901505 // number computed from corpus
+        val map = scala.collection.mutable.HashMap[String, SparseVector[Double]]()
+
+        // length of the vector for each ngram
+        val VECTOR_LENGTH = 20
+
+        // file prefix:
+        val prefix = "../phraseClusters/phraseClusters."
+        val suffix = ".txt.gz"
+
+        // 1000 column vectors
+        //val vectorIdx = Array.fill(1000)(List[Int]())
+        //val vectorValues = Array.fill(1000)(List[Double]())
+        val vectors = Array.fill(1000)(new SparseVector[Double](Array.ofDim[Int](0), Array.ofDim[Double](0), totalNgrams))
+
+        var ngram = 0 // number of ngrams
+
+        for (i <- 1 to 10) {
+          val zipFile = prefix + i + suffix
+          println("\nprocessing: " + zipFile)
+          val zis =
+            new GZIPInputStream(new FileInputStream(zipFile))
+
+          val scanner = new java.util.Scanner(zis)
+
+          while (scanner.hasNext()) {
+            val line = scanner.nextLine
+
+            val array = line.split("\t")
+            val name = array(0)
+
+            val length = math.min(VECTOR_LENGTH, array.length / 2)
+
+            //val vector = DenseVector.zeros[Double](1000)
+            for (i <- 0 until length) {
+              val dimension = array(i * 2 + 1).toInt
+              val value = array(i * 2 + 2).toDouble
+
+              vectors(dimension)(ngram) = value
+            }
+
+            ngram = ngram + 1
+            //print(".")
+          }
+
+        }
+        println("total ngrams = " + ngram)
+        vectors
+      }
 
     protected def loadFiles(): HashMap[String, SparseVector[Double]] = {
       val map = scala.collection.mutable.HashMap[String, SparseVector[Double]]()
@@ -103,10 +147,10 @@ package cluster.ngram {
           val values = Array.ofDim[Double](VECTOR_LENGTH)
 
           val length = math.min(VECTOR_LENGTH, array.length / 2)
-          
+
           //val vector = DenseVector.zeros[Double](1000)
           for (i <- 0 until length) {
-            indices(i)= array(i * 2 + 1).toInt
+            indices(i) = array(i * 2 + 1).toInt
             values(i) = array(i * 2 + 2).toDouble
             //vector(index) = value
           }
@@ -196,7 +240,7 @@ package cluster.ngram {
      */
     override def apply(key: String) =
       {
-         throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException()
       }
 
     protected def createReadConnection() {

@@ -249,15 +249,7 @@ package nlp {
         answer
       }
 
-    def evaluate(clusters: List[Cluster], gold: List[Cluster]) {
 
-      val (r1, p1) = ClusterMetric.muc(gold, clusters)
-      val (r2, p2) = ClusterMetric.bCubed(gold, clusters)
-      println("MUC: recall " + r1 + " precision " + p1 + " f1 " + 2 * p1 * r1 / (p1 + r1))
-
-      println("B Cubed: recall " + r2 + " precision " + p2 + " f1 " + 2 * p2 * r2 / (p2 + r2))
-      println("purity: " + ClusterMetric.purity(gold, clusters))
-    }
 
     def iterativeRestrain(cList: List[Cluster], stories: List[Story], simiMatrix: Array[Array[Double]]) {
 

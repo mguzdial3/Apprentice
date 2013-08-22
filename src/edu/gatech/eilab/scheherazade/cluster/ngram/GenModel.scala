@@ -127,10 +127,10 @@ object GenModel {
         var maxY = -1
 
         var maxProduct = Double.NegativeInfinity
-        if (z(i).size == 0) {
-          println("num of ngrams = " + z(i).size)
-          System.exit(1)
-        }
+//        if (z(i).size == 0) {
+//          println("num of ngrams = " + z(i).size)
+//          System.exit(1)
+//        }
         for (j <- 0 until numClusters) {
           // loop for each cluster
           var product = 0.0
@@ -145,7 +145,8 @@ object GenModel {
               // find the best assignment to z
 
               val diri = new Dirichlet(theta(j)(k))
-              val p = diri.logPdf(textVector) - 10000
+              val multinomial = new Multinomial(pi(j))
+              val p = diri.logPdf(textVector) + multinomial.logProbabilityOf(k)
 
               if (p > max) {
                 max = p
@@ -204,6 +205,7 @@ object GenModel {
       // computing qz
       var sum = 0.0
       var count = 0
+      var max = Double.NegativeInfinity
 
       for (i <- 0 until numSents) {
         val multi = Multinomial(pi(y(i)))
@@ -212,22 +214,26 @@ object GenModel {
 
           for (k <- 0 until topicsPerCluster) {
             val diri = new Dirichlet(theta(y(i))(k))
-            var prob = multi.logProbabilityOf(k) + diri.logPdf(textVector)
+            val prob = multi.logProbabilityOf(k) + diri.logPdf(textVector)
             qz(i)(j)(k) = prob
             sum += prob
             count += 1
+            if (prob > max)
+            {
+              max = prob
+            }
           }
         }
       }
 
       val average = sum / count
-      println(average)
+      //println(average)
 
       for (i <- 0 until numSents) {
         for (j <- 0 until corpus.ngrams(i).length) {
           for (k <- 0 until topicsPerCluster) {
             qz(i)(j)(k) -= average
-            println(qz(i)(j)(k))
+            //println(qz(i)(j)(k))
           }
         }
       }
@@ -251,12 +257,13 @@ object GenModel {
           val sum = newTheta.sum
           theta(i)(p) =
             if (sum == 0 || sum.isNaN()) {
-              generateDirichlet(components, dimension, 1)(0)
+              //generateDirichlet(components, dimension, 1)(0)
+              theta(i)(p)
             } else {
               newTheta / (newTheta.sum * MAGIC_DIVISOR)
             }
 
-          pw.println(theta(i)(p))
+          //pw.println(theta(i)(p))
         }
       }
 
@@ -279,12 +286,13 @@ object GenModel {
         val sum = newPi.sum
         pi(i) =
           if (sum == 0 || sum.isNaN()) {
-            DenseVector.ones[Double](topicsPerCluster) / topicsPerCluster.asInstanceOf[Double]
+            //DenseVector.ones[Double](topicsPerCluster) / topicsPerCluster.asInstanceOf[Double]
+            pi(i)
           } else {
             newPi / sum // multinomial distribution must sum up to one
           }
 
-        pw.println(i + ": " + pi(i))
+        //pw.println(i + ": " + pi(i))
       }
     }
 

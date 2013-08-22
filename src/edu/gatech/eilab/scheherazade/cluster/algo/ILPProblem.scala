@@ -240,7 +240,7 @@ object ILPProblem {
   }
   
   def main(args: Array[String]) {
-    testILPProblem()
+    testConstraints()
   }
 
   /**

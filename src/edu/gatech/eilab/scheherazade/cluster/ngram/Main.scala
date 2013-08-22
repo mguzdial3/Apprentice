@@ -6,18 +6,23 @@ import main._
 import io._
 import data.serialize._
 import nlp._
-import java.io.File
+import java.io._
 import breeze.linalg._
 import breeze.stats.distributions._
+import cluster.metric.ClusterMetric
 
 package cluster.ngram {
 
   /**
-   * keeps the ngrams data for one corpus
-   *  Each NGramData in the ngrams field is a decomposed ngram for a sentence in the corpus
+   *  Keeps the ngrams data for one corpus
+   *  The ngram field is an 2d array. The first index is the sentence number and the array 
+   *  contains a number of ngrams in that sentence
+   *
    *  For ngrams existing in the data, their corresponding vectors are stored in the vectors field
+   *  
+   *  The stories field maps each sentence index to the story they belong to
    */
-  class NGramCorpus(val ngrams: Array[Array[String]], val vectors: Map[String, DenseVector[Double]]) extends XStreamable[NGramCorpus]
+  class NGramCorpus(val ngrams: Array[Array[String]], val vectors: Map[String, DenseVector[Double]], val stories:Map[Int, Int]) extends XStreamable[NGramCorpus]
 
   object NGramizer {
 
@@ -41,39 +46,58 @@ package cluster.ngram {
       val parseFile = Global.parseFile
 
       val reader = new ConfigReader(configFile)
-      var (stories, _) = reader.initData()
+      var (stories, gold) = reader.initData()
 
       def parser() = CachedOperation {
         SFParser.parse(stories)
-      }(Global.parseFile).flatMap(_.members)
+      }(Global.parseFile)
 
-      val sents = parser()
-
+      stories = parser()
+      val sents = stories.flatMap(_.members)
+      
       def ngramFunc() = CachedOperation {
 
         ngramDB.init()
         //val string = "John took a piece of paper and made a paper plane" //"John opened the bank door"
-        val list = sents.map {
-          x => ngramize(x, ngramDB)
+        var storyId = 0
+        val list = stories.map {
+          story =>        
+
+            story.members.map {
+              sentence =>
+                
+                val ngrams = ngramize(sentence, ngramDB)
+                (sentence.id, ngrams)
+            }
         }
 
         val map = scala.collection.mutable.HashMap[String, DenseVector[Double]]()
 
         val array = Array.ofDim[Array[String]](list.size)
-        var i = 0
 
-        for (n <- list) {
-          val textList = n.getNGramsString()
-          var finalGrams = List[String]()
+        
+        val sentIdMap = scala.collection.mutable.HashMap[Int, Int]()
+        
+        for (storyId <- 0 until list.length; j <- 0 until list(storyId).length) {         
+          val sentId = list(storyId)(j)._1
+          sentIdMap += ((sentId -> storyId))
+          
+          val textList = list(storyId)(j)._2.getNGramsString()
+          
+          var validNGrams = List[String]()
+          
           for (ng <- textList) {
             if (ngramDB.textExists(ng)) {
-              finalGrams = ng :: finalGrams
+              validNGrams = ng :: validNGrams
 
               if (!map.contains(ng)) {
 
                 var dense = ngramDB(ng).toDenseVector
 
-                dense = dense / dense.sum * (1 - 980*VERY_SMALL)
+                dense = dense / dense.sum * (1 - 980 * VERY_SMALL) 
+                /* the rational behind this normalization is that 
+                 * this vector has only 20 non-zero components, so the rest will be VERY_SMALL                 
+                 */
 
                 for (i <- 0 until dense.length) {
                   if (dense(i) == 0)
@@ -87,11 +111,10 @@ package cluster.ngram {
 
             }
           }
-          array(i) = finalGrams.toArray
-          i += 1
+          array(sentId) = validNGrams.toArray          
         }
 
-        new NGramCorpus(array, map.toMap)
+        new NGramCorpus(array, map.toMap, sentIdMap.toMap)
 
       }(new File("RobNgram.lzma"))
 
@@ -99,8 +122,21 @@ package cluster.ngram {
 
       val ngramCorpus = ngramFunc()
 
-      cluster(sents, ngramCorpus)
+      val pw = new PrintWriter(new BufferedOutputStream(new FileOutputStream("nonsense.log")))
+      pw.println("s, dimension, MUC P, MUC R, B^3 P, B^3 R, Purity")
+      for (dimension <- 140 to 140 by 20) {
+        //GenModel2.DESIRED_DIMENSION = dimension
+        for (iteration <- 0 to 0) {
+          //GenModel2.ALPHA_SUM = dimension * 10 + 2 * dimension * iteration
+          val foundClusters = cluster(sents, ngramCorpus)
+          val (p1, r1, p2, r2, purity) = ClusterMetric.evaluate(foundClusters, gold)
+          pw.println(GenModel2.ALPHA_SUM + ", " + dimension + ", " + p1 + ", " + r1 + ", " + p2 + ", " + r2 + ", " + purity)
+        }
 
+        pw.flush
+      }
+
+      pw.close
     }
 
     def testProbabilities(corpus: NGramCorpus) {
@@ -136,20 +172,29 @@ package cluster.ngram {
 
     }
 
-    def cluster(sents:List[Sentence], corpus: NGramCorpus) {
-      val clustering = GenModel.train(corpus)
+    def cluster(sents: List[Sentence], corpus: NGramCorpus): List[Cluster] = {
+
+      val clustering = GenModel5.train(corpus)
       val length = clustering.max
 
+      var clusters = List[Cluster]()
       for (i <- 0 to length) {
-        println("Cluster: " + i)
+        var members = List[Sentence]()
+        //println("Cluster: " + i)
         for (s <- sents) {
           if (clustering(s.id) == i) {
-            println(s.toSimpleString)
+            //println(s.toSimpleString)
+            members = s :: members
           }
         }
-
-        println("*****\n")
+        //println("*****\n")
+        if (members != Nil) {
+          val newCluster = new Cluster("C" + i, members)
+          clusters = newCluster :: clusters
+        }
       }
+
+      clusters
     }
 
     def ngramize(sentence: Sentence, ngramDB: NGramStore): NGramData = {

@@ -5,13 +5,30 @@ import data._
 import scala.collection.mutable.HashMap
 package cluster.metric {
 
-  /** contains methods to evaluate cluster quality
-   *  
+  /**
+   * contains methods to evaluate cluster quality
+   *
    */
   object ClusterMetric {
 
+    /** evaluate clusters and print out results
+     *  
+     */
+    def evaluate(clusters: List[Cluster], gold: List[Cluster]) = {
+
+      val (r1, p1) = ClusterMetric.muc(gold, clusters)
+      val (r2, p2) = ClusterMetric.bCubed(gold, clusters)
+      println("MUC: precision " + p1 + " recall " + r1 + " f1 " + 2 * p1 * r1 / (p1 + r1))
+
+      println("B Cubed: precision " + p2 + " recall " + r2 + " f1 " + 2 * p2 * r2 / (p2 + r2))
+      val purity = ClusterMetric.purity(gold, clusters)
+      println("purity: " + purity)
+      
+      (p1, r1, p2, r2, purity)
+    }
+
     /**
-     * @return average purity for all clusters 
+     * @return average purity for all clusters
      */
     def purity(gold: List[Cluster], actual: List[Cluster]): Double = {
       val count: Double = actual.flatMap(_.members).size
@@ -28,8 +45,9 @@ package cluster.metric {
       total / count
     }
 
-    /** @return recall and precision using the B cubed method
-     *  
+    /**
+     * @return recall and precision using the B cubed method
+     *
      */
     def bCubed(gold: List[Cluster], actual: List[Cluster]): (Double, Double) =
       {
@@ -64,10 +82,11 @@ package cluster.metric {
         1 - sum / allSents.length
       }
 
-    /** Evaluates the clustering results against the gold using the MUC method. 
+    /**
+     * Evaluates the clustering results against the gold using the MUC method.
      *  @param gold the gold standard of clusters
      *  @param actual the actual clustering results
-     *  
+     *
      *  @return recall and precision using the MUC method
      */
     def muc(gold: List[Cluster], actual: List[Cluster]): (Double, Double) =
@@ -138,57 +157,53 @@ package cluster.metric {
 
       //val tested = "robberyTotalManualClusters.txt"
       //val tested = "mv-cl-"+i+".txt" // cluster to be tested
-      val tested = "./data/new_movie/georgePrelim/test.txt"
+      val tested = "./ngram-clusters-rob2.txt"
 
-      val clusterFile = "./data/new_movie/georgePrelim/gold.txt"
+      val clusterFile = "./data/robbery/robberyGold2.gold"
       //val clusterFile = "./data/robbery/robberyGold.txt"
 
-      var results: List[Cluster] = SimpleParser.parseClusters(tested)
+      var results: List[Cluster] = SimpleParser.parseClusters(tested)//.filter(c => c.members.size >= 4)
       results = results.filter(c => c.members.size >= 4);
 
       println("using cluster file: " + clusterFile)
-      val clusterList: List[Cluster] = SimpleParser.parseClusters(clusterFile).filter(c => c.members.size >= 4)
+      val clusterList: List[Cluster] = SimpleParser.parseClusters(clusterFile)//.filter(c => c.members.size >= 4)
 
-      results foreach {
-        gold =>
-          var best = 0
-          var bestMatch: Cluster = null
-          var best2nd = 0
-          var bestMatch2nd: Cluster = null
-          var cnt = 0
-          
-          clusterList foreach {
-            gg =>
-              gold.members foreach { s1 =>
-                gg.members foreach {
-                  s2 => if (s1.id == s2.id) cnt += 1
-                }
-              }
-              
-             if (cnt > best)
-             {
-               best2nd = best
-               bestMatch2nd = bestMatch
-               best = cnt
-               bestMatch = gg
-             }
-             else if (cnt > best2nd)
-             {
-               best2nd = cnt
-               bestMatch2nd = gg
-             }
-              
-          }
-          
-          gold.members foreach {
-            s =>
-              if (bestMatch != null && !bestMatch.members.exists(m => m.id == s.id))
-                println("not matched: " + s.toSimpleString())
-          }
-          
-          
-      }
-      
+//      results foreach {
+//        gold =>
+//          var best = 0
+//          var bestMatch: Cluster = null
+//          var best2nd = 0
+//          var bestMatch2nd: Cluster = null
+//          var cnt = 0
+//
+//          clusterList foreach {
+//            gg =>
+//              gold.members foreach { s1 =>
+//                gg.members foreach {
+//                  s2 => if (s1.id == s2.id) cnt += 1
+//                }
+//              }
+//
+//              if (cnt > best) {
+//                best2nd = best
+//                bestMatch2nd = bestMatch
+//                best = cnt
+//                bestMatch = gg
+//              } else if (cnt > best2nd) {
+//                best2nd = cnt
+//                bestMatch2nd = gg
+//              }
+//
+//          }
+//
+//          gold.members foreach {
+//            s =>
+//              if (bestMatch != null && !bestMatch.members.exists(m => m.id == s.id))
+//                println("not matched: " + s.toSimpleString())
+//          }
+//
+//      }
+
       //val results = storyList.map(s => new Cluster("a", s.members.toList))
       val (r1, p1) = muc(clusterList, results)
       val (r2, p2) = bCubed(clusterList, results)

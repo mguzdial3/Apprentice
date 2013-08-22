@@ -5,6 +5,7 @@ import graph._
 import data._
 import nlp._
 import io._
+import cluster.metric._
 
 import scala.collection.mutable.ListBuffer
 import utils.Matrix
@@ -13,14 +14,14 @@ import scala.collection.immutable.Traversable
 package cluster.algo {
 
   /**
-   * Learning the sequence of clusters and the clusters at the same time, with the help from Jacob Eisenstein
+   * Learning the sequence of clusters and the clusters at the same time, as outlined by Jacob Eisenstein
    *
    * @author Albert Li
    */
   object ILPSequencer {
 
     def main(args: Array[String]) {
-      //TODO: have a global configuration object that indicates which file is associated with what purposes
+      
       
       Global.switchDataSet("Movie")
       // load the sentences and the gold
@@ -36,7 +37,7 @@ package cluster.algo {
       val numClusters = clusters.length
 
       println("Starting with OPTICS clusters: ")
-      NLPMain.evaluate(clusters, gold)
+      ClusterMetric.evaluate(clusters, gold)
       
       for (repeat <- 1 to 20) {
     	println("\nIteration " + repeat)
@@ -99,7 +100,7 @@ package cluster.algo {
         
         
         println("iteration " + repeat + " completed")
-        NLPMain.evaluate(clusters, gold)
+        ClusterMetric.evaluate(clusters, gold)
       }
 
       //
