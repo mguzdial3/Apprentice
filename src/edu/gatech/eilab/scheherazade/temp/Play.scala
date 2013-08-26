@@ -12,39 +12,45 @@ import cc.mallet.optimize._
 object Play {
 
   def main(args: Array[String]) {
-	  testArgMax
+    testStringBuilder
   }
-  
+
+  def testStringBuilder() {
+    val builder = new StringBuilder()
+    builder += 'a'
+    builder += 'b'
+    builder += 'c'
+    println(builder.toString)
+  }
+
   def testArgMax() {
     val vec = SparseVector.zeros[Double](500)
     vec(4) = -1
     vec(3) = 5
     vec(2) = 30
-    
+
     var active = vec.activeIterator.toList
     println(active)
-    
+
     active = active.sortBy(x => x._2)
-    
+
     println(active)
   }
-  
+
   def testNullSparseVector() {
     val v = new SparseVector[Double](Array.ofDim[Int](0), Array.ofDim[Double](0), 1000)
-    for (i <- 0 to 10)
-    {
+    for (i <- 0 to 10) {
       val d = Rand.randInt(1000).draw
       val value = Rand.randInt(10).draw
-      
+
       println(d + ": " + value)
-      
+
       v(d) = value
     }
-    
+
     println(v)
-    
-    for (p <- v.activeIterator)
-    {
+
+    for (p <- v.activeIterator) {
       println(p)
     }
   }

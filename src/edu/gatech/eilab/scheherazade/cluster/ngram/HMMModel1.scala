@@ -127,7 +127,7 @@ object HMMModel1 {
 
       println("pca done")
 
-      new NGramCorpus(oldCorpus.ngrams, newVectors.toMap)
+      new NGramCorpus(oldCorpus.ngrams, newVectors.toMap, oldCorpus.stories)
     }
 
   def train(oldCorpus: NGramCorpus): DenseVector[Int] = {
