@@ -10,19 +10,20 @@ import java.io._
 import breeze.linalg._
 import breeze.stats.distributions._
 import cluster.metric.ClusterMetric
+import scala.collection.mutable.ListBuffer
 
 package cluster.ngram {
 
   /**
    *  Keeps the ngrams data for one corpus
-   *  The ngram field is an 2d array. The first index is the sentence number and the array 
+   *  The ngram field is an 2d array. The first index is the sentence number and the array
    *  contains a number of ngrams in that sentence
    *
    *  For ngrams existing in the data, their corresponding vectors are stored in the vectors field
-   *  
-   *  The stories field maps each sentence index to the story they belong to
+   *
+   *  The stories field maps each story index to the list of indices of sentences the story contains
    */
-  class NGramCorpus(val ngrams: Array[Array[String]], val vectors: Map[String, DenseVector[Double]], val stories:Map[Int, Int]) extends XStreamable[NGramCorpus]
+  class NGramCorpus(val ngrams: Array[Array[String]], val vectors: Map[String, DenseVector[Double]], val stories: Array[Array[Int]]) extends XStreamable[NGramCorpus]
 
   object NGramizer {
 
@@ -54,18 +55,18 @@ package cluster.ngram {
 
       stories = parser()
       val sents = stories.flatMap(_.members)
-      
+
       def ngramFunc() = CachedOperation {
 
         ngramDB.init()
         //val string = "John took a piece of paper and made a paper plane" //"John opened the bank door"
-        var storyId = 0
+       
         val list = stories.map {
-          story =>        
+          story =>
 
             story.members.map {
               sentence =>
-                
+
                 val ngrams = ngramize(sentence, ngramDB)
                 (sentence.id, ngrams)
             }
@@ -73,48 +74,52 @@ package cluster.ngram {
 
         val map = scala.collection.mutable.HashMap[String, DenseVector[Double]]()
 
-        val array = Array.ofDim[Array[String]](list.size)
+        val ngramsArray = Array.ofDim[Array[String]](sents.size)
 
-        
-        val sentIdMap = scala.collection.mutable.HashMap[Int, Int]()
-        
-        for (storyId <- 0 until list.length; j <- 0 until list(storyId).length) {         
-          val sentId = list(storyId)(j)._1
-          sentIdMap += ((sentId -> storyId))
+        val sentIdMap = Array.ofDim[Array[Int]](list.length)
+
+        for (storyId <- 0 until list.length) {
           
-          val textList = list(storyId)(j)._2.getNGramsString()
+          sentIdMap(storyId) = list(storyId).map(_._1)
           
-          var validNGrams = List[String]()
-          
-          for (ng <- textList) {
-            if (ngramDB.textExists(ng)) {
-              validNGrams = ng :: validNGrams
+          for (j <- 0 until list(storyId).length) {
+            val sentId = list(storyId)(j)._1
+            
 
-              if (!map.contains(ng)) {
+            val textList = list(storyId)(j)._2.getNGramsString()
 
-                var dense = ngramDB(ng).toDenseVector
+            var validNGrams = List[String]()
 
-                dense = dense / dense.sum * (1 - 980 * VERY_SMALL) 
-                /* the rational behind this normalization is that 
+            for (ng <- textList) {
+              if (ngramDB.textExists(ng)) {
+                validNGrams = ng :: validNGrams
+
+                if (!map.contains(ng)) {
+
+                  var dense = ngramDB(ng).toDenseVector
+
+                  dense = dense / dense.sum * (1 - 980 * VERY_SMALL)
+                  /* the rational behind this normalization is that 
                  * this vector has only 20 non-zero components, so the rest will be VERY_SMALL                 
                  */
 
-                for (i <- 0 until dense.length) {
-                  if (dense(i) == 0)
-                    dense(i) = VERY_SMALL
+                  for (i <- 0 until dense.length) {
+                    if (dense(i) == 0)
+                      dense(i) = VERY_SMALL
+                  }
+
+                  //dense = dense / dense.sum
+
+                  map += ((ng -> dense))
                 }
 
-                //dense = dense / dense.sum
-
-                map += ((ng -> dense))
               }
-
             }
+            ngramsArray(sentId) = validNGrams.toArray
           }
-          array(sentId) = validNGrams.toArray          
         }
 
-        new NGramCorpus(array, map.toMap, sentIdMap.toMap)
+        new NGramCorpus(ngramsArray, map.toMap, sentIdMap)
 
       }(new File("RobNgram.lzma"))
 
@@ -130,7 +135,7 @@ package cluster.ngram {
           //GenModel2.ALPHA_SUM = dimension * 10 + 2 * dimension * iteration
           val foundClusters = cluster(sents, ngramCorpus)
           val (p1, r1, p2, r2, purity) = ClusterMetric.evaluate(foundClusters, gold)
-          pw.println(GenModel2.ALPHA_SUM + ", " + dimension + ", " + p1 + ", " + r1 + ", " + p2 + ", " + r2 + ", " + purity)
+          pw.println(ILPModel2.ALPHA_SUM + ", " + dimension + ", " + p1 + ", " + r1 + ", " + p2 + ", " + r2 + ", " + purity)
         }
 
         pw.flush
@@ -174,20 +179,20 @@ package cluster.ngram {
 
     def cluster(sents: List[Sentence], corpus: NGramCorpus): List[Cluster] = {
 
-      val clustering = GenModel5.train(corpus)
+      val clustering = ILPModel2.train(corpus)
       val length = clustering.max
 
       var clusters = List[Cluster]()
       for (i <- 0 to length) {
         var members = List[Sentence]()
-        //println("Cluster: " + i)
+        println("Cluster: " + i)
         for (s <- sents) {
           if (clustering(s.id) == i) {
-            //println(s.toSimpleString)
+            println(s.toSimpleString)
             members = s :: members
           }
         }
-        //println("*****\n")
+        println("*****\n")
         if (members != Nil) {
           val newCluster = new Cluster("C" + i, members)
           clusters = newCluster :: clusters

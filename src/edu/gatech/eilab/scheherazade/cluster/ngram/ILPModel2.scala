@@ -4,17 +4,18 @@ import breeze.stats.distributions._
 import breeze.linalg._
 import java.io._
 import cc.mallet.optimize._
-
+import scala.collection.mutable.ListBuffer
 /**
- * 
+ * a better way to flexiable precision parameters for dirichlet
+ *
  */
-object HMMModel1 {
+object ILPModel2 {
 
-  var ALPHA_SUM = 4000.0
+  var ALPHA_SUM = 1500.0
   var DESIRED_DIMENSION = 150
   val SMALL = 1E-5
 
-  val numClusters = 75
+  val numClusters = 130
 
   val pw = new PrintWriter(new BufferedOutputStream(new FileOutputStream("model.log")))
 
@@ -137,7 +138,7 @@ object HMMModel1 {
     // number of unique ngrams
     val numNgrams = corpus.vectors.keys.size
     val DIMENSION = corpus.vectors.head._2.size
-
+    val numStories = corpus.stories.size
     // manually set parameters
 
     val maxIterations = 35
@@ -176,34 +177,41 @@ object HMMModel1 {
 
       val oldY = y.copy
       // computing y = argmax P(x,z|y)
-      for (i <- 0 until numSents) {
-        // outer loop for each sentence
+      for (s <- 0 until numStories) {
 
-        var maxY = -1
-        var max = Double.NegativeInfinity
+        val sentences = corpus.stories(s)
+        val prob = Array.ofDim[Double](sentences.length, numClusters) // probabilities of each sentence belonging to each cluster
 
-        for (j <- 0 until numClusters) {
-          // loop for each cluster
-          var product = 0.0
-          val diri = new Dirichlet(theta(j))
+        for (i <- 0 until sentences.length) {
+          // outer loop for each sentence
+          val sID = sentences(i)
 
-          for (ngIdx <- 0 until corpus.ngrams(i).size) {
-            // for each ngram in the sentence
-            val text = corpus.ngrams(i)(ngIdx)
+          for (j <- 0 until numClusters) {
+            // loop for each cluster
+            var product = 0.0
+            val diri = new Dirichlet(theta(j))
 
-            val textVector = corpus.vectors(text)
+            for (text <- corpus.ngrams(sID)) {
+              // for each ngram in the sentence              
+              val textVector = corpus.vectors(text)
+              val p = diri.logPdf(textVector) //+ yPrior.logProbabilityOf(j)
+              product += p
+            }
 
-            val p = diri.logPdf(textVector) //+ yPrior.logProbabilityOf(j)
-            product += p
-          }
-
-          if (product > max) {
-            max = product
-            maxY = j
+            prob(i)(j) = product
           }
         }
-        //println(maxProduct)
-        y(i) = maxY
+
+        // run the ILP
+        val ilp = new ILPAssignment(prob)
+        val assignment = ilp.solve
+
+        for (i <- 0 until sentences.length) {
+          val sID = sentences(i)
+          y(sID) = assignment(i)
+          //println(sID + ", " + assignment(i))
+        }
+
       }
 
       if ((oldY - y).norm(1) < 0.01 || iter == maxIterations) {
@@ -216,49 +224,40 @@ object HMMModel1 {
       pw.println(str)
       println(str)
 
+//      println("Stop? ")
+//      val answer = readLine.trim
+//      if (answer == "y" || answer == "Y") return y
+
       /** M-step **/
       /** compute theta **/
 
       (0 until numClusters).par.foreach { i =>
         var count = 0.0
-        var dataList = List[DenseVector[Double]]()
+        var dataList = ListBuffer[DenseVector[Double]]()
         for (j <- 0 until numSents if y(j) == i; k <- 0 until corpus.ngrams(j).size) {
           val textVector = corpus.vectors(corpus.ngrams(j)(k))
-          dataList = textVector :: dataList
+          dataList += textVector
         }
 
         //var newTheta: DenseVector[Double] = null
 
-        if (dataList.size > 0) {
-          var newTheta = optimize(dataList, theta(i), components)
-          //dataList.foldRight(DenseVector.zeros[Double](DIMENSION))(_ + _)
-          //newTheta = newTheta / newTheta.sum * FACTOR
-
-          //println("updating cluster " + i + " (" + dataList.size + ")")
-          //println("old params: " + theta(i))
-          //newTheta = newTheta / sum
-
-          /*
-          var better = 0
-          var worse = 0
-          for (textVector <- dataList) {
-            val oldprob = (new Dirichlet(theta(i))).logPdf(textVector)
-            val newprob = (new Dirichlet(newTheta)).logPdf(textVector)
-            if (oldprob > newprob) {
-              worse += 1
-            } else if (oldprob < newprob) {
-              better += 1
-            }
-          }
-
-          println("better = " + better + ", worse = " + worse + (better > worse)) 
-          */
-
+        if (dataList.size > 1) {
+          var newTheta = optimize(dataList.toList, theta(i), components)
           theta(i) = newTheta
 
           drawnCrowd(i) = 3
 
           //pw.println("new params: " + theta(i))
+        } else if (dataList.size == 1) {
+
+          var newTheta = DenseVector.zeros[Double](DIMENSION)
+          for (item <- dataList) {
+            newTheta += item
+          }
+
+          theta(i) = newTheta / (newTheta.sum / ALPHA_SUM)
+
+          drawnCrowd(i) = 3
         } else if (drawnCrowd(i) <= 0) {
           /* resample the dirichlet distribution from the biggest cluster */
 
@@ -308,7 +307,30 @@ object HMMModel1 {
        * yPrior = Multinomial(baseObservation + observation)
        */
     }
+
     y
+  }
+
+  def randomSentFromBiggestCluster(numSents: Int, y: DenseVector[Int]) = {
+    var max = 0
+    var maxIdx = -1
+    for (q <- 0 until numClusters) {
+      var count = 0
+      y.foreach { x => if (x == q) count += 1 }
+      if (count > max) {
+        max = count
+        maxIdx = q
+      }
+    }
+
+    // a random sentence id from the biggest cluster
+    val randomSent = {
+      val sentsInCluster = (0 until numSents).filter(y(_) == maxIdx)
+      val idx = Rand.randInt(sentsInCluster.size).draw
+      sentsInCluster(idx)
+    }
+
+    randomSent
   }
 
   def optimize(data: List[DenseVector[Double]], start: DenseVector[Double], components: List[Int]): DenseVector[Double] =
@@ -367,18 +389,12 @@ object HMMModel1 {
 
     def setParameter(index: Int, value: Double) {
       x(components(index)) = value
-
-      var sum = x.sum / GenModel2.ALPHA_SUM
-      x = x.map(_ / sum)
     }
 
     def setParameters(params: Array[Double]) {
       for (i <- 0 until realDimension) {
         x(components(i)) = params(i)
       }
-
-      val sum = x.sum / GenModel2.ALPHA_SUM
-      x = x.map(_ / sum)
     }
 
     def getValue(): Double =
@@ -392,11 +408,9 @@ object HMMModel1 {
         val index = components(i)
         var x1 = DenseVector(x.clone)
         x1(index) = x1(index) + DELTA
-        x1 = x1 / (x1.sum / GenModel2.ALPHA_SUM)
 
         var x2 = DenseVector(x.clone)
         x2(index) = x2(index) - DELTA
-        x2 = x2 / (x2.sum / GenModel2.ALPHA_SUM)
 
         //      val prob1 = math.exp(data.map(Dirichlet(x1).logPdf).sum - subtractee)
         //      val prob2 = math.exp(data.map(Dirichlet(x2).logPdf).sum - subtractee)

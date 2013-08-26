@@ -7,14 +7,14 @@ import net.sf.javailp._
  */
 class ILPAssignment(probs: Array[Array[Double]]) {
 
-  def solve() {
+  def solve() = {
     val rows = probs.length
     val cols = probs(0).length
     val problem = new Problem();
 
     var objective = new Linear();
     for (i <- 0 until rows; j <- 0 until cols) {
-      val variable = "z" + i + j
+      val variable = "z" + i + j      
       objective.add(probs(i)(j), variable)
       problem.setVarLowerBound(variable, 0);
       problem.setVarUpperBound(variable, 1);
@@ -30,7 +30,7 @@ class ILPAssignment(probs: Array[Array[Double]]) {
         val variable = "z" + i + j
         constraint.add(1, variable)
       }
-      problem.add(constraint, "<=", 1)
+      problem.add("rowCons"+i, constraint, "=", 1)
     }
     
     // each cluster can contain only one sentence
@@ -40,7 +40,7 @@ class ILPAssignment(probs: Array[Array[Double]]) {
         val variable = "z" + i + j
         constraint.add(1, variable)
       }
-      problem.add(constraint, "<=", 1)
+      problem.add("colCons"+j, constraint, "<=", 1)
     }
 
     var solver = ILPAssignment.factory.get(); // you should use this solver only once for one problem
@@ -49,12 +49,12 @@ class ILPAssignment(probs: Array[Array[Double]]) {
     //println(result)
 
     val answer = Array.ofDim[Int](rows)
-    for (i <- 0 until rows) {
+    for (i <- 0 until rows) {           
       for (j <- 1 until cols) {
         val variable = "z" + i + j
 
         if (result.get(variable).intValue() == 1) {
-          answer(i) = j
+          answer(i) = j          
         }
       }
     }
