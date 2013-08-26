@@ -12,7 +12,27 @@ import cc.mallet.optimize._
 object Play {
 
   def main(args: Array[String]) {
-    testStringBuilder
+    testMax()
+  }
+  
+  def testMax() {
+    val matrix = DenseMatrix.zeros[Double](4, 4)
+    matrix(1, 2) = 4
+    matrix(3, 2) = 1
+    matrix(0, 2) = 20.5
+    matrix(3, 1) = 1
+    matrix(1, 1) = 2.3
+    matrix(2, 2) = 1
+    matrix(0, 3) = 12
+    
+    println(matrix.max)
+  }
+
+  def testWordNet() {
+    System.setProperty("wordnet.database.dir", "./wordnet/dict/")
+    val wordnet = edu.smu.tspell.wordnet.WordNetDatabase.getFileInstance();
+    wordnet.getSynsets("fly").length > 0
+
   }
 
   def testStringBuilder() {

@@ -13,8 +13,11 @@ abstract class KBConnection {
 class WordNetConnection() extends KBConnection {
   System.setProperty("wordnet.database.dir", "./wordnet/dict/")
   val wordnet = edu.smu.tspell.wordnet.WordNetDatabase.getFileInstance();
-
-  def isWord(word: String): Boolean = wordnet.getSynsets(word).length > 0
+  
+  def isWord(word: String): Boolean = {
+    //println("w = " + word)
+    wordnet.getSynsets(word.trim).length > 0
+  }
 }
 
 /**

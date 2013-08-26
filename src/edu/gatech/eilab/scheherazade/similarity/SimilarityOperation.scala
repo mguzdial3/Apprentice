@@ -9,62 +9,69 @@ import data.serialize._
 import breeze.linalg.DenseMatrix
 
 package similarity {
-    
-  class SimilarityOperation(val ruler: BasicSimilarity, val KB:KBConnection) {
-    
 
-    /** Variables for storing the min and max of each set of data.
-     *  
+  class SimilarityOperation(val ruler: BasicSimilarity, val KB: KBConnection) {
+
+    /**
+     * Variables for storing the min and max of each set of data.
+     *
      */
     var min = Double.PositiveInfinity
     var max = 0.0
-    
-    /** computes the similarity matrix for all sentences
-     *  
+
+    /**
+     * computes the similarity matrix for all sentences
+     *
      */
-    def getSimMatrix(sentList: List[Sentence]):Array[Array[Double]] =
-    {      
-      val matrix = Array.fill(sentList.length, sentList.length)(0.0)
-      // do the preprocessing once and for all
-      val sents = sentList.map { s =>
-        new Sentence(s.id, s.tokens, s.parse, preprocess(s.deps), s.location)        
+    def getSimMatrix(sentList: List[Sentence]): Array[Array[Double]] =
+      {
+        val matrix = Array.fill(sentList.length, sentList.length)(0.0)
+        // do the preprocessing once and for all
+        val sents = sentList.map { s =>
+          new Sentence(s.id, s.tokens, s.parse, preprocess(s.deps), s.location)
+        }
+
+        // compute the unnormalized similarity for all sentences
+        for (i <- 0 until sents.length) {
+          for (j <- i + 1 to sents.length - 1) {
+            matrix(i)(j) = sentenceSimilarity(sents(i), sents(j))._1
+          }
+        }
+
+        for (i <- 0 until sents.length) {
+          for (j <- i + 1 to sents.length - 1) {
+            // normalize the similarities
+            //println("inner min = " + min)
+            //println("inner max = " + max)
+            matrix(i)(j) = normalize(matrix(i)(j))
+            // do the symmetry
+            matrix(j)(i) = matrix(i)(j)
+            //if (matrix(i)(j) > 1) throw new Exception(sents(i).toString() + " " + sents(j).toString + " " + matrix(i)(j)) 
+          }
+        }
+
+        matrix
       }
 
-      // compute the unnormalized similarity for all sentences
-      for (i <- 0 until sents.length) {
-        for (j <- i + 1 to sents.length - 1) {
-          matrix(i)(j) = sentenceSimilarity(sents(i), sents(j))._1
-        }
-      }      
-
-      for (i <- 0 until sents.length) {
-        for (j <- i + 1 to sents.length - 1) {
-          // normalize the similarities
-          matrix(i)(j) = normalize(matrix(i)(j))
-          // do the symmetry
-          matrix(j)(i) = matrix(i)(j)
-          //if (matrix(i)(j) > 1) throw new Exception(sents(i).toString() + " " + sents(j).toString + " " + matrix(i)(j)) 
-        }
+    protected def normalize(value: Double): Double =
+      {
+        (value - min) / (max - min)
       }
 
-      matrix
-    }
-
-    protected def normalize(value:Double):Double = 
-    {
-      (value - min) / (max - min)
-    }
-    
     protected def wordSimilarity(word1: Token, word2: Token): Double =
       {
-        if (word1 == word2) 1
+        val lemma1 = word1.lemma
+        val lemma2 = word2.lemma
+        if (lemma1 == lemma2) return 1
         else {
-          val lemma1 = word1.lemma
-          val lemma2 = word2.lemma
           var value = ruler.similarity(lemma1, lemma2)
           if (value < 0) value = 0
           if (value < min) min = value
           if (value > max) max = value
+
+          if (value > 1E10) {
+            println("WARNING " + lemma1 + " " + lemma2 + " = " + value)
+          }
           value
         }
       }
@@ -124,7 +131,7 @@ package similarity {
       }
 
     /**
-     * return (Similarity, Dissimilarity). 
+     * return (Similarity, Dissimilarity).
      * Sentence similarity is an assignment problem solved by the Hungarian algorithm
      *
      */
@@ -209,7 +216,7 @@ package similarity {
           //println(rel)
           val word = rel.dep.word + " " + rel.gov.word
           val lemma = rel.dep.lemma + " " + rel.gov.lemma
-          
+
           if (KB.isWord(word)) {
             // this is a word
 

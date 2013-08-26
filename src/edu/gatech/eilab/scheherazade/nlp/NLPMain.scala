@@ -23,7 +23,8 @@ package nlp {
   object NLPMain {
 
     def main(args: Array[String]) {
-      internalCluster("Robbery")
+      clusterDataSet("Robbery")
+
     }
 
     //    def clusterAll() {
@@ -122,77 +123,64 @@ package nlp {
 
       def simMatrix() =
         CachedOperation {
-          val m = simOp.getSimMatrix(parsed()).flatMap(x => x)
-          val length = m.length
-          val denseMat = new DenseMatrix(length, length, m)
+          val sents = parsed()
+          val m = simOp.getSimMatrix(sents)
+          val length = sents.length
+          val denseMat = DenseMatrix.zeros[Double](length, length)
+
+          for (i <- 0 until length; j <- 0 until length) {
+            denseMat(i, j) = m(i)(j)
+          }
+
           denseMat
         }(Global.semanticFile)
 
       def locMatrix() = CachedOperation {
         locationDifference(parsed())
-      }(Global.allFile)
+      }(Global.locationFile)
 
       def getMatrix() = CachedOperation {
-    	  val semanticMatrix = simMatrix()
-    	  val locationMatrix = locMatrix()
-    	  
-    	  val filter = 0.1
-    	  val locM = locationMatrix.map(x => if (x < 0.1) 0 else x)
-    	  
-    	  locM * 0.3 + semanticMatrix
+        val semanticMatrix = simMatrix()
+        val locationMatrix = locMatrix()
+
+        println("min = " + semanticMatrix.min)
+        println("max = " + semanticMatrix.max)
+
+        val filter = 0.1 // robbery: 0.1, movie: 0.25-0.3 
+        val locM = locationMatrix.map(x => if (x < filter) 0 else x)
+
+        println("size 1: " + locM.rows + " " + locM.cols)
+        println("size 2: " + semanticMatrix.rows + " " + semanticMatrix.cols)
+
+        locM * 0.3 + semanticMatrix // robbery: 0.3. movie: 0.6
       }(Global.allFile)
 
-      //      val parser = new StoryNLPParser(stories, Global.parseFile, true)
+      var dense = getMatrix()
+
+      var matrix = Array.ofDim[Double](dense.rows, dense.cols)
+      for (i <- 0 until dense.rows; j <- 0 until dense.cols) {
+        matrix(i)(j) = dense(i, j)
+      }
+
+      val (distance, max) = similarityToDistance(matrix)
       //
-      //      def sentFn: () => List[Sentence] = () => parser().storyList.flatMap(_.members)
-      //
-      //      val simi = new DSDSimilarity(sentFn, Global.semanticFile)
-      //      val local = new SimpleLocation(sentFn, 0.6, Global.locationFile) // robbery: 0.3. movie: 0.6
-      //      var addition = new MatrixAddition(() => simi(), () => local(), 0.25, Global.allFile) // robbery: 0.1, movie: 0.25-0.3      
-      //      var matrix = addition()
-      //
-      //      //matrix = mutualKNN(matrix, 7);
-      //      val (distance, max) = similarityToDistance(matrix)
-      //
-      //      OPTICS.visualized = false
+      OPTICS.visualized = true
       //      println("sentences = " + stories.flatMap(_.members.toList).size)
-      //      OPTICS.cluster(distance, max, minCluster, stories.flatMap(_.members.toList))
-      Nil
+      val clusters = OPTICS.cluster(distance, max, minCluster, stories.flatMap(_.members.toList))
+
+      writeClusters("clusters.txt", clusters)
+      clusters
     }
 
-    def internalCluster(dataset: String) {
-      //      Global.switchDataSet(dataset)
-      //      val reader = new ConfigReader(Global.configFile)
-      //      var (stories, gold) = reader.initData()
-      //      val minCluster = 4
-      //      gold = gold.filter(_.members.size >= minCluster)
-      //
-      //      val parser = new StoryNLPParser(stories, Global.parseFile, true)
-      //
-      //      def sentFn: () => List[Sentence] = () => parser().storyList.flatMap(_.members)
-      //
-      //      val simi = new DSDSimilarity(sentFn, Global.semanticFile)
-      //      val local = new SimpleLocation(sentFn, 0.6, Global.locationFile)
-      //      var addition = new MatrixAddition(() => simi(), () => local(), 0.3, Global.allFile)
-      //      var matrix = addition()
-      //
-      //      //no-link constraints
-      //      //    var count = 0
-      //      //    for (story <- stories) {
-      //      //      val storyLen = story.members.length
-      //      //      for (i <- 0 until storyLen; j <- i + 1 until storyLen) {
-      //      //        matrix(i + count)(j + count) = 0
-      //      //        matrix(j + count)(i + count) = 0
-      //      //      }
-      //      //      count = storyLen
-      //      //    }
-      //
-      //      //matrix = mutualKNN(matrix, 7);
-      //      val (distance, max) = similarityToDistance(matrix)
-      //      println("sentences = " + stories.flatMap(_.members.toList).size)
-      //      var clusterList = OPTICS.cluster(distance, max, minCluster, stories.flatMap(_.members.toList))
-      //      println(clusterList.map(_.toHexSeparatedString).mkString("\n"))
-      //      evaluate(clusterList, gold)
+    def clusterDataSet(dataset: String) {
+      Global.switchDataSet(dataset)
+      val reader = new ConfigReader(Global.configFile)
+      var (stories, gold) = reader.initData()
+      val minCluster = 4
+      gold = gold.filter(_.members.size >= minCluster)
+
+      val generatedClusters = cluster(stories, minCluster)
+      ClusterMetric.evaluate(generatedClusters, gold)
 
     }
 
@@ -249,13 +237,11 @@ package nlp {
         answer
       }
 
-
-
     def iterativeRestrain(cList: List[Cluster], stories: List[Story], simiMatrix: Array[Array[Double]]) {
 
       var clusterList = cList
       val sentences = stories.flatMap(_.members)
-      writeClusters(0, clusterList)
+      //writeClusters(0, clusterList)
       for (iteration <- 1 to 4) {
 
         val sizes = clusterList.map(_.size)
@@ -353,7 +339,7 @@ package nlp {
 
         //cluster.algo.OPTICS.loose = true
         clusterList = OPTICS.cluster(distance, max, 4, stories.flatMap(_.members.toList))
-        writeClusters(iteration, clusterList)
+        //writeClusters(iteration, clusterList)
       }
     }
 
@@ -361,7 +347,7 @@ package nlp {
       {
         var max = 0.0
         for (a <- matrix; b <- a) {
-          if (b > max) max = b
+          if (b > max && b != Double.PositiveInfinity) max = b
         }
 
         val top = max + 0.1
@@ -375,10 +361,9 @@ package nlp {
         (distance, max)
       }
 
-    def writeClusters(i: Int, clusters: List[Cluster]) {
+    def writeClusters(filename: String, clusters: List[Cluster]) {
       import java.io._
-      val name = "mv-cl-" + i + ".txt"
-      val clusterOut = new PrintWriter(new BufferedOutputStream(new FileOutputStream(name)))
+      val clusterOut = new PrintWriter(new BufferedOutputStream(new FileOutputStream(filename)))
 
       for (c <- clusters) {
         clusterOut.println("@ aaa")
