@@ -42,7 +42,7 @@ package cluster.ngram {
 
       val ngramDB: NGramStore = new NGramMemory()
 
-      Global.switchDataSet("Robbery")
+      Global.switchDataSet("Movie")
       val configFile = Global.configFile
       val parseFile = Global.parseFile
 
@@ -121,7 +121,7 @@ package cluster.ngram {
 
         new NGramCorpus(ngramsArray, map.toMap, sentIdMap)
 
-      }(new File("RobNgram.lzma"))
+      }(new File("MovieNgram.lzma"))
 
       println("reading ngram data...")
 
@@ -135,7 +135,7 @@ package cluster.ngram {
           //GenModel2.ALPHA_SUM = dimension * 10 + 2 * dimension * iteration
           val foundClusters = cluster(sents, ngramCorpus)
           val (p1, r1, p2, r2, purity) = ClusterMetric.evaluate(foundClusters, gold)
-          pw.println(ILPModel2.ALPHA_SUM + ", " + dimension + ", " + p1 + ", " + r1 + ", " + p2 + ", " + r2 + ", " + purity)
+          pw.println(ILPModel3.ALPHA_SUM + ", " + dimension + ", " + p1 + ", " + r1 + ", " + p2 + ", " + r2 + ", " + purity)
         }
 
         pw.flush
@@ -179,7 +179,7 @@ package cluster.ngram {
 
     def cluster(sents: List[Sentence], corpus: NGramCorpus): List[Cluster] = {
 
-      val clustering = ILPModel2.train(corpus)
+      val clustering = ILPModel3.train(corpus)
       val length = clustering.max
 
       var clusters = List[Cluster]()

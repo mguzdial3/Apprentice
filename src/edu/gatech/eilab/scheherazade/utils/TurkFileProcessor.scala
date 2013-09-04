@@ -9,7 +9,7 @@ import java.util.Properties
 object TurkFileProcessor {
 
   def main(args: Array[String]) {
-    val pathString = "E:/Code/MTurk Data/affairs"
+    val pathString = "E:/Code/MTurk Data/affairs/2"
     val directory = new File(pathString)
     val dataFiles = directory.listFiles(new FilenameFilter {
       def accept(dir: File, name: String) =

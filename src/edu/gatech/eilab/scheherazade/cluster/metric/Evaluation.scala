@@ -157,7 +157,7 @@ package cluster.metric {
 
       //val tested = "robberyTotalManualClusters.txt"
       //val tested = "mv-cl-"+i+".txt" // cluster to be tested
-      val tested = "./ngram-clusters-rob2.txt"
+      val tested = "./ILPClustering1.txt"
 
       val clusterFile = "./data/robbery/robberyGold2.gold"
       //val clusterFile = "./data/robbery/robberyGold.txt"

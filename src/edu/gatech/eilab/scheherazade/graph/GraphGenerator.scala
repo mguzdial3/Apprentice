@@ -60,22 +60,23 @@ package graph {
 
       // create the graph that contains every link
       val links = allRelations filter thresholdFilter
-      val totalGraph = new Graph(clusterList, links)
+      var totalGraph = new Graph(clusterList, links)
 
-      var compactGraph = totalGraph.compact
-
-      if (compactGraph.containsLoop()) {
-        hashmap += ("withLoops" -> (compactGraph, 0))
+      if (totalGraph.containsLoop()) {
+        hashmap += ("withLoops" -> (totalGraph, 0))
         // find the loops and break them
         try {
-          compactGraph = breakLoops(compactGraph, links)
+          //TODO: fix loop breaking. Does not work for gas
+          totalGraph = breakLoops(totalGraph, links)
         } catch {
           case ge: GraphException =>
             println(ge.msg)
-            hashmap += ("original" -> (compactGraph, 0))
+            hashmap += ("original" -> (totalGraph, 0))
             return hashmap
         }
       }
+
+      var compactGraph = totalGraph.compact
 
       //println(compactGraph.links.mkString("\n"))
       var (sum, avg) = errorChecker.checkErrors(storyList, compactGraph)
@@ -99,7 +100,7 @@ package graph {
 
     }
 
-    def breakLoops(graph: Graph, links:List[ObservedLink]): Graph =
+    def breakLoops(graph: Graph, links: List[ObservedLink]): Graph =
       {
         val loops = graph.simpleLoops
         var allLinks = links
@@ -107,7 +108,7 @@ package graph {
 
           // find all relations in the loop
           val slidingWindows = List(loop.last, loop.head) :: loop.sliding(2).toList
-          
+
           var loopLinks = slidingWindows.map {
             pair =>
               val s = pair.head
@@ -254,10 +255,11 @@ package graph {
         println("accepted modifications: " + accepted + " rejected modifications: " + rejected)
         oldGraph
       }
-    
-    /** This is the latest version. Nov 15 2012
+
+    /**
+     * This is the latest version. Nov 15 2012
      * Only one possible parent is used in order of descending probability for each bad link
-     * 
+     *
      */
     def updateBadPaths4(badPaths: List[(Link, (Double, Double))], graph: Graph,
       allRelations: List[ObservedLink]): Graph =
@@ -368,7 +370,6 @@ package graph {
         oldGraph
       }
 
-
     def updateBadPaths(badPaths: List[(Link, (Double, Double))], graph: Graph,
       allRelations: List[ObservedLink]): Graph =
       {
@@ -478,63 +479,63 @@ package graph {
         oldGraph
       }
 
-//    def computeRelations(storyList: List[Story], clusterList: List[Cluster]): List[ObservedLink] =
-//      {
-//        var relations = List[ObservedLink]()
-//        val linkTable = new HashMap[(Cluster, Cluster), Int]
-//
-//        def increment(source: Cluster, target: Cluster) {
-//          if (linkTable.contains((source, target))) {
-//            // increment the count
-//            var count = linkTable((source, target))
-//            count += 1
-//            linkTable((source, target)) = count
-//          } else
-//            linkTable += { (source, target) -> 1 }
-//        }
-//
-//        storyList foreach {
-//          story =>
-//            for (i <- 0 to story.members.length - 2) {
-//              for (j <- i + 1 to story.members.length - 1) {
-//                val source = story.members(i).cluster
-//                val target = story.members(j).cluster // this line for normal computation
-//                //val target = story.members(i+1).cluster // this line for adjacent graph
-//
-//                //if (source == null || target == null) println(story + ", " + i + ", " + j + " have no clusters")
-//                // $source and $target can be null. in which case they will be ignored in counting later 
-//                increment(source, target)
-//              }
-//            }
-//        }
-//
-//        var linkList = List[(Cluster, Cluster, Int)]()
-//        //val clusterArray = clusterList.toArray // efficiency increase? should refactor to use lists
-//
-//        var sourceList = clusterList
-//        var source: Cluster = null
-//        var target: Cluster = null
-//
-//        // non-repeated counting
-//        while (sourceList != Nil) {
-//          source = sourceList.head
-//          sourceList = sourceList.tail
-//          var targetList = sourceList
-//          while (targetList != Nil) {
-//            target = targetList.head
-//            targetList = targetList.tail
-//
-//            val forward = linkTable.getOrElse((source, target), 0)
-//            val backward = linkTable.getOrElse((target, source), 0)
-//            //println("forward: " + forward + " backward: " + backward)
-//            val forwardRelation = ObservedLink(source, target, forward, forward + backward)
-//            val backwardRelation = ObservedLink(target, source, backward, forward + backward)
-//            relations = forwardRelation :: backwardRelation :: relations
-//          }
-//        }
-//
-//        relations
-//      }
+    //    def computeRelations(storyList: List[Story], clusterList: List[Cluster]): List[ObservedLink] =
+    //      {
+    //        var relations = List[ObservedLink]()
+    //        val linkTable = new HashMap[(Cluster, Cluster), Int]
+    //
+    //        def increment(source: Cluster, target: Cluster) {
+    //          if (linkTable.contains((source, target))) {
+    //            // increment the count
+    //            var count = linkTable((source, target))
+    //            count += 1
+    //            linkTable((source, target)) = count
+    //          } else
+    //            linkTable += { (source, target) -> 1 }
+    //        }
+    //
+    //        storyList foreach {
+    //          story =>
+    //            for (i <- 0 to story.members.length - 2) {
+    //              for (j <- i + 1 to story.members.length - 1) {
+    //                val source = story.members(i).cluster
+    //                val target = story.members(j).cluster // this line for normal computation
+    //                //val target = story.members(i+1).cluster // this line for adjacent graph
+    //
+    //                //if (source == null || target == null) println(story + ", " + i + ", " + j + " have no clusters")
+    //                // $source and $target can be null. in which case they will be ignored in counting later 
+    //                increment(source, target)
+    //              }
+    //            }
+    //        }
+    //
+    //        var linkList = List[(Cluster, Cluster, Int)]()
+    //        //val clusterArray = clusterList.toArray // efficiency increase? should refactor to use lists
+    //
+    //        var sourceList = clusterList
+    //        var source: Cluster = null
+    //        var target: Cluster = null
+    //
+    //        // non-repeated counting
+    //        while (sourceList != Nil) {
+    //          source = sourceList.head
+    //          sourceList = sourceList.tail
+    //          var targetList = sourceList
+    //          while (targetList != Nil) {
+    //            target = targetList.head
+    //            targetList = targetList.tail
+    //
+    //            val forward = linkTable.getOrElse((source, target), 0)
+    //            val backward = linkTable.getOrElse((target, source), 0)
+    //            //println("forward: " + forward + " backward: " + backward)
+    //            val forwardRelation = ObservedLink(source, target, forward, forward + backward)
+    //            val backwardRelation = ObservedLink(target, source, backward, forward + backward)
+    //            relations = forwardRelation :: backwardRelation :: relations
+    //          }
+    //        }
+    //
+    //        relations
+    //      }
 
     def printDistance(distList: List[(Cluster, Cluster, Double)]) {
       println(distList.map {
@@ -630,12 +631,12 @@ package graph {
     }
 
   }
-  
+
   object GraphGenerator {
-    
+
     def computeRelations(storyList: List[Story], clusterList: List[Cluster]): List[ObservedLink] =
       {
-        
+
         val linkTable = new HashMap[(Cluster, Cluster), Int]
 
         // a helper function to increment the count in LinkTable robustly
@@ -683,7 +684,7 @@ package graph {
             targetList = targetList.tail
 
             // a unique pair of clusters: (source, target) 
-            
+
             val forward = linkTable.getOrElse((source, target), 0)
             val backward = linkTable.getOrElse((target, source), 0)
             //println("forward: " + forward + " backward: " + backward)

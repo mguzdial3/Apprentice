@@ -7,7 +7,7 @@ import cc.mallet.optimize._
 import scala.collection.mutable.ListBuffer
 
 /**
- * add-on from ILPModel2: initialize the clusters with clustering results from OPTICS 
+ * add-on from ILPModel2: initialize the clusters with clustering results from OPTICS
  *
  */
 object ILPModel3 {
@@ -178,41 +178,46 @@ object ILPModel3 {
 
       val oldY = y.copy
       // computing y = argmax P(x,z|y)
-      for (s <- 0 until numStories) {
 
-        val sentences = corpus.stories(s)
-        val prob = Array.ofDim[Double](sentences.length, numClusters) // probabilities of each sentence belonging to each cluster
+      if (iter == 1) {
+        y = loadOPTICSInitialization(corpus, theta)
+      } else {
+        for (s <- 0 until numStories) {
 
-        for (i <- 0 until sentences.length) {
-          // outer loop for each sentence
-          val sID = sentences(i)
+          val sentences = corpus.stories(s)
+          val prob = Array.ofDim[Double](sentences.length, numClusters) // probabilities of each sentence belonging to each cluster
 
-          for (j <- 0 until numClusters) {
-            // loop for each cluster
-            var product = 0.0
-            val diri = new Dirichlet(theta(j))
+          for (i <- 0 until sentences.length) {
+            // outer loop for each sentence
+            val sID = sentences(i)
 
-            for (text <- corpus.ngrams(sID)) {
-              // for each ngram in the sentence              
-              val textVector = corpus.vectors(text)
-              val p = diri.logPdf(textVector) //+ yPrior.logProbabilityOf(j)
-              product += p
+            for (j <- 0 until numClusters) {
+              // loop for each cluster
+              var product = 0.0
+              val diri = new Dirichlet(theta(j))
+
+              for (text <- corpus.ngrams(sID)) {
+                // for each ngram in the sentence              
+                val textVector = corpus.vectors(text)
+                val p = diri.logPdf(textVector) //+ yPrior.logProbabilityOf(j)
+                product += p
+              }
+
+              prob(i)(j) = product
             }
-
-            prob(i)(j) = product
           }
+
+          // run the ILP
+          val ilp = new ILPAssignment(prob)
+          val assignment = ilp.solve
+
+          for (i <- 0 until sentences.length) {
+            val sID = sentences(i)
+            y(sID) = assignment(i)
+            //println(sID + ", " + assignment(i))
+          }
+
         }
-
-        // run the ILP
-        val ilp = new ILPAssignment(prob)
-        val assignment = ilp.solve
-
-        for (i <- 0 until sentences.length) {
-          val sID = sentences(i)
-          y(sID) = assignment(i)
-          //println(sID + ", " + assignment(i))
-        }
-
       }
 
       if ((oldY - y).norm(1) < 0.01 || iter == maxIterations) {
@@ -225,9 +230,9 @@ object ILPModel3 {
       pw.println(str)
       println(str)
 
-//      println("Stop? ")
-//      val answer = readLine.trim
-//      if (answer == "y" || answer == "Y") return y
+      //      println("Stop? ")
+      //      val answer = readLine.trim
+      //      if (answer == "y" || answer == "Y") return y
 
       /** M-step **/
       /** compute theta **/
@@ -356,6 +361,56 @@ object ILPModel3 {
       //func.getParameters(result)
       //println("new value = " + func.getValue)
       new DenseVector(result)
+    }
+
+  def loadOPTICSInitialization(corpus: NGramCorpus, theta: Array[DenseVector[Double]]): DenseVector[Int] =
+    {
+      import edu.gatech.eilab.scheherazade.io.SimpleParser
+
+      
+      
+      val numSents = corpus.ngrams.length
+      val y = DenseVector.zeros[Int](numSents)
+      val used = Array.fill[Boolean](numSents)(false)
+
+      val clusters = SimpleParser.parseClusters("movieOPTICS.txt").toArray
+      
+      println("clusters loaded from OPTICS = " + clusters.length)
+      
+      for (i <- 0 until clusters.length) {
+        for (sent <- clusters(i).members) {
+          y(sent.id) = i
+          used(sent.id) = true
+        }
+      }
+
+      for (i <- 0 until numSents if !used(i)) {
+        // pick the best cluster for the i-th sentence
+        var max = Double.NegativeInfinity
+        var maxCluster = -1
+        
+        for (j <- clusters.length until theta.length) {
+          var product = 0.0
+          val diri = new Dirichlet(theta(j))
+
+          for (text <- corpus.ngrams(i)) {
+            // for each ngram in the sentence              
+            val textVector = corpus.vectors(text)
+            val p = diri.logPdf(textVector) //+ yPrior.logProbabilityOf(j)
+            product += p
+          }
+          
+          if (product > max)
+          {
+            max = product
+            maxCluster = j
+          }
+        }
+        
+        y(i) = maxCluster
+      }
+
+      y
     }
 
   class DiriOptimizable(val data: List[DenseVector[Double]], start: Array[Double], val components: Array[Int]) extends Optimizable.ByGradientValue {
