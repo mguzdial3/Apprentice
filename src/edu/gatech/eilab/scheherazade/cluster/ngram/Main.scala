@@ -179,7 +179,7 @@ package cluster.ngram {
 
     def cluster(sents: List[Sentence], corpus: NGramCorpus): List[Cluster] = {
 
-      val clustering = ILPModel3.train(corpus)
+      val clustering = HMMModel.train(corpus)
       val length = clustering.max
 
       var clusters = List[Cluster]()

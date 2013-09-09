@@ -9,7 +9,7 @@ import java.util.Properties
 object TurkFileProcessor {
 
   def main(args: Array[String]) {
-    val pathString = "E:/Code/MTurk Data/affairs/2"
+    val pathString = "E:/Code/MTurk Data/Pharmacy/"
     val directory = new File(pathString)
     val dataFiles = directory.listFiles(new FilenameFilter {
       def accept(dir: File, name: String) =
@@ -35,7 +35,7 @@ object TurkFileProcessor {
   
   def printTo(pw:PrintWriter, record:Properties)
   {    
-    for (i <- 1 to 20)
+    for (i <- 1 to 14)
     {
       val key = "Answer.Event" + i
       val value = record.getProperty(key).trim

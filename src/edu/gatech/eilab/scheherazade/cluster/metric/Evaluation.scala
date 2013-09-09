@@ -157,9 +157,9 @@ package cluster.metric {
 
       //val tested = "robberyTotalManualClusters.txt"
       //val tested = "mv-cl-"+i+".txt" // cluster to be tested
-      val tested = "./ILPClustering1.txt"
+      val tested = "./ngram-clusters-movie1.txt"
 
-      val clusterFile = "./data/robbery/robberyGold2.gold"
+      val clusterFile = "./data/new_movie/movieGold2.gold"
       //val clusterFile = "./data/robbery/robberyGold.txt"
 
       var results: List[Cluster] = SimpleParser.parseClusters(tested)//.filter(c => c.members.size >= 4)
