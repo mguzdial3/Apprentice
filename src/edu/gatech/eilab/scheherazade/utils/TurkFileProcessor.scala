@@ -4,6 +4,7 @@ import java.io._
 import java.util.Properties
 /**
  * automated processing of downloaded turk data
+ * The limitation is that each field must not contain a new line character
  *
  */
 object TurkFileProcessor {
