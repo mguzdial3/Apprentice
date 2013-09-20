@@ -12,9 +12,18 @@ import cc.mallet.optimize._
 object Play {
 
   def main(args: Array[String]) {
-    testMax()
+    testMulti()
   }
-  
+
+  def testMulti() {
+    val a = DenseVector(0.1, 0.2)
+    val multi = Multinomial(a)
+    for (i <- 0 to 10) {
+      val v = multi.draw
+      println(v)
+    }
+  }
+
   def testMax() {
     val matrix = DenseMatrix.zeros[Double](4, 4)
     matrix(1, 2) = 4
@@ -24,7 +33,7 @@ object Play {
     matrix(1, 1) = 2.3
     matrix(2, 2) = 1
     matrix(0, 3) = 12
-    
+
     println(matrix.max)
   }
 
