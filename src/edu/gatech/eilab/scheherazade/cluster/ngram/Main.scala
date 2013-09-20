@@ -42,7 +42,7 @@ package cluster.ngram {
 
       val ngramDB: NGramStore = new NGramMemory()
 
-      Global.switchDataSet("Movie")
+      Global.switchDataSet("Airport")
       val configFile = Global.configFile
       val parseFile = Global.parseFile
 
@@ -121,7 +121,7 @@ package cluster.ngram {
 
         new NGramCorpus(ngramsArray, map.toMap, sentIdMap)
 
-      }(new File("MovieNgram.lzma"))
+      }(new File("AirportNgram.lzma"))
 
       println("reading ngram data...")
 
@@ -179,7 +179,7 @@ package cluster.ngram {
 
     def cluster(sents: List[Sentence], corpus: NGramCorpus): List[Cluster] = {
 
-      val clustering = HMMModel.train(corpus)
+      val clustering = HMMModel2.train(corpus)
       val length = clustering.max
 
       var clusters = List[Cluster]()
