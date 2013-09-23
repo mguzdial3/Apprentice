@@ -4,6 +4,7 @@ import breeze.linalg._
 import breeze.stats.distributions._
 import java.io._
 import scala.collection.mutable._
+import scala.collection.mutable.Set
 
 /**
  * Dirichlet Process with Gaussian base distribution and Gaussian data
@@ -13,19 +14,186 @@ object DPGaussian {
 
   val DATA_FILE = "SyntheticDPGaussian.txt"
   val base_mu = 0
-  val baseSigma = 2
+  val baseSigma = 1.5
   val base = new Gaussian(base_mu, baseSigma)
-  val sigma = .5
-  val ALPHA = 1.0
+  val generationSigma = 0.2
+  val sigma = 0.2
+  val ALPHA = 1
 
   def main(args: Array[String]) {
     //synthesizeData
     val data = readSyntheticData()
-    MCMC1(data)
+    MCMC2(data)
   }
 
-  /** algorithm 1 from Neal (2000)
-   *  
+  /**
+   * algorithm 2 from Neal (2000)
+   *
+   */
+  def MCMC2(data: Array[Double]) {
+    val pw = new PrintWriter(new BufferedOutputStream(new FileOutputStream("test.csv")))
+    
+    val MAX_K = 50000
+    var n = data.length
+    var c = Array.fill(n)(0)
+    var state = ListBuffer[ListBuffer[Int]]()
+    // initialization
+    var theta = ListBuffer[Double]()
+
+    //var book = HashMap[Set[Set[Int]], Int]()
+    var bins = Array.fill(1001)(0)
+
+    c(0) = 0
+    state += ListBuffer(0)
+    theta += base.draw
+
+    for (iter <- 0 to MAX_K) {
+      for (i <- 1 until n) {
+
+        if (iter > 0) {
+          // remove the ith point
+          val cluster = state(c(i))
+          if (cluster.size == 1) {
+            state -= cluster
+            theta -= theta(c(i))
+            for (j <- 0 until n) {
+              if (c(j) > c(i)) {
+                c(j) -= 1
+              }
+            }
+          } else {
+            state(c(i)) -= i
+            //println("removed " + i + " from " + c(i))
+            //println(state)
+          }
+        }
+
+        var probs = DenseVector.zeros[Double](state.size + 1)
+        for (j <- 0 until state.size) {
+          probs(j) = math.log(state(j).size) + logLikelihood(data(i), theta(j))
+        }
+        probs(state.size) = math.log(ALPHA) + logMarginalLikelihood(data(i))
+
+        probs = normalizeLog(probs)
+
+        c(i) = Multinomial(probs).draw
+
+        if (c(i) < state.size) {
+          // selecting an old cluster
+          val cluster = state(c(i))
+          cluster += i
+          //println(i + " merged to cluster " + c(i))
+          //println(state)
+        } else {
+          state += ListBuffer(i)
+          theta += base.draw
+          //println(i + " created new cluster " + c(i))
+          //println(state)
+        }
+
+        // draw thetas
+        for (i <- 0 until theta.size) {
+          val dataInCluster = state(i).map(data(_)).toArray
+          theta(i) = posterior(dataInCluster).draw
+        }
+
+        if (iter > 10000) {
+          //setBookKeeping(state, book)
+          for (i <- 0 until theta.size) {
+            if (theta(i) < -5 || theta(i) > 5) {
+              // discard anything < -5 or > 5
+            } else {
+              val bin = math.floor((theta(i) + 5) * 100).toInt
+              bins(bin) += 1
+            }
+          }
+        }
+      }
+
+      if (iter % 500 == 0) {
+        println(iter)
+        //        println(iter + ":" + state)
+        //        println(theta.mkString(", "))
+      }
+    }
+
+    //showSetBook(book, data)
+    var list = List[(Double, Int)]()
+    for(b <- 0 until bins.length)
+    {
+      val value = b / 100.0 - 5
+      list = (value, bins(b)) :: list
+    }
+    list = list.sortBy(_._2 * -1)
+    
+    
+    
+    
+    pw.println(list.take(200).map(p => p._1 + ", " + p._2).mkString("\n"))
+    pw.close
+  }
+
+  def showSetBook(book: HashMap[Set[Set[Int]], Int], data: Array[Double]) {
+    var sorted = book.toList.sortBy(p => -p._2)
+    var d = 0
+    while (sorted != Nil && d < 3) {
+      val partition = sorted.head
+      println(partition)
+      for (p <- partition._1) {
+        print("(")
+        for (ind <- p) {
+          print(data(ind))
+          print(", ")
+        }
+        println(")")
+      }
+      //      
+
+      sorted = sorted.tail
+      d += 1
+    }
+  }
+
+  def setBookKeeping(result: ListBuffer[ListBuffer[Int]], book: HashMap[Set[Set[Int]], Int]) {
+    val hashset = Set[Set[Int]]()
+
+    for (lbf <- result) {
+      val set = Set[Int]()
+      for (num <- lbf) {
+        set += num
+      }
+      hashset += set
+    }
+
+    if (book.size > 20000) {
+      // keep only the least frequent 1000 entries
+      val sorted = book.toList.sortBy(p => -p._2)
+      val remainder = sorted.take(1000)
+      book.clear
+      book ++= remainder
+    } else {
+      if (book contains hashset) {
+        val count = book(hashset)
+        book += ((hashset, count + 1))
+      } else {
+        book += ((hashset, 1))
+      }
+    }
+  }
+
+  def normalizeLog(vector: DenseVector[Double]): DenseVector[Double] =
+    {
+      val n = vector.size
+      val sum = vector.sum
+      val mean = sum / n
+
+      val normalized = vector.map(v => math.exp(v - mean))
+      normalized
+    }
+
+  /**
+   * algorithm 1 from Neal (2000)
+   *
    */
   def MCMC1(data: Array[Double]) {
     val MAX_K = 5000
@@ -74,7 +242,7 @@ object DPGaussian {
 
         c(i) = Multinomial(probs).draw
         if (c(i) != i) {
-          theta(i) = posterior(data(i)).draw
+          theta(i) = posterior(Array(data(i))).draw
         } else {
           theta(i) = theta(c(i))
         }
@@ -122,17 +290,43 @@ object DPGaussian {
     }
   }
 
-  def posterior(x: Double): Gaussian =
+  def posterior(data: Array[Double]): Gaussian =
     {
       val sigmaSquared = sigma * sigma
       val baseSigmaSquared = baseSigma * baseSigma
+      val n = data.length
+      val dataSum = data.sum
 
-      val postSigmaSquared = baseSigmaSquared * sigmaSquared / (baseSigmaSquared + sigmaSquared)
+      val postSigmaSquared = baseSigmaSquared * sigmaSquared / (n * baseSigmaSquared + sigmaSquared)
 
-      val postMu = postSigmaSquared * (base_mu / baseSigmaSquared + x / sigmaSquared)
+      val postMu = postSigmaSquared * (base_mu / baseSigmaSquared + dataSum / sigmaSquared)
       val postSigma = math.sqrt(postSigmaSquared)
 
       new Gaussian(postMu, postSigma)
+    }
+
+  def logLikelihood(x: Double, theta: Double): Double =
+    {
+      val sigmaSquared = sigma * sigma
+      val coeff = 0.5 * math.log(2 * math.Pi * sigmaSquared)
+      val c1 = -1 / (2 * sigmaSquared)
+      val c2 = math.pow(x - theta, 2)
+
+      coeff + c1 + c2
+    }
+
+  def logMarginalLikelihood(x: Double): Double =
+    {
+
+      val baseSigmaSquared = baseSigma * baseSigma
+      val sigmaSquared = sigma * sigma
+
+      val coeff = -0.5 * math.log(math.sqrt(2 * math.Pi * (baseSigmaSquared + sigmaSquared)))
+      val c1 = (-x / (2 * sigmaSquared) - base_mu / (2 * baseSigmaSquared))
+      val c2 = ((baseSigmaSquared * x * x / sigmaSquared + sigmaSquared * base_mu * base_mu / baseSigmaSquared + 2 * x * base_mu) /
+        2 * (sigmaSquared + baseSigmaSquared))
+
+      coeff + c1 + c2
     }
 
   def marginalLikelihood(x: Double): Double =
@@ -146,7 +340,6 @@ object DPGaussian {
       val c2 = math.exp((baseSigmaSquared * x * x / sigmaSquared + sigmaSquared * base_mu * base_mu / baseSigmaSquared + 2 * x * base_mu) /
         2 * (sigmaSquared + baseSigmaSquared))
 
-        
       coeff * c1 * c2
     }
 
@@ -174,7 +367,7 @@ object DPGaussian {
 
       pw.print("Gaussian: \t")
       pw.println(gs(i).mu + ", " + gs(i).sigma)
-      for (j <- 1 to 5) {
+      for (j <- 1 to 10) {
         val v = gs(i).draw
         pw.println(v)
       }
@@ -188,6 +381,6 @@ object DPGaussian {
     {
       val miu = base.draw
 
-      Gaussian(miu, sigma)
+      Gaussian(miu, generationSigma)
     }
 }
