@@ -99,6 +99,7 @@ object PageRank {
       for (i <- 0 until n) {
         var list = List[Int]()
         
+        // add the mutually exclusive vertices to list
         for (melink <- graph.mutualExcls) {          
           if (nodes(i) == melink.c1) {
             val j = nodes.indexWhere(v => v == melink.c2)
@@ -109,19 +110,22 @@ object PageRank {
           }
         }
 
-        val cnt = list.length
+        val cnt = list.length // size of the exclusion list for i
 
         for (j <- ((0 until n) filterNot (list contains)))
         {
-          total(i) += matrix(j, i)
+          total(i) += matrix(j, i) // sum of i's transition to other nodes not in the exclusion list
         }
         
         for (j <- list) {
-          matrix(j, i) = -0.5 * total(i) / cnt
+          matrix(j, i) = -0.5 * total(i) / cnt 
+          // distribute some negative power, equal to the rest of the outgoing power, 
+          // to all nodes in the exclusion list
         }
 
       }
 
+      // matrix normalization
       total = Array.fill[Double](n)(0.0)
       for (j <- 0 until n; i <- 0 until n) {
         total(j) += matrix(i, j)

@@ -11,7 +11,7 @@ abstract class KBConnection {
  *
  */
 class WordNetConnection() extends KBConnection {
-  System.setProperty("wordnet.database.dir", "./wordnet/dict/")
+  System.setProperty("wordnet.database.dir", "../../Wordnet/dict/")
   val wordnet = edu.smu.tspell.wordnet.WordNetDatabase.getFileInstance();
   
   def isWord(word: String): Boolean = {

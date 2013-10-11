@@ -23,7 +23,7 @@ package nlp {
   object NLPMain {
 
     def main(args: Array[String]) {
-      clusterDataSet("Robbery")
+      clusterDataSet("Coffee")
 
     }
 
