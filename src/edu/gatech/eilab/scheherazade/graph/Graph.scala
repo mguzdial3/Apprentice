@@ -249,7 +249,7 @@ package graph {
       writer.close()
 
       println("writing graph to " + fn + ".png")
-      Runtime.getRuntime().exec("dot -Tpng -o" + fn + ".png " + filename)
+      //Runtime.getRuntime().exec("dot -Tpng -o" + fn + ".png " + filename)
       file.deleteOnExit()
     }
 

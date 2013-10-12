@@ -66,7 +66,6 @@ package graph {
         hashmap += ("withLoops" -> (totalGraph, 0))
         // find the loops and break them
         try {
-          //TODO: fix loop breaking. Does not work for gas
           totalGraph = breakLoops(totalGraph, links)
         } catch {
           case ge: GraphException =>
@@ -102,35 +101,106 @@ package graph {
 
     def breakLoops(graph: Graph, links: List[ObservedLink]): Graph =
       {
-        val loops = graph.simpleLoops
-        var allLinks = links
-        for (loop <- loops) {
 
-          // find all relations in the loop
-          val slidingWindows = List(loop.last, loop.head) :: loop.sliding(2).toList
+        def loopPairs(loop: List[Cluster]) =
+          List(loop.last, loop.head) :: loop.sliding(2).toList
 
-          var loopLinks = slidingWindows.map {
-            pair =>
-              val s = pair.head
-              val t = pair.last
-              allLinks.find(l => l.source == s && l.target == t).get.asInstanceOf[ObservedLink]
+        def loopContains(loop: List[Cluster], link: ObservedLink): Boolean =
+          {
+            val pairs = loopPairs(loop)
+            pairs.exists(pair => pair.head == link.source && pair.last == link.target)
           }
+        
+        var allLinks = links
+        var answer = graph
+        var loops = answer.simpleLoops.distinct // TODO need to find all cycles in a graph. Find the link from stack overflow
+        while (loops != Nil) {
+          
+          println("loops: " + loops.map(_.map(_.name)).mkString("\n"))
 
-          // find the link with the minimum confidence
-          var minLink: ObservedLink = null
-          var min = 1.0
-          for (link <- loopLinks) {
-            if (link.confidence < min) {
-              min = link.confidence
-              minLink = link
+          //println("links: " + allLinks)
+
+          /** converting every loop into a list of links **/
+          val loopLinks: HashMap[ObservedLink, Int] = new HashMap[ObservedLink, Int]()
+
+          for (loop <- loops) {
+
+            //TODO fix bug: breaking one loop may also breaks other loops. so we cannot find other loops when we try to break them
+
+            // find all relations in the loop
+            val slidingWindows = loopPairs(loop)
+
+            slidingWindows foreach {
+              pair =>
+                val s = pair.head
+                val t = pair.last
+                val option = allLinks.find(l => l.source == s && l.target == t)
+                option match {
+                  case Some(o) =>
+                    val l = o.asInstanceOf[ObservedLink]
+                    if (loopLinks.contains(l)) {
+                      val cnt = loopLinks(l)
+                      loopLinks.update(l, cnt + 1)
+                    } else {
+                      loopLinks += ((l, 1))
+                    }
+                  case None =>
+                    throw new RuntimeException("cannot find " + s.name + " -> " + t.name)
+                }
             }
           }
 
-          // remove that link
-          allLinks = allLinks filterNot (_ == minLink)
-        }
+          while (loops != Nil) {
+            // find the link with the minimum confidence
+            var brokenLink: ObservedLink = null
+            var min = 1.0
+            for (p <- loopLinks) {
+              val link = p._1
+              if (link.confidence < min) {
+                min = link.confidence
+                brokenLink = link
+              }
+            }
 
-        val answer = new Graph(graph.nodes, allLinks).compact()
+            // remove that link
+            allLinks = allLinks filterNot (_ == brokenLink)
+            loopLinks.remove(brokenLink)
+            //println("link removed " + brokenLink)
+
+            // delete broken loops
+            val (broken, unbroken) = loops.partition(loop => loopContains(loop, brokenLink))
+            loops = unbroken
+            //println("broken " + broken.size + " loops")
+
+            /* For each broken loop, decrement the loop link counter
+           * If the counter reaches zero, delete it.
+           */
+            for (bLoop <- broken) {
+              loopPairs(bLoop) foreach {
+                pair =>
+                  val keys = loopLinks.keySet
+                  keys.find(p => p.source == pair.head && p.target == pair.last) match {
+                    case Some(link) =>
+                      val cnt = loopLinks(link)
+                      if (cnt == 1) {
+                        loopLinks.remove(link)
+                      } else {
+                        loopLinks.update(link, cnt - 1)
+                      }
+                    case None =>
+                  }
+              }
+
+            }
+
+          }
+
+          answer = new Graph(graph.nodes, allLinks) //.compact()
+          loops = answer.simpleLoops.distinct
+        }
+        //loops = answer.simpleLoops.distinct
+        //println("loops: " + loops.map(_.map(_.name)).mkString("\n"))
+        println("breaking complete")
         if (answer.containsLoop)
           throw new GraphException("Encountered complex loop structure that cannot be removed by this simple procedure")
         else return answer
