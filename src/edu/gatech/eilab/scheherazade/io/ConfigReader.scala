@@ -7,19 +7,18 @@ import graph._
 import utils.SuperProperties
 import java.io._
 import java.util.Properties
-import scala.collection.mutable.{HashMap, ListBuffer, Queue}
+import scala.collection.mutable.{ HashMap, ListBuffer, Queue }
 
 package io {
   class ConfigReader(val configFile: java.io.File) {
 
-    def this(file:String) = this(new java.io.File(file))
-    
+    def this(file: String) = this(new java.io.File(file))
+
     val properties = new SuperProperties()
     val in = new FileInputStream(configFile)
     properties.load(in)
     in.close()
     println("Parameters supplied: " + properties.getProperty("parameters"))
-
 
     def initData(): (List[Story], List[Cluster]) =
       {
@@ -84,7 +83,9 @@ package io {
             story.members foreach
               {
                 sentence =>
-                  if (hashmap.contains(sentence.id)) throw new ParsingException("sentence repeated" + sentence.id)
+                  if (hashmap.contains(sentence.id)) {
+                    throw new ParsingException("sentence repeated " + sentence.id)
+                  }
                   hashmap += ((sentence.id, sentence))
                 //println(sentence.id)
               }
@@ -123,5 +124,4 @@ package io {
 
   }
 
-  
 }

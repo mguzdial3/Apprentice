@@ -24,8 +24,8 @@ package nlp {
     def main(args: Array[String]) {
 
       computeMaxMin()
-      //      var v = queryGoogle("fiction_NOUN", "eng_2012")
-      //      println(v)
+      //var v = queryGoogle("fiction_NOUN", "eng_2012")
+      //println(v)
       //      
       //      takeABreak()
       //      
@@ -62,15 +62,15 @@ package nlp {
       }
 
     def computeMaxMin() {
-      val dataset = "Airport"
+      val dataset = "Robbery"
       Global.switchDataSet(dataset)
-
+      Global.setConfig(new File("configRobExp.txt"))
       val reader = new ConfigReader(Global.configFile)
       var (stories, gold) = reader.initData()
 
       def parsed() = CachedOperation {
         SFParser.parse(stories)
-      }(Global.parseFile).flatMap(_.members)
+      }(new File("RobExp.lzma")).flatMap(_.members)
 
       val sents = parsed
 

@@ -47,7 +47,12 @@ object Global {
 
   }
 
-  def fileSet(dataSet: String) = {
-
+//  def fileSet(dataSet: String) = {
+//
+//  }
+  
+  def setConfig(newConfig:File)
+  {
+    configFile = newConfig
   }
 }
