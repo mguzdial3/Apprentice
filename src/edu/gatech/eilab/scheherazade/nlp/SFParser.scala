@@ -63,7 +63,7 @@ object SFParser {
               val graph = nlp.getSemanticGraph()
 
               val relations = graphToRelations(graph, tokens)
-              println("parsed: " + sent.id + " " + tokens.map(_.toString()).mkString(" "))
+              //println("parsed: " + sent.id + " " + tokens.map(_.toString()).mkString(" "))
               count += 1
               newSentence = Sentence(sent.id, tokens, null, relations, sent.location)
             } else {

@@ -17,6 +17,9 @@ package nlp {
 
   object SentenceSelection {
 
+    val ENGLISH = "eng_2012"
+    val ENGLISH_FICTION = "eng_fiction_2012"
+    val corpusID = new HashMap[String, Int]() ++ List((ENGLISH, 15), (ENGLISH_FICTION, 16))  
     val unigramProb = loadProbability("unigram_prob.txt")
     val unigramFictionProb = loadProbability("unigram_prob_fiction.txt")
     val stopwords = loadStopWords()
@@ -24,8 +27,9 @@ package nlp {
     def main(args: Array[String]) {
 
       computeMaxMin()
-      //var v = queryGoogle("fiction_NOUN", "eng_2012")
-      //println(v)
+      
+//      var v = queryGoogle("fiction_NOUN", ENGLISH_FICTION)
+//      println(v)
       //      
       //      takeABreak()
       //      
@@ -166,7 +170,7 @@ package nlp {
       if (unigramProb.contains(wordWithPos)) {
         unigramProb(wordWithPos)
       } else {
-        val v1 = queryGoogle(wordWithPos, "eng_2012")
+        val v1 = queryGoogle(wordWithPos, ENGLISH)
         unigramProb += ((wordWithPos -> v1))
 
         takeABreak()
@@ -182,7 +186,7 @@ package nlp {
       if (unigramFictionProb.contains(wordWithPos)) {
         unigramFictionProb(wordWithPos)
       } else {
-        val v1 = queryGoogle(wordWithPos, "eng_fiction_2012")
+        val v1 = queryGoogle(wordWithPos, ENGLISH_FICTION)
         unigramFictionProb += ((wordWithPos -> v1))
 
         takeABreak()
@@ -267,18 +271,19 @@ package nlp {
         else ""
       }
 
-    def queryGoogle(word: String, corpus: String = "eng_2012"): Double =
+    def queryGoogle(word: String, corpus: String = ENGLISH): Double =
       {
         val query = word + ":" + corpus
-        val request = Http("http://books.google.com/ngrams/graph").params(("content", query), ("year_start", "1991"),
-          ("year_end", "2000"), ("corpus", "15"), ("smoothing", "0")).option(HttpOptions.readTimeout(10000))
+        val id = corpusID(corpus).toString
+        val request = Http("https://books.google.com/ngrams/graph").params(("content", query), ("year_start", "1991"),
+          ("year_end", "2000"), ("corpus", id), ("smoothing", "0")).option(HttpOptions.readTimeout(10000))
 
         var average = -1.0
         
         while (average < 0) {
           try {
             val str = request.asString
-
+            //println("http response = " + str)
             val scanner = new java.util.Scanner(str)
 
             var found = false
@@ -286,11 +291,14 @@ package nlp {
 
             while (scanner.hasNextLine() && !found) {
               val line = scanner.nextLine().trim
-              if (line == "data.addRows(") {
-                val dataLine = scanner.nextLine.trim
-                val data = dataLine.replaceAll("\\]", "").replaceAll("\\[", "").split(",")
-                for (i <- 1 until data.length by 2) {
-                  numbers((i - 1) / 2) = data(i).trim.toDouble
+              if (line.startsWith("var data")) {
+                val startPosition = line.indexOf("timeseries")
+                val remainder = line.substring(startPosition+14)
+                val endPosition = remainder.indexOf("]")
+                val data = remainder.substring(0, endPosition).split(",")
+
+                for (i <- 0 until data.length) {
+                  numbers(i) = data(i).trim.toDouble
                 }
                 //println(numbers.mkString(", "))
                 found = true
