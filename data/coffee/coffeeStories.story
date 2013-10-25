@@ -45,7 +45,7 @@
 41 John turned on the faucet.
 42 John took a glass from the cupboard.
 43 John filled the glass with water.
-44 John poured the water into the resevoir of the coffee maker.
+44 John poured the water into the reservoir of the coffee maker.
 45 John turned on the coffee maker.
 ###
 46 John strode over to the coffeemaker.
@@ -67,13 +67,13 @@
 62 John drank his mug of coffee.
 ###
 63 John walked into the kitchen.
-64 John took his french press from the cabinet.
+64 John took his French press from the cabinet.
 65 John grabbed his bag of coffee beans from the cabinet.
 66 John ground his coffee beans in his grinder.
 67 John heated up water in the microwave.
-68 John added his hot water and ground coffee to the french press.
+68 John added his hot water and ground coffee to the French press.
 69 John waited three minuted for the coffee to brew.
-70 John plunged his french press.
+70 John plunged his French press.
 71 John poured his coffee into a cup.
 ###
 72 John poured water into the reservoir.
@@ -152,18 +152,18 @@
 140 John pressed the brew button.
 ###
 141 John entered the kitchen.
-142 John plugged in the Coffee Maker.
-143 John opened the Coffee Maker.
-144 John put a Filter in the Coffee Maker.
+142 John plugged in the coffee maker.
+143 John opened the coffee maker.
+144 John put a Filter in the coffee maker.
 145 John put Grounds in the Filter.
-146 John put a Pot under the Coffee Maker.
-147 John closed the Lid of the Coffee Maker.
-148 John pressed the Start Button on the Coffee Maker.
-149 John waited for the Coffee.
+146 John put a Pot under the coffee maker.
+147 John closed the Lid of the coffee maker.
+148 John pressed the Start Button on the coffee maker.
+149 John waited for the coffee.
 150 John took the Pot.
-151 John poured the Coffee into a Mug.
-152 John poured Cream in the Mug.
-153 John drank the Coffee.
+151 John poured the coffee into a mug.
+152 John poured Cream in the mug.
+153 John drank the coffee.
 ###
 154 John put the coffee beans into the grinder.
 155 John pushed the button on the grinder.
@@ -210,15 +210,15 @@
 ###
 194 John walked into the kitchen.
 195 John grabbed the bag of Dunkin Donuts ground coffee from the cabinet.
-196 John poured the remaining contents of the bag into the french press.
+196 John poured the remaining contents of the bag into the French press.
 197 John poured water into a pot.
 198 John boiled the water.
 199 John waited.
 200 John removed the pot from the stove top.
-201 John poured the hot water into the french press.
-202 John put the lid on the french press.
+201 John poured the hot water into the French press.
+202 John put the lid on the French press.
 203 John waited.
-204 After several minutes,  John pushed the lever down on the french press.
+204 After several minutes,  John pushed the lever down on the French press.
 205 John poured himself a cup of black coffee.
 ###
 206 John got a coffee filter out.
@@ -454,11 +454,11 @@
 418 John got the coffee beans out of the cabinet.
 419 John put two scoops of beans into the coffee grinder.
 420 John ground the coffee to his desired consistency.
-421 John put the ground coffee into the french press.
-422 John poured very hot water into the french press.
+421 John put the ground coffee into the French press.
+422 John poured very hot water into the French press.
 423 John stirred the water and coffee.
-424 John put the lid on the french press.
-425 John let the french press sit for three minutes.
-426 John slowly pushed the plunger on the french press down.
+424 John put the lid on the French press.
+425 John let the French press sit for three minutes.
+426 John slowly pushed the plunger on the French press down.
 427 John poured the coffee into a mug.
 ###
