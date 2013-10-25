@@ -587,7 +587,7 @@
 539 Sally ordered a soda.
 540 John and Sally shared a box of candy.
 541 John and Sally sat next to each other.
-542 Joh and Sally enjoyed the movie.
+542 John and Sally enjoyed the movie.
 543 John shared popcorn with Sally.
 544 John and Sally left the movie theater.
 545 Sally and John went home.
