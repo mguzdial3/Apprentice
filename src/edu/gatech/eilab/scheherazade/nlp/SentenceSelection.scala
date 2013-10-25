@@ -19,7 +19,7 @@ package nlp {
 
     val ENGLISH = "eng_2012"
     val ENGLISH_FICTION = "eng_fiction_2012"
-    val corpusID = new HashMap[String, Int]() ++ List((ENGLISH, 15), (ENGLISH_FICTION, 16))  
+    val corpusID = new HashMap[String, Int]() ++ List((ENGLISH, 15), (ENGLISH_FICTION, 16))
     val unigramProb = loadProbability("unigram_prob.txt")
     val unigramFictionProb = loadProbability("unigram_prob_fiction.txt")
     val stopwords = loadStopWords()
@@ -27,9 +27,9 @@ package nlp {
     def main(args: Array[String]) {
 
       computeMaxMin()
-      
-//      var v = queryGoogle("fiction_NOUN", ENGLISH_FICTION)
-//      println(v)
+
+      //var v = queryGoogle("noble_NOUN", ENGLISH_FICTION)
+      //println(v)
       //      
       //      takeABreak()
       //      
@@ -251,7 +251,13 @@ package nlp {
     }
 
     def takeABreak() {
-      val interval = scala.math.random * 5000 + 15000
+      val interval = scala.math.random * 10000 + 20000
+      Thread.sleep(interval.toInt)
+    }
+
+    /** a 15-20 minute break **/
+    def takeALongBreak() {
+      val interval = scala.math.random * 300000 + 900000
       Thread.sleep(interval.toInt)
     }
 
@@ -276,42 +282,53 @@ package nlp {
         val query = word + ":" + corpus
         val id = corpusID(corpus).toString
         val request = Http("https://books.google.com/ngrams/graph").params(("content", query), ("year_start", "1991"),
-          ("year_end", "2000"), ("corpus", id), ("smoothing", "0")).option(HttpOptions.readTimeout(10000))
+          ("year_end", "2000"), ("corpus", id), ("smoothing", "0"), ("share", ""), ("direct_url", "t1;," + query + ";,c0")).option(HttpOptions.readTimeout(10000))
 
         var average = -1.0
-        
+
         while (average < 0) {
           try {
             val str = request.asString
             //println("http response = " + str)
             val scanner = new java.util.Scanner(str)
 
-            var found = false
+            //var found = false
             val numbers = Array.ofDim[Double](10)
+            var dataLine: String = null
 
-            while (scanner.hasNextLine() && !found) {
+            while (scanner.hasNextLine() && dataLine == null) {
               val line = scanner.nextLine().trim
               if (line.startsWith("var data")) {
-                val startPosition = line.indexOf("timeseries")
-                val remainder = line.substring(startPosition+14)
-                val endPosition = remainder.indexOf("]")
-                val data = remainder.substring(0, endPosition).split(",")
-
-                for (i <- 0 until data.length) {
-                  numbers(i) = data(i).trim.toDouble
-                }
-                //println(numbers.mkString(", "))
-                found = true
+                //println(line)
+                dataLine = line
               }
             }
 
-            average = numbers.sum / 10.0
+            if (dataLine != null) {
+              val startPosition = dataLine.indexOf("timeseries")
+              val remainder = dataLine.substring(startPosition + 14)
+              println(remainder)
+              val endPosition = remainder.indexOf("]")
+              if (endPosition != -1) {
+                val data = remainder.substring(0, endPosition).split(",")
+                average = data.map(_.trim.toDouble).sum / 10.0
+              } else {
+                average = 1E-10 // very small number
+              }
+            } else {
+              average = 1E-10 // very small number
+            }
+
             println("Queried Google Ngram (" + corpus + "): " + word + " = " + average)
 
           } catch {
-            case e: Exception =>
-              println(e.getMessage())
-              takeABreak()
+            case e: IOException =>
+              val msg = e.getMessage()
+              println("Exception: " + msg)
+              takeALongBreak()
+            //              if (msg.startsWith("Server redirected too many") || msg.startsWith("429: Too Many Requests")) {
+            //            	  takeALongBreak()
+            //              }
           }
         }
         average
