@@ -42,7 +42,7 @@ package cluster.ngram {
 
       val ngramDB: NGramStore = new NGramMemory()
 
-      Global.switchDataSet("Airport")
+      Global.switchDataSet("Movie")
       val configFile = Global.configFile
       val parseFile = Global.parseFile
 
@@ -68,7 +68,7 @@ package cluster.ngram {
               sentence =>
 
                 val ngrams = ngramize(sentence, ngramDB)
-                (sentence.id, ngrams)
+                (sentence.id, ngrams) //.map(x.filterNot(z => z.word == "John" || z.word == "Sally" || z.word == "and"))
             }
         }
 
@@ -98,7 +98,7 @@ package cluster.ngram {
 
                   var dense = ngramDB(ng).toDenseVector
 
-                  dense = dense / dense.sum * (1 - 980 * VERY_SMALL)
+                  //dense = dense / dense.sum * (1 - 980 * VERY_SMALL)
                   /* the rational behind this normalization is that 
                  * this vector has only 20 non-zero components, so the rest will be VERY_SMALL                 
                  */
@@ -121,27 +121,46 @@ package cluster.ngram {
 
         new NGramCorpus(ngramsArray, map.toMap, sentIdMap)
 
-      }(new File("AirportNgram.lzma"))
+      }(new File("MovieNgram.lzma"))
 
       println("reading ngram data...")
 
-      val ngramCorpus = ngramFunc()
+      var ngramCorpus = ngramFunc()
 
-      val pw = new PrintWriter(new BufferedOutputStream(new FileOutputStream("nonsense.log")))
-      pw.println("s, dimension, MUC P, MUC R, B^3 P, B^3 R, Purity")
-      for (dimension <- 140 to 140 by 20) {
-        //GenModel2.DESIRED_DIMENSION = dimension
-        for (iteration <- 0 to 0) {
-          //GenModel2.ALPHA_SUM = dimension * 10 + 2 * dimension * iteration
+      /*
+      val pw = new PrintWriter(new BufferedOutputStream(new FileOutputStream("./data/vectors/movie.txt")))
+      ngramCorpus = HMMModel2.performLargerPCA(ngramCorpus)
+      for(pair <- ngramCorpus.vectors)
+      {
+        val ngram = pair._1
+        pw.print(ngram)
+        pw.print("\t")
+        
+        // count the number of occurrence
+        val count = ngramCorpus.ngrams.map(s => s.count(_ == ngram)).sum
+        pw.print(count)
+        pw.print("\t")
+        
+        val vector = pair._2
+        val str = vector.toArray.mkString("\t")
+        pw.println(str)
+      }*/
+      
+//      pw.println("s, dimension, MUC P, MUC R, B^3 P, B^3 R, Purity")
+//      for (dimension <- 140 to 140 by 20) {
+//        //GenModel2.DESIRED_DIMENSION = dimension
+//        for (iteration <- 0 to 0) {
+//          //GenModel2.ALPHA_SUM = dimension * 10 + 2 * dimension * iteration
           val foundClusters = cluster(sents, ngramCorpus)
-          val (p1, r1, p2, r2, purity) = ClusterMetric.evaluate(foundClusters, gold)
-          pw.println(ILPModel3.ALPHA_SUM + ", " + dimension + ", " + p1 + ", " + r1 + ", " + p2 + ", " + r2 + ", " + purity)
-        }
+          val noGarbage = foundClusters.filterNot(_.members.size < 4)
+          val (p1, r1, p2, r2, purity) = ClusterMetric.evaluate(noGarbage, gold)
+          //pw.println(ILPModel3.ALPHA_SUM + ", " + dimension + ", " + p1 + ", " + r1 + ", " + p2 + ", " + r2 + ", " + purity)
+//        }
+//
+//        pw.flush
+//      }
 
-        pw.flush
-      }
-
-      pw.close
+      //pw.close
     }
 
     def testProbabilities(corpus: NGramCorpus) {
@@ -212,13 +231,13 @@ package cluster.ngram {
 
       while (!found && !queue.isEmpty) {
         val s = queue.dequeue
-        //println("visiting: " + s.solutionString + " , cost = " + s.cost)
+        
         if (s.isComplete) {
           found = true
           solution = s
         } else {
           val splits = s.nextSplit(ngramDB)
-          //println("  nextSplits = ")
+          
           for (sp <- splits) {
             //println("    " + sp.solutionString + " , cost = " + sp.cost)
             queue.enqueue(sp)

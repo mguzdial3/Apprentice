@@ -4,8 +4,6 @@ import data.Sentence
 import data.Token
 import data.serialize.XStreamable
 
-
-
 package cluster.ngram {
 
   class NGramData( //protected[NGramData] var text: String, 
@@ -31,7 +29,7 @@ package cluster.ngram {
       else if (NGramData.this.cost > that.cost) -1
       else 0
     }
-    
+
     def getNGramsString() = {
       ngrams.map(_.map(_.word).mkString(" "))
     }
@@ -76,7 +74,7 @@ package cluster.ngram {
         new NGramData(this.sentence, newNGrams, newUsed, this.tokens)
       }
 
-    def nextSplit(ngramDB:NGramStore): List[NGramData] = {
+    def nextSplit(ngramDB: NGramStore): List[NGramData] = {
 
       var list = List[NGramData]()
       val limit = math.min(MAX_NGRAM_LENGTH, tokens.length - used)
@@ -110,15 +108,23 @@ package cluster.ngram {
      */
     def NGramDropOne(sentence: Sentence) =
       {
-        val n = sentence.tokens.length
+        // filter out john and sally's names
+        val tokens = sentence.tokens filterNot (x => x.word == "John" || x.word == "Sally" || x.word == "and")
+        val n = tokens.length
+
         val toks = Array.ofDim[Token](n - 1)
         for (i <- 0 until n - 1) {
-          toks(i) = sentence.tokens(i)
+          val oldTok = tokens(i)
+          if (oldTok.word == "John" || oldTok.word == "Sally") {
+            toks(i) = oldTok
+          } else {
+            toks(i) = Token(oldTok.id, oldTok.word.toLowerCase(), oldTok.pos, oldTok.lemma.toLowerCase(), oldTok.ner)
+          }
+
         }
 
         new NGramData(sentence, List[List[Token]](), 0, toks)
       }
   }
-  
- 
+
 }

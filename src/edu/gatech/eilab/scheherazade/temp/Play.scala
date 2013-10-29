@@ -12,7 +12,11 @@ import cc.mallet.optimize._
 object Play {
 
   def main(args: Array[String]) {
-    testMulti()
+    val a = DenseVector(1, 2, 3, 4)
+    val b = DenseVector(1, 2, 3, 4)
+    println(a)
+    println(a :* b)
+    println(a dot b)
   }
 
   def testMulti() {

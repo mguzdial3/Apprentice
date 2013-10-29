@@ -37,8 +37,12 @@ package cluster.ngram {
 
     override def ngramExists(ngrams: List[Token]): Boolean =
       {
+
         val string = ngrams.map(_.word).mkString(" ")
-        store.contains(string)
+        if (string.contains("John") || string.contains("Sally")) 
+          false
+        else
+          store.contains(string)
       }
 
     override def textExists(key: String): Boolean =
