@@ -131,28 +131,7 @@ object HMMModel2 {
       new NGramCorpus(oldCorpus.ngrams, newVectors.toMap, oldCorpus.stories)
     }
   
-  def normalizeLogProb(prob:Array[Double]) : Array[Double] =
-  {
-    val sum = prob.sum
-    val size = prob.size
-    val mean = sum / size
-    
-    val newProb = Array.ofDim[Double](size)
-    
-    var divider = 0.0
-    for (i <- 0 until size)
-    {
-      newProb(i) = prob(i) - mean
-      divider = math.exp(newProb(i))
-    }        
-    
-    for (i <- 0 until size)
-    {
-      newProb(i) = newProb(i) - math.log(divider)
-    }
-    
-    newProb
-  }
+
 
   def train(oldCorpus: NGramCorpus): DenseVector[Int] = {
     println("s = " + ALPHA_SUM + " vector length = " + DESIRED_DIMENSION)
@@ -229,12 +208,12 @@ object HMMModel2 {
           }
           
           // normalization
-          prob(i) = normalizeLogProb(prob(i))
+          prob(i) = Utils.normalizeLogProb(prob(i))
         }
 
         //val time = System.currentTimeMillis()
         // run the ILP
-        val ilp = new HMMAssignment(prob, transition)
+        val ilp = new HMMAssignment(prob, Utils.logMat(transition))
         val assignment = ilp.solve
         
         //println("time used = " + (System.currentTimeMillis() - time) / 1000.0)
