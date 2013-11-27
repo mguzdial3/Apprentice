@@ -193,7 +193,7 @@ object PageRank {
     val map = g.nodes.map {
       node =>
         val score = events.find(pair => pair._1 == node.name).get._2
-        val newName = node.name + " " + ("%1.2f" format (score / median))
+        val newName = node.name + " " + ("%1.2f" format (score / median)) // median normalized to 1
         node -> newName
     }.toMap
 
