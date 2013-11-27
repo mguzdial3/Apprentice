@@ -1,8 +1,7 @@
 package edu.gatech.eilab.scheherazade.cluster.ngram
 import java.io._
 /**
- * Each cluster is now modelled as a multinomial distribution instead of a dirichlet distribution
- * This is based on GenModel
+ * Adding a markov model to NewGenModel
  *
  */
 import breeze.stats.distributions._
@@ -11,9 +10,7 @@ import breeze.linalg.DenseVector
  * a n-gram generative model for clustering sentences
  *
  */
-object NewGenModel {
-
-  val SMALL = 1e-8
+object NewGenModel2 {
 
   def train(corpus: NGramCorpus): Array[Int] = {
 
@@ -57,13 +54,11 @@ object NewGenModel {
     var q = Array.fill(numSents, m.max)(DenseVector.zeros[Double](dimension))
 
     //val pw = new PrintWriter(new BufferedOutputStream(new FileOutputStream("print.txt")))
-    var diverseY = Array.fill(numSents)(0)
-    var used = 0
+
     for (iter <- 1 to numIterations) {
 
       println("iteration: " + iter)
-      val oldY = y.copy
-
+      val oldY = y
       //pw.println("iteration: " + iter)
       /** E-Step **/
       /** Step 1: computing y = argmax P(x,z|y) **/
@@ -89,13 +84,6 @@ object NewGenModel {
 
         y(i) = maxY
         //println(y(i))
-      }
-
-      val distinctY = y.toArray.toList.distinct
-      println("non-empty clusters:" + distinctY.mkString(" ") + " (" + distinctY.size + ")")
-      if (distinctY.size >= used) {
-        used = distinctY.size
-        diverseY = y.toArray
       }
 
       if ((oldY - y).norm(1) < 0.01 || iter == numIterations) {
@@ -125,23 +113,17 @@ object NewGenModel {
         }
 
         pi(c) = newPi / newPi.sum
-        for (k <- 0 until dimension) {
-          if (pi(c)(k) < SMALL)
-            pi(c)(k) = SMALL
-        }
       }
 
       val empty = (0 until numClusters) filterNot (y.toArray.toList.distinct contains)
       for (c <- empty) {
-        // regenerate
-        if (math.random < 0.9) {
-          val v = DenseVector.rand(dimension)
-          pi(c) = v / v.sum
-        }
+        // regenerate 
+        val v = DenseVector.rand(dimension)
+        pi(c) = v / v.sum
       }
 
     }
 
-    diverseY.toArray
+    y.toArray
   }
 }

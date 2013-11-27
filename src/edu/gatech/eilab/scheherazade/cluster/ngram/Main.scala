@@ -85,7 +85,6 @@ package cluster.ngram {
           for (j <- 0 until list(storyId).length) {
             val sentId = list(storyId)(j)._1
             
-
             val textList = list(storyId)(j)._2.getNGramsString()
 
             var validNGrams = List[String]()
@@ -198,7 +197,7 @@ package cluster.ngram {
 
     def cluster(sents: List[Sentence], corpus: NGramCorpus): List[Cluster] = {
 
-      val clustering = HMMModel2.train(corpus)
+      val clustering = NewGenModel.train(corpus)
       val length = clustering.max
 
       var clusters = List[Cluster]()

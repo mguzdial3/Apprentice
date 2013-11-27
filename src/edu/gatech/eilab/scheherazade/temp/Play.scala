@@ -12,11 +12,29 @@ import cc.mallet.optimize._
 object Play {
 
   def main(args: Array[String]) {
-    val a = DenseVector(1, 2, 3, 4)
-    val b = DenseVector(1, 2, 3, 4)
-    println(a)
-    println(a :* b)
-    println(a dot b)
+    val da = Dirichlet.sym(10000, 1000)
+    val db = Dirichlet.sym(0.1, 1000)
+    
+    for (i <- 0 to 5) {
+      val t = da.draw
+      //print(t)
+      var ent = 0.0
+      for (j <- 0 until 5) {
+        ent += math.log(t(j)) * t(j)
+      }
+      println(" " + -1*ent)
+    }
+
+    println("****")
+    for (i <- 0 to 5) {
+      val t = db.draw
+      //print(t)
+      var ent = 0.0
+      for (j <- 0 until 5) {
+        ent += math.log(t(j)) * t(j)
+      }
+      println(" " + -1*ent)
+    }
   }
 
   def testMulti() {
