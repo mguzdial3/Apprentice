@@ -5,6 +5,8 @@ import breeze.linalg._
 import java.io._
 import cc.mallet.optimize._
 import scala.collection.mutable.ListBuffer
+import edu.gatech.eilab.scheherazade.data._
+import edu.gatech.eilab.scheherazade.cluster.metric._
 /**
  * a correct version of EM
  *
@@ -130,10 +132,8 @@ object HMMModel2 {
 
       new NGramCorpus(oldCorpus.ngrams, newVectors.toMap, oldCorpus.stories)
     }
-  
 
-
-  def train(oldCorpus: NGramCorpus): DenseVector[Int] = {
+  def train(oldCorpus: NGramCorpus, sents: List[Sentence], gold: List[Cluster]): DenseVector[Int] = {
     println("s = " + ALPHA_SUM + " vector length = " + DESIRED_DIMENSION)
     val corpus = performLargerPCA(oldCorpus)
     val numSents = corpus.ngrams.length
@@ -144,7 +144,7 @@ object HMMModel2 {
     // manually set parameters
 
     val maxIterations = 40
-    
+
     //val baseObservation = DenseVector.ones[Double](numClusters) * math.max(1.0, numSents / numClusters / 4)
     //var yPrior = Multinomial(baseObservation / baseObservation.sum)
 
@@ -172,8 +172,9 @@ object HMMModel2 {
     var theta = generateDirichlet(components, DIMENSION, numClusters).toArray
 
     var transition = Array.fill(numClusters, numClusters)(1.0 / numClusters)
+    var alpha = Array.fill(numClusters)(1.0 / numClusters)
     var portion = Array.fill(numClusters)(1.0 / numClusters)
-    
+
     for (iter <- 1 to maxIterations) {
 
       println("iteration: " + iter)
@@ -204,18 +205,19 @@ object HMMModel2 {
               product += p
             }
 
-            prob(i)(j) = product + math.log(portion(j))
+            prob(i)(j) = product //+ math.log(portion(j))
           }
-          
+
           // normalization
           prob(i) = Utils.normalizeLogProb(prob(i))
         }
 
         //val time = System.currentTimeMillis()
         // run the ILP
-        val ilp = new HMMAssignment(prob, Utils.logMat(transition))
+
+        val ilp = new HMMAssignmentOld(prob, transition)
         val assignment = ilp.solve
-        
+        print(".")
         //println("time used = " + (System.currentTimeMillis() - time) / 1000.0)
 
         for (i <- 0 until sentences.length) {
@@ -240,8 +242,14 @@ object HMMModel2 {
       //      val answer = readLine.trim
       //      if (answer == "y" || answer == "Y") return y
 
+      /** evaluation **/
+      val foundClusters = NGramizer.peelClusters(y, sents)
+      val noGarbage = foundClusters.filterNot(_.members.size < 4)
+      val (p1, r1, p2, r2, purity) = ClusterMetric.evaluate(noGarbage, gold.filterNot(_.members.size < 4))
+
       /** M-step **/
       /** compute theta **/
+      println("m-step")
 
       (0 until numClusters).par.foreach { i =>
         var count = 0.0
@@ -306,6 +314,8 @@ object HMMModel2 {
       /** compute transition probability **/
 
       transition = Array.fill(numClusters, numClusters)(0.0)
+      alpha = Array.fill(numClusters)(0.0)
+
       for (s <- 0 until numStories) {
         val sentences = corpus.stories(s)
         for (i <- 0 until sentences.length - 1) {
@@ -313,34 +323,43 @@ object HMMModel2 {
           val nextCluster = y(sentences(i + 1))
           transition(currentCluster)(nextCluster) += 1 // record all transitions
         }
+
+        val start = y(sentences(0))
+        alpha(start) += 1
       }
 
       // before normalization: makes sure nothing is zero
       for (i <- 0 until numClusters; j <- 0 until numClusters) {
-        if (transition(i)(j) < SMALL) {
-          transition(i)(j) = SMALL
-        }
+        //if (transition(i)(j) < 0.01) {
+        transition(i)(j) += 0.01
+        //}
+      }
+
+      for (i <- 0 until numClusters) {
+        alpha(i) += 0.01
       }
 
       // perform normalization
       for (i <- 0 until numClusters) {
         val sum = transition(i).sum
         for (j <- 0 until numClusters) {
-          transition(i)(j) = transition(i)(j) / sum 
+          transition(i)(j) = transition(i)(j) / sum
         }
       }
-      
+
+      val s = alpha.sum
+      alpha = alpha.map(_ / s)
+
       // compute the portion of each cluster
-      portion = Array.fill(numClusters)(1.0)      
-      for (i <- 0 until numSents)
-      {
-        portion(y(i)) += 1
-      }
-      
-      for (i <- 0 until numClusters)
-      {
-        portion(i) += portion(i) / (numClusters + numSents)
-      }
+      //      portion = Array.fill(numClusters)(1.0)
+      //      for (i <- 0 until numSents) {
+      //        portion(y(i)) += 1
+      //      }
+      //
+      //      for (i <- 0 until numClusters) {
+      //        portion(i) += portion(i) / (numClusters + numSents)
+      //      }
+
     }
 
     y

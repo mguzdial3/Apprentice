@@ -108,7 +108,7 @@ object NewGenModel {
       for (i <- 0 until numSents; j <- 0 until m(i)) {
         val text = corpus.ngrams(i)(j)
         val textVector = corpus.vectors(text)
-        q(i)(j) = ProbUtils.normalizeLogProb {
+        q(i)(j) = Utils.normalizeLogProb {
           pi(y(i)).map(math.log) + textVector.map(math.log)
         }
 

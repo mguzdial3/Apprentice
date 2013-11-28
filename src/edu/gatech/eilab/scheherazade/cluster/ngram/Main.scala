@@ -60,7 +60,7 @@ package cluster.ngram {
 
         ngramDB.init()
         //val string = "John took a piece of paper and made a paper plane" //"John opened the bank door"
-       
+
         val list = stories.map {
           story =>
 
@@ -79,12 +79,12 @@ package cluster.ngram {
         val sentIdMap = Array.ofDim[Array[Int]](list.length)
 
         for (storyId <- 0 until list.length) {
-          
+
           sentIdMap(storyId) = list(storyId).map(_._1)
-          
+
           for (j <- 0 until list(storyId).length) {
             val sentId = list(storyId)(j)._1
-            
+
             val textList = list(storyId)(j)._2.getNGramsString()
 
             var validNGrams = List[String]()
@@ -144,20 +144,20 @@ package cluster.ngram {
         val str = vector.toArray.mkString("\t")
         pw.println(str)
       }*/
-      
-//      pw.println("s, dimension, MUC P, MUC R, B^3 P, B^3 R, Purity")
-//      for (dimension <- 140 to 140 by 20) {
-//        //GenModel2.DESIRED_DIMENSION = dimension
-//        for (iteration <- 0 to 0) {
-//          //GenModel2.ALPHA_SUM = dimension * 10 + 2 * dimension * iteration
-          val foundClusters = cluster(sents, ngramCorpus)
-          val noGarbage = foundClusters.filterNot(_.members.size < 4)
-          val (p1, r1, p2, r2, purity) = ClusterMetric.evaluate(noGarbage, gold)
-          //pw.println(ILPModel3.ALPHA_SUM + ", " + dimension + ", " + p1 + ", " + r1 + ", " + p2 + ", " + r2 + ", " + purity)
-//        }
-//
-//        pw.flush
-//      }
+
+      //      pw.println("s, dimension, MUC P, MUC R, B^3 P, B^3 R, Purity")
+      //      for (dimension <- 140 to 140 by 20) {
+      //        //GenModel2.DESIRED_DIMENSION = dimension
+      //        for (iteration <- 0 to 0) {
+      //          //GenModel2.ALPHA_SUM = dimension * 10 + 2 * dimension * iteration
+      val foundClusters = cluster(sents, ngramCorpus, gold)
+      val noGarbage = foundClusters.filterNot(_.members.size < 4)
+      val (p1, r1, p2, r2, purity) = ClusterMetric.evaluate(noGarbage, gold)
+      //pw.println(ILPModel3.ALPHA_SUM + ", " + dimension + ", " + p1 + ", " + r1 + ", " + p2 + ", " + r2 + ", " + purity)
+      //        }
+      //
+      //        pw.flush
+      //      }
 
       //pw.close
     }
@@ -195,28 +195,32 @@ package cluster.ngram {
 
     }
 
-    def cluster(sents: List[Sentence], corpus: NGramCorpus): List[Cluster] = {
+    def cluster(sents: List[Sentence], corpus: NGramCorpus, gold:List[Cluster]): List[Cluster] = {
 
-      val clustering = NewGenModel.train(corpus)
+      val clustering = HMMModelFix.train(corpus)
+      peelClusters(clustering, sents)
+    }
+
+    def peelClusters(clustering:DenseVector[Int], sents: List[Sentence]): List[Cluster] = {
+      
       val length = clustering.max
-
       var clusters = List[Cluster]()
+      
       for (i <- 0 to length) {
         var members = List[Sentence]()
-        println("Cluster: " + i)
+        //println("Cluster: " + i)
         for (s <- sents) {
           if (clustering(s.id) == i) {
-            println(s.toSimpleString)
+            //println(s.toSimpleString)
             members = s :: members
           }
         }
-        println("*****\n")
+        //println("*****\n")
         if (members != Nil) {
           val newCluster = new Cluster("C" + i, members)
           clusters = newCluster :: clusters
         }
       }
-
       clusters
     }
 
@@ -230,13 +234,13 @@ package cluster.ngram {
 
       while (!found && !queue.isEmpty) {
         val s = queue.dequeue
-        
+
         if (s.isComplete) {
           found = true
           solution = s
         } else {
           val splits = s.nextSplit(ngramDB)
-          
+
           for (sp <- splits) {
             //println("    " + sp.solutionString + " , cost = " + sp.cost)
             queue.enqueue(sp)
