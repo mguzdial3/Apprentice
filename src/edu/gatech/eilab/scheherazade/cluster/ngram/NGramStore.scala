@@ -78,7 +78,7 @@ package cluster.ngram {
         val VECTOR_LENGTH = 20
 
         // file prefix:
-        val prefix = "../phraseClusters/phraseClusters."
+        val prefix = "../../phraseClusters/phraseClusters."
         val suffix = ".txt.gz"
 
         // 1000 column vectors
@@ -128,7 +128,7 @@ package cluster.ngram {
       val VECTOR_LENGTH = 20
 
       // file prefix:
-      val prefix = "../phraseClusters/phraseClusters."
+      val prefix = "../../phraseClusters/phraseClusters."
       val suffix = ".txt.gz"
 
       for (i <- 1 to 10) {

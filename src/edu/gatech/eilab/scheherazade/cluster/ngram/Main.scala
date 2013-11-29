@@ -42,7 +42,7 @@ package cluster.ngram {
 
       val ngramDB: NGramStore = new NGramMemory()
 
-      Global.switchDataSet("Airport")
+      Global.switchDataSet("Movie")
       val configFile = Global.configFile
       val parseFile = Global.parseFile
 
@@ -54,14 +54,14 @@ package cluster.ngram {
       }(Global.parseFile)
 
       stories = parser()
-      val sents = stories.flatMap(_.members)
+      var sents = stories.flatMap(_.members)
 
       def ngramFunc() = CachedOperation {
 
         ngramDB.init()
         //val string = "John took a piece of paper and made a paper plane" //"John opened the bank door"
-       
-        val list = stories.map {
+
+        val sentIdToNgrams = stories.map {
           story =>
 
             story.members.map {
@@ -74,19 +74,18 @@ package cluster.ngram {
 
         val map = scala.collection.mutable.HashMap[String, DenseVector[Double]]()
 
-        val ngramsArray = Array.ofDim[Array[String]](sents.size)
+        val ngramsArray = Array.ofDim[Array[String]](sents.size) // ngrams of each sentence
 
-        val sentIdMap = Array.ofDim[Array[Int]](list.length)
+        val sentIdMap = Array.ofDim[Array[Int]](sentIdToNgrams.length) // maps story id to an array of sentence id
 
-        for (storyId <- 0 until list.length) {
-          
-          sentIdMap(storyId) = list(storyId).map(_._1)
-          
-          for (j <- 0 until list(storyId).length) {
-            val sentId = list(storyId)(j)._1
-            
+        for (storyId <- 0 until sentIdToNgrams.length) {
 
-            val textList = list(storyId)(j)._2.getNGramsString()
+          sentIdMap(storyId) = sentIdToNgrams(storyId).map(_._1) 
+
+          for (j <- 0 until sentIdToNgrams(storyId).length) {
+            val sentId = sentIdToNgrams(storyId)(j)._1
+
+            val textList = sentIdToNgrams(storyId)(j)._2.getNGramsString()
 
             var validNGrams = List[String]()
 
@@ -98,6 +97,7 @@ package cluster.ngram {
 
                   var dense = ngramDB(ng).toDenseVector
 
+                  /* disabled normalization
                   dense = dense / dense.sum * (1 - 980 * VERY_SMALL)
                   /* the rational behind this normalization is that 
                  * this vector has only 20 non-zero components, so the rest will be VERY_SMALL                 
@@ -107,7 +107,7 @@ package cluster.ngram {
                     if (dense(i) == 0)
                       dense(i) = VERY_SMALL
                   }
-
+                   */
                   //dense = dense / dense.sum
 
                   map += ((ng -> dense))
@@ -121,27 +121,45 @@ package cluster.ngram {
 
         new NGramCorpus(ngramsArray, map.toMap, sentIdMap)
 
-      }(new File("AirportNgram.lzma"))
+      }(new File("MovieNgram.lzma"))
 
       println("reading ngram data...")
 
-      val ngramCorpus = ngramFunc()
+      var ngramCorpus = ngramFunc()
 
-      val pw = new PrintWriter(new BufferedOutputStream(new FileOutputStream("nonsense.log")))
-      pw.println("s, dimension, MUC P, MUC R, B^3 P, B^3 R, Purity")
-      for (dimension <- 140 to 140 by 20) {
+      //val pw = new PrintWriter(new BufferedOutputStream(new FileOutputStream("nonsense.log")))
+      //pw.println("s, dimension, MUC P, MUC R, B^3 P, B^3 R, Purity")
+      //for (dimension <- 140 to 140 by 20) {
         //GenModel2.DESIRED_DIMENSION = dimension
-        for (iteration <- 0 to 0) {
+        for (iteration <- 0 to 3) {
           //GenModel2.ALPHA_SUM = dimension * 10 + 2 * dimension * iteration
-          val foundClusters = cluster(sents, ngramCorpus)
-          val (p1, r1, p2, r2, purity) = ClusterMetric.evaluate(foundClusters, gold)
-          pw.println(ILPModel3.ALPHA_SUM + ", " + dimension + ", " + p1 + ", " + r1 + ", " + p2 + ", " + r2 + ", " + purity)
+          val foundClusters = cluster(sents, ngramCorpus, gold)
+          ClusterMetric.evaluate(foundClusters, gold)
+          val t = discardSmallClusters(sents, foundClusters, ngramCorpus)
+          sents = t._1
+          ngramCorpus = t._2
+          //val (p1, r1, p2, r2, purity) = ClusterMetric.evaluate(foundClusters, gold)
+          //pw.println(ILPModel3.ALPHA_SUM + ", " + dimension + ", " + p1 + ", " + r1 + ", " + p2 + ", " + r2 + ", " + purity)
         }
 
-        pw.flush
-      }
+        //pw.flush
+      //}
 
-      pw.close
+      //pw.close
+    }
+    
+    def discardSmallClusters(sents:List[Sentence], clusters:List[Cluster], corpus:NGramCorpus):(List[Sentence], NGramCorpus) =
+    {
+      val discarded = clusters.filter(_.members.size < 4).flatMap(_.members)
+      val story2Sent = corpus.stories.map{
+        story =>
+          story.filterNot(discarded contains)
+      }
+      
+      val newSents = sents.filterNot(discarded contains _.id)
+      
+      val newCorpus = new NGramCorpus(corpus.ngrams, corpus.vectors, story2Sent)
+      (newSents, newCorpus)
     }
 
     def testProbabilities(corpus: NGramCorpus) {
@@ -177,28 +195,42 @@ package cluster.ngram {
 
     }
 
-    def cluster(sents: List[Sentence], corpus: NGramCorpus): List[Cluster] = {
+    def cluster(sents: List[Sentence], corpus: NGramCorpus, gold: List[Cluster]): List[Cluster] = {
 
-      val clustering = HMMModel2.train(corpus)
+      val clustering = HMMModel3.train(corpus, sents, gold)
+      peelClusters(sents, clustering, true)
+
+    }
+
+    def peelClusters(sents: List[Sentence], clustering: DenseVector[Int], verbose:Boolean = false):List[Cluster] = {
       val length = clustering.max
-
       var clusters = List[Cluster]()
       for (i <- 0 to length) {
         var members = List[Sentence]()
-        println("Cluster: " + i)
+        if (verbose){
+        	println("Cluster: " + i)
+        }
+        
         for (s <- sents) {
           if (clustering(s.id) == i) {
-            println(s.toSimpleString)
+            if (verbose)
+            {
+            	println(s.toSimpleString)
+            }            
             members = s :: members
           }
         }
-        println("*****\n")
+        
+        if(verbose)
+        {
+        	println("*****\n")
+        }
         if (members != Nil) {
           val newCluster = new Cluster("C" + i, members)
           clusters = newCluster :: clusters
         }
       }
-
+      
       clusters
     }
 

@@ -5,7 +5,7 @@ import net.sf.javailp._
  *  @param probs: probs(i, j) is the log probability of sentence i belonging to cluster j
  *  @param transition: transition(i, j) is the log probability (freq) of cluster i followed by cluster j
  */
-class HMMAssignment(probs: Array[Array[Double]], transition: Array[Array[Double]]) {
+class HMMAssignment2(probs: Array[Array[Double]], transition: Array[Array[Double]], alpha: Array[Double]) {
 
   def saveParam() {
     import java.io._
@@ -44,7 +44,24 @@ class HMMAssignment(probs: Array[Array[Double]], transition: Array[Array[Double]
     val problem = new Problem();
 
     var objective = new Linear();
-    for (i <- 0 until numSents; j <- 0 until numClusters; k <- 0 until numClusters) {
+
+    for (j <- 0 until numClusters; k <- 0 until numClusters) {
+      // first sentence
+      val v0 = "z" + 0 + "" + "c" + j + "c" + k
+      objective.add(alpha(j) + probs(0)(j) + transition(j)(k), v0)
+      problem.setVarLowerBound(v0, 0);
+      problem.setVarUpperBound(v0, 1);
+      problem.setVarType(v0, classOf[Integer])
+
+      // last sentence
+      val vN = "z" + (numSents - 1) + "" + "c" + j + "c" + k
+      objective.add(probs(numSents - 1)(j), v0)
+      problem.setVarLowerBound(vN, 0);
+      problem.setVarUpperBound(vN, 1);
+      problem.setVarType(vN, classOf[Integer])
+    }
+
+    for (i <- 1 until numSents - 1; j <- 0 until numClusters; k <- 0 until numClusters) {
       val variable = "z" + i + "" +
         "c" + j + "c" + k
       objective.add(probs(i)(j) + transition(j)(k), variable)
@@ -126,10 +143,10 @@ class HMMAssignment(probs: Array[Array[Double]], transition: Array[Array[Double]
 
 }
 
-object HMMAssignment {
-
-  val factory = new SolverFactoryGLPK()
-  factory.setParameter(Solver.TIMEOUT, 100000); // set timeout to 1000 seconds
-  factory.setParameter(Solver.VERBOSE, 0);
-
-}
+//object HMMAssignment {
+//
+//  val factory = new SolverFactoryGLPK()
+//  factory.setParameter(Solver.TIMEOUT, 100000); // set timeout to 1000 seconds
+//  factory.setParameter(Solver.VERBOSE, 0);
+//
+//}

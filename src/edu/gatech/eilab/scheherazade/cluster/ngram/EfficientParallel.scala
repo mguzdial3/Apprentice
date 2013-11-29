@@ -12,27 +12,17 @@ object EfficientParallelPCA {
   val NUM_THREADS = 6
 
   def main(args: Array[String]) {
-        val m = loadMatrix
-    
-        val (realValues, imaginaryValues, eigVectors) = eig(m)
-    
-        val pw = new PrintWriter(new BufferedOutputStream(new FileOutputStream("pcabasis.txt")))
-    
-        for (i <- 0 to 998) {
-          val vi = eigVectors(::, i)
-          val vj = eigVectors(::, i+1)
+    val m = loadMatrix
+    //breeze.linalg.useNativeLibraries(true)
+    val (realValues, imaginaryValues, eigVectors) = eig(m)
 
-//          print(realValues(i))
-//          print(" ")
-//          print(vi.dot(vi))
-//          print(" ")
-//          println(vi.dot(vj))
-//          print(vi dot vi)
-//          print(vi dot vi)
-          pw.println(eigVectors(::, i).toArray.mkString(", "))
-        }
-    
-        pw.close
+    val pw = new PrintWriter(new BufferedOutputStream(new FileOutputStream("pcabasis.txt")))
+
+    for (i <- 0 to 999) {
+      pw.println(eigVectors(::, i).toArray.mkString(", "))
+    }
+
+    pw.close
 
     //computeMatrix()
   }
