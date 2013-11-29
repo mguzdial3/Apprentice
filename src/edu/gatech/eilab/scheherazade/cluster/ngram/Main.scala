@@ -195,17 +195,17 @@ package cluster.ngram {
 
     }
 
-    def cluster(sents: List[Sentence], corpus: NGramCorpus, gold:List[Cluster]): List[Cluster] = {
+    def cluster(sents: List[Sentence], corpus: NGramCorpus, gold: List[Cluster]): List[Cluster] = {
 
-      val clustering = HMMModelFix.train(corpus)
+      val clustering = HMMModel2.train(corpus, sents, gold)
       peelClusters(clustering, sents)
     }
 
-    def peelClusters(clustering:DenseVector[Int], sents: List[Sentence]): List[Cluster] = {
-      
+    def peelClusters(clustering: DenseVector[Int], sents: List[Sentence]): List[Cluster] = {
+
       val length = clustering.max
       var clusters = List[Cluster]()
-      
+
       for (i <- 0 to length) {
         var members = List[Sentence]()
         //println("Cluster: " + i)

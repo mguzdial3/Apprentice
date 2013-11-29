@@ -9,22 +9,22 @@ object Utils {
    */
   def normalizeLogProb(prob: Array[Double]): Array[Double] =
     {
-      val sum = prob.sum
+      //val sum = prob.sum
       val size = prob.size
-      val mean = sum / size
+      val max = prob.max
 
       val newProb = Array.ofDim[Double](size)
 
       var divider = 0.0
       for (i <- 0 until size) {
-        newProb(i) = prob(i) - mean
-        divider += math.exp(newProb(i))
+        newProb(i) = math.exp(prob(i) - max + 2) + 1e-6
+        divider += newProb(i)
       }
 
       val substractee = math.log(divider)
 
       for (i <- 0 until size) {
-        newProb(i) = newProb(i) - substractee
+        newProb(i) = math.log(newProb(i)) - substractee
       }
 
       newProb
@@ -34,18 +34,18 @@ object Utils {
     {
       val sum = prob.sum
       val size = prob.size
-      val mean = sum / size
+      val max = prob.max
 
       val newProb = DenseVector.zeros[Double](size)
 
       var divider = 0.0
       for (i <- 0 until size) {
-        newProb(i) = prob(i) - mean
-        divider += math.exp(newProb(i))
+        newProb(i) = math.exp(prob(i) - max + 2) + 1e-6
+        divider += newProb(i)
       }
 
       for (i <- 0 until size) {
-        newProb(i) = newProb(i) - math.log(divider)
+        newProb(i) = math.log(newProb(i)) - math.log(divider)
       }
 
       newProb

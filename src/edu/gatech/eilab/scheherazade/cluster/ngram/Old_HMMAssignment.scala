@@ -5,10 +5,9 @@ import net.sf.javailp._
  *  @param probs: probs(i, j) is the log probability of sentence i belonging to cluster j
  *  @param transition: transition(i, j) is the log probability (freq) of cluster i followed by cluster j
  */
-class HMMAssignment(probs: Array[Array[Double]], transition: Array[Array[Double]]) {
+class HMMAssignmentOld(probs: Array[Array[Double]], transition: Array[Array[Double]]) {
 
   def solve() = {
-    //println("glpk")
     val numSents = probs.length
     val numClusters = probs(0).length
     val problem = new Problem();
@@ -17,7 +16,7 @@ class HMMAssignment(probs: Array[Array[Double]], transition: Array[Array[Double]
     for (i <- 0 until numSents; j <- 0 until numClusters; k <- 0 until numClusters) {
       val variable = "z" + i + "" +
         "c" + j + "c" + k
-      objective.add(probs(i)(k) + transition(j)(k), variable)
+      objective.add(probs(i)(j) + transition(j)(k), variable)
       problem.setVarLowerBound(variable, 0);
       problem.setVarUpperBound(variable, 1);
       problem.setVarType(variable, classOf[Integer])
@@ -50,33 +49,32 @@ class HMMAssignment(probs: Array[Array[Double]], transition: Array[Array[Double]
     	problem.add("consistent" + i + "c" + j + "c" + k, constraint, "<=", 1)
     }*/
 
-    /*
-    for (i <- 2 until numSents; j <- 0 until numClusters) {
+    for (i <- 0 until numSents - 1; k <- 0 until numClusters) {
       val constraint = new Linear()
-      for (k <- 0 until numClusters) {
+      for (j <- 0 until numClusters) {
         val v1 = "z" + i + "c" + j + "c" + k
         constraint.add(1, v1)
       }
       
-      for (jp <- 0 until numClusters) {
-        val v2 = "z" + (i - 1) + "c" + jp + "c" + j
+      for (kp <- 0 until numClusters) {
+        val v2 = "z" + (i + 1) + "c" + k + "c" + kp
         constraint.add(-1, v2)
       }
 
-      problem.add("consistent" + i + "c" + j, constraint, "=", 0)
-    }*/
+      problem.add("consistent" + i + "c" + k, constraint, "=", 0)
+    }
 
     // each cluster can contain only one sentence
-    for (k <- 0 until numClusters) {
+    for (j <- 0 until numClusters) {
       val constraint = new Linear()
-      for (i <- 0 until numSents; j <- 0 until numSents) {
+      for (i <- 0 until numSents; k <- 0 until numSents) {
         val variable = "z" + i + "c" + j + "c" + k
         constraint.add(1, variable)
       }
-      problem.add("1SentPerCluster" + k, constraint, "<=", 1)
+      problem.add("1SentPerCluster" + j, constraint, "<=", 1)
     }
 
-    var solver = HMMAssignment.factory.get(); // you should use this solver only once for one problem
+    var solver = HMMAssignmentOld.factory.get(); // you should use this solver only once for one problem
     var result = solver.solve(problem);
 
     //println(result)
@@ -87,7 +85,7 @@ class HMMAssignment(probs: Array[Array[Double]], transition: Array[Array[Double]
         val variable = "z" + i + "c" + j + "c" + k
 
         if (result.get(variable).intValue() == 1) {
-          answer(i) = k
+          answer(i) = j
         }
       }
     }
@@ -97,10 +95,10 @@ class HMMAssignment(probs: Array[Array[Double]], transition: Array[Array[Double]
 
 }
 
-object HMMAssignment {
+object HMMAssignmentOld {
 
   val factory = new SolverFactoryGLPK()
   factory.setParameter(Solver.TIMEOUT, 100000); // set timeout to 1000 seconds
-  factory.setParameter(Solver.VERBOSE, 1);
+  factory.setParameter(Solver.VERBOSE, 0);
 
 }
