@@ -1,91 +1,96 @@
 package edu.gatech.eilab.scheherazade.cluster.ngram
-
-import gurobi._
+import net.sf.javailp._
 /**
  * solves ilp assignment problem for the dirichlet model
  *  @param probs: probs(i, j) is the log probability of sentence i belonging to cluster j
  *  @param transition: transition(i, j) is the log probability (freq) of cluster i followed by cluster j
- *
- *  Nov 26 2013: Modified to use Gurobi and corrected mistakes
  */
 class HMMAssignment(probs: Array[Array[Double]], transition: Array[Array[Double]]) {
 
   def solve() = {
-    val env = new GRBEnv("graph_qp.log")
-    env.set(GRB.DoubleParam.TimeLimit, 2000)
-    val model = new GRBModel(env)
+    //println("glpk")
     val numSents = probs.length
     val numClusters = probs(0).length
+    val problem = new Problem();
 
-    // put all variables here
-    val varMat = Array.ofDim[GRBVar](numSents, numClusters, numClusters)
-
-    val objective = new GRBLinExpr()
+    var objective = new Linear();
     for (i <- 0 until numSents; j <- 0 until numClusters; k <- 0 until numClusters) {
-      val varName = "z" + i + "" +
+      val variable = "z" + i + "" +
         "c" + j + "c" + k
-      val variable = model.addVar(0.0, 1.0, 0.0, GRB.INTEGER, varName)
-      objective.addTerm(probs(i)(k) + transition(j)(k), variable)
-      varMat(i)(j)(k) = variable
+      objective.add(probs(i)(k) + transition(j)(k), variable)
+      problem.setVarLowerBound(variable, 0);
+      problem.setVarUpperBound(variable, 1);
+      problem.setVarType(variable, classOf[Integer])
     }
-    model.update()
 
-    model.setObjective(objective, GRB.MAXIMIZE);
+    problem.setObjective(objective, OptType.MAX);
 
-    // The EXHAUSTIVE constraint: Each sentence (and the subsequent sentence) can belong to only one cluster
+    // each sentence (and the subsequent sentence) can belong to only one cluster
     for (i <- 0 until numSents) {
-      val constraint = new GRBLinExpr()
+      val constraint = new Linear()
       for (j <- 0 until numClusters; k <- 0 until numClusters) {
-        constraint.addTerm(1, varMat(i)(j)(k))
+        val variable = "z" + i + "c" + j + "c" + k
+        constraint.add(1, variable)
       }
-      model.addConstr(constraint, GRB.EQUAL, 1.0, "exhaustive" + i)
+      problem.add("1ClusterPerSent" + i, constraint, "=", 1)
     }
 
     // consistent transitions:
     // for all i, j, k, z_ijk + sum(k' != k, k'') z_i+1, k', k'' = 1
-    for (i <- 1 until numSents; j <- 0 until numClusters) {
-      val constraint = new GRBLinExpr()
+    /*for (i <- 0 until numSents-1; j <- 0 until numClusters; k <- 0 until numClusters) {
+    	val constraint = new Linear()
+    	val v1 = "z" + i + "c" + j + "c" + k
+    	constraint.add(1, v1)
+    	for (kp <- 0 until numClusters if kp != k; kpp <- 0 until numClusters)
+    	{
+    	  val v2 = "z" + (i+1) + "c" + kp + "c" + kpp
+    	  constraint.add(1, v2)
+    	}
+    	
+    	problem.add("consistent" + i + "c" + j + "c" + k, constraint, "<=", 1)
+    }*/
+
+    /*
+    for (i <- 2 until numSents; j <- 0 until numClusters) {
+      val constraint = new Linear()
       for (k <- 0 until numClusters) {
-        val v1 = varMat(i)(j)(k)
-        constraint.addTerm(1, v1)
+        val v1 = "z" + i + "c" + j + "c" + k
+        constraint.add(1, v1)
       }
-
+      
       for (jp <- 0 until numClusters) {
-        val v2 = varMat(i - 1)(jp)(j)
-        constraint.addTerm(-1, v2)
+        val v2 = "z" + (i - 1) + "c" + jp + "c" + j
+        constraint.add(-1, v2)
       }
 
-      model.addConstr(constraint, GRB.EQUAL, 0, "consistency" + i + "c" + j)
-    }
+      problem.add("consistent" + i + "c" + j, constraint, "=", 0)
+    }*/
 
-    // UNIQUE MEMEBERSHIP constraint: each cluster can contain only one sentence
+    // each cluster can contain only one sentence
     for (k <- 0 until numClusters) {
-      val constraint = new GRBLinExpr()
+      val constraint = new Linear()
       for (i <- 0 until numSents; j <- 0 until numSents) {
-        val variable = varMat(i)(j)(k)
-        constraint.addTerm(1, variable)
+        val variable = "z" + i + "c" + j + "c" + k
+        constraint.add(1, variable)
       }
-      model.addConstr(constraint, GRB.LESS_EQUAL, 1, "unique" + k)
+      problem.add("1SentPerCluster" + k, constraint, "<=", 1)
     }
 
-    // solve
-    model.optimize
+    var solver = HMMAssignment.factory.get(); // you should use this solver only once for one problem
+    var result = solver.solve(problem);
 
     //println(result)
 
     val answer = Array.ofDim[Int](numSents)
     for (i <- 0 until numSents) {
       for (j <- 1 until numClusters; k <- 1 until numClusters) {
-        val variable = varMat(i)(j)(k)
+        val variable = "z" + i + "c" + j + "c" + k
 
-        if (variable.get(GRB.DoubleAttr.X) > 0.99) {
+        if (result.get(variable).intValue() == 1) {
           answer(i) = k
         }
       }
     }
-
-    env.dispose()
-    model.dispose()
 
     answer
   }
@@ -94,5 +99,8 @@ class HMMAssignment(probs: Array[Array[Double]], transition: Array[Array[Double]
 
 object HMMAssignment {
 
+  val factory = new SolverFactoryGLPK()
+  factory.setParameter(Solver.TIMEOUT, 100000); // set timeout to 1000 seconds
+  factory.setParameter(Solver.VERBOSE, 1);
 
 }

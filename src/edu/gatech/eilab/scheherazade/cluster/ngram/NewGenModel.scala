@@ -1,7 +1,8 @@
 package edu.gatech.eilab.scheherazade.cluster.ngram
 import java.io._
 /**
- * generative model for ngram data
+ * Each cluster is now modelled as a multinomial distribution instead of a dirichlet distribution
+ * This is based on GenModel
  *
  */
 import breeze.stats.distributions._
@@ -11,6 +12,8 @@ import breeze.linalg.DenseVector
  *
  */
 object NewGenModel {
+
+  val SMALL = 1e-8
 
   def train(corpus: NGramCorpus): Array[Int] = {
 
@@ -51,13 +54,16 @@ object NewGenModel {
     }
 
     // q(z)
-    var q = Array.ofDim[Double](numSents, m.max, dimension)
+    var q = Array.fill(numSents, m.max)(DenseVector.zeros[Double](dimension))
 
     //val pw = new PrintWriter(new BufferedOutputStream(new FileOutputStream("print.txt")))
-
+    var diverseY = Array.fill(numSents)(0)
+    var used = 0
     for (iter <- 1 to numIterations) {
 
       println("iteration: " + iter)
+      val oldY = y.copy
+
       //pw.println("iteration: " + iter)
       /** E-Step **/
       /** Step 1: computing y = argmax P(x,z|y) **/
@@ -85,15 +91,27 @@ object NewGenModel {
         //println(y(i))
       }
 
+      val distinctY = y.toArray.toList.distinct
+      println("non-empty clusters:" + distinctY.mkString(" ") + " (" + distinctY.size + ")")
+      if (distinctY.size >= used) {
+        used = distinctY.size
+        diverseY = y.toArray
+      }
+
+      if ((oldY - y).norm(1) < 0.01 || iter == numIterations) {
+        // converged or max iteration reached
+        return y.toArray
+      }
+
       /** finding q(z_ij) **/
 
       for (i <- 0 until numSents; j <- 0 until m(i)) {
         val text = corpus.ngrams(i)(j)
         val textVector = corpus.vectors(text)
-
-        for (c <- 0 until dimension) {
-          q(i)(j)(c) = pi(y(i))(c) * textVector(c)
+        q(i)(j) = Utils.normalizeLogProb {
+          pi(y(i)).map(math.log) + textVector.map(math.log)
         }
+
       }
 
       /*** M-Step ***/
@@ -103,23 +121,27 @@ object NewGenModel {
       for (c <- 0 until numClusters) {
         val newPi = DenseVector.zeros[Double](dimension)
         for (i <- 0 until numSents if (y(i) == c); j <- 0 until m(i)) {
-          for (d <- 0 until dimension) {
-            newPi(d) += q(i)(j)(d)
-          }
+          newPi += q(i)(j)
         }
 
         pi(c) = newPi / newPi.sum
+        for (k <- 0 until dimension) {
+          if (pi(c)(k) < SMALL)
+            pi(c)(k) = SMALL
+        }
       }
 
       val empty = (0 until numClusters) filterNot (y.toArray.toList.distinct contains)
       for (c <- empty) {
-        // regenerate 
-        val v = DenseVector.rand(dimension)
-        pi(c) = v / v.sum
+        // regenerate
+        if (math.random < 0.9) {
+          val v = DenseVector.rand(dimension)
+          pi(c) = v / v.sum
+        }
       }
 
     }
 
-    y.toArray
+    diverseY.toArray
   }
 }

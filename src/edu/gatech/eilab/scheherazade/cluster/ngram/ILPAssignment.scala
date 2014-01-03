@@ -14,7 +14,7 @@ class ILPAssignment(probs: Array[Array[Double]]) {
 
     var objective = new Linear();
     for (i <- 0 until rows; j <- 0 until cols) {
-      val variable = "z" + i + j      
+      val variable = "z" + i + "c" + j      
       objective.add(probs(i)(j), variable)
       problem.setVarLowerBound(variable, 0);
       problem.setVarUpperBound(variable, 1);
@@ -27,7 +27,7 @@ class ILPAssignment(probs: Array[Array[Double]]) {
     for (i <- 0 until rows) {
       val constraint = new Linear()
       for (j <- 0 until cols) {
-        val variable = "z" + i + j
+        val variable = "z" + i + "c" + j
         constraint.add(1, variable)
       }
       problem.add("rowCons"+i, constraint, "=", 1)
@@ -37,7 +37,7 @@ class ILPAssignment(probs: Array[Array[Double]]) {
     for (j <- 0 until cols) {
       val constraint = new Linear()
       for (i <- 0 until rows) {
-        val variable = "z" + i + j
+        val variable = "z" + i + "c" + j
         constraint.add(1, variable)
       }
       problem.add("colCons"+j, constraint, "<=", 1)
@@ -51,7 +51,7 @@ class ILPAssignment(probs: Array[Array[Double]]) {
     val answer = Array.ofDim[Int](rows)
     for (i <- 0 until rows) {           
       for (j <- 1 until cols) {
-        val variable = "z" + i + j
+        val variable = "z" + i + "c" + j
 
         if (result.get(variable).intValue() == 1) {
           answer(i) = j          
