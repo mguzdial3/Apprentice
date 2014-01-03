@@ -80,6 +80,10 @@ object EdgeIntegerProblem {
       env.dispose()
       model.dispose()
       
+      goodEdges foreach{
+        e => println(e.toString)
+      }
+      
       new Graph(clusters, goodEdges.toList)
     }
 

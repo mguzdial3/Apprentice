@@ -32,7 +32,7 @@ package graph {
      *  The results are summarized in the summary.csv file
      */
     def generateGraphs() {
-      val reader = new ConfigReader("configAir.txt")
+      val reader = new ConfigReader("configRobBest.txt")
       val (stories, clusters) = reader.initData()
       //val (stories, clusters) = reader.initDataFiltered()
 
@@ -76,7 +76,7 @@ package graph {
         for (entry <- hashmap) {
           val name = entry._1
           val (graph, error) = entry._2
-          graph.draw(outputPrefix + name)
+          graph.draw(outputPrefix + name)          
 
           if (name == "original") beforeErr = error
           else if (name == "improved") afterErr = error
