@@ -10,21 +10,30 @@ import graph._
 import similarity._
 import scala.collection.mutable.HashSet
 import scala.collection.mutable.HashMap
-import scalaj.http._
+
 import java.io._
 
 package nlp {
 
-  object GoogleQuery {
+  object Crawler {
+    def takeABreak() {
+      val interval = scala.math.random * 10000 + 20000
+      Thread.sleep(interval.toInt)
+    }
 
-    val ENGLISH = "eng_2012"
-    val ENGLISH_FICTION = "eng_fiction_2012"
-    val corpusID = new HashMap[String, Int]() ++ List((ENGLISH, 15), (ENGLISH_FICTION, 16))
+    /** a 15-20 minute break **/
+    def takeALongBreak() {
+      val interval = scala.math.random * 300000 + 900000
+      Thread.sleep(interval.toInt)
+    }
+  }
+
+  object WordFreqCrawler {
+
     val unigramProb = loadProbability("unigram_prob.txt")
     val unigramFictionProb = loadProbability("unigram_prob_fiction.txt")
     val stopwords = loadStopWords()
-    
-    
+
     def main(args: Array[String]) {
 
       computeMaxMin()
@@ -171,10 +180,10 @@ package nlp {
       if (unigramProb.contains(wordWithPos)) {
         unigramProb(wordWithPos)
       } else {
-        val v1 = queryGoogle(wordWithPos, ENGLISH)
+        val v1 = GoogleQuery.singleQuery(wordWithPos, GoogleQuery.ENGLISH)
         unigramProb += ((wordWithPos -> v1))
 
-        takeABreak()
+        Crawler.takeABreak()
 
         var out = new PrintWriter(new BufferedWriter(new FileWriter("unigram_prob.txt", true)))
         out.println(wordWithPos + ", " + v1)
@@ -187,10 +196,10 @@ package nlp {
       if (unigramFictionProb.contains(wordWithPos)) {
         unigramFictionProb(wordWithPos)
       } else {
-        val v1 = queryGoogle(wordWithPos, ENGLISH_FICTION)
+        val v1 = GoogleQuery.singleQuery(wordWithPos, GoogleQuery.ENGLISH_FICTION)
         unigramFictionProb += ((wordWithPos -> v1))
 
-        takeABreak()
+        Crawler.takeABreak()
 
         var out = new PrintWriter(new BufferedWriter(new FileWriter("unigram_prob_fiction.txt", true)))
         out.println(wordWithPos + ", " + v1)
@@ -237,8 +246,8 @@ package nlp {
         var value = -1.0
 
         do {
-          value = queryGoogle(word, "eng_2012")
-          takeABreak()
+          value = GoogleQuery.singleQuery(word, "eng_2012")
+          Crawler.takeABreak()
         } while (value < 0)
 
         pw.print(word)
@@ -247,17 +256,6 @@ package nlp {
         pw.flush()
       }
       pw.close
-    }
-
-    def takeABreak() {
-      val interval = scala.math.random * 10000 + 20000
-      Thread.sleep(interval.toInt)
-    }
-
-    /** a 15-20 minute break **/
-    def takeALongBreak() {
-      val interval = scala.math.random * 300000 + 900000
-      Thread.sleep(interval.toInt)
     }
 
     def loadStopWords(): HashSet[String] = {
@@ -276,62 +274,5 @@ package nlp {
         else ""
       }
 
-    def queryGoogle(word: String, corpus: String = ENGLISH): Double =
-      {
-        val query = word + ":" + corpus
-        val id = corpusID(corpus).toString
-        val request = Http("https://books.google.com/ngrams/graph").params(("content", query), ("year_start", "1991"),
-          ("year_end", "2000"), ("corpus", id), ("smoothing", "0"), ("share", ""), ("direct_url", "t1;," + query + ";,c0")).option(HttpOptions.readTimeout(10000))
-
-        var average = -1.0
-
-        while (average < 0) {
-          try {
-            val str = request.asString
-            //println("http response = " + str)
-            val scanner = new java.util.Scanner(str)
-
-            //var found = false
-            val numbers = Array.ofDim[Double](10)
-            var dataLine: String = null
-
-            while (scanner.hasNextLine() && dataLine == null) {
-              val line = scanner.nextLine().trim
-              if (line.startsWith("var data")) {
-                //println(line)
-                dataLine = line
-              }
-            }
-
-            if (dataLine != null) {
-              val startPosition = dataLine.indexOf("timeseries")
-              val remainder = dataLine.substring(startPosition + 14)
-              println(remainder)
-              val endPosition = remainder.indexOf("]")
-              if (endPosition != -1) {
-                val data = remainder.substring(0, endPosition).split(",")
-                average = data.map(_.trim.toDouble).sum / 10.0
-              } else {
-                average = 1E-10 // very small number
-              }
-            } else {
-              average = 1E-10 // very small number
-            }
-
-            println("Queried Google Ngram (" + corpus + "): " + word + " = " + average)
-
-          } catch {
-            case e: IOException =>
-              val msg = e.getMessage()
-              println("Exception: " + msg)
-              takeALongBreak()
-            //              if (msg.startsWith("Server redirected too many") || msg.startsWith("429: Too Many Requests")) {
-            //            	  takeALongBreak()
-            //              }
-          }
-        }
-        average
-
-      }
   }
 }

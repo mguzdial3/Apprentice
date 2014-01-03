@@ -2,10 +2,11 @@ package edu.gatech.eilab.scheherazade.cluster.ngram
 import net.sf.javailp._
 /**
  * solves ilp assignment problem for the dirichlet model
+ * has a garbage cluster, which is the last one
  *  @param probs: each row is the probabilities of a sentence belonging to different clusters
  *
  */
-class ILPAssignment(probs: Array[Array[Double]]) {
+class ILPAssignmentGarbage(probs: Array[Array[Double]]) {
 
   def solve() = {
     val rows = probs.length
@@ -34,7 +35,8 @@ class ILPAssignment(probs: Array[Array[Double]]) {
     }
     
     // each cluster can contain only one sentence
-    for (j <- 0 until cols) {
+    // except for the garbage cluster
+    for (j <- 0 until cols-1) {
       val constraint = new Linear()
       for (i <- 0 until rows) {
         val variable = "z" + i + "c" + j
@@ -62,11 +64,4 @@ class ILPAssignment(probs: Array[Array[Double]]) {
     answer
   }
 
-}
-
-object ILPAssignment {
-
-  val factory = new SolverFactoryGLPK()
-  factory.setParameter(Solver.TIMEOUT, 100000); // set timeout to 1000 seconds
-  factory.setParameter(Solver.VERBOSE, 0);
 }

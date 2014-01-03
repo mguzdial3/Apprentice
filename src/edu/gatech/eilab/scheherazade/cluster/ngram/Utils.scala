@@ -1,7 +1,79 @@
 package edu.gatech.eilab.scheherazade.cluster.ngram
 import breeze.linalg.DenseVector
+import breeze.linalg._
 
 object Utils {
+  val SMALL = 1E-5
+
+  def performPCA(oldCorpus: NGramCorpus): NGramCorpus =
+    {
+      val desiredDimension = 20
+      val n = oldCorpus.vectors.size
+      val m = oldCorpus.vectors.head._2.size
+      val matrix = DenseMatrix.zeros[Double](n, m)
+
+      var i = 0
+      var iter = oldCorpus.vectors.iterator
+      for ((text, vector) <- iter) {
+        for (j <- 0 until m) {
+          matrix.update(i, j, vector(j))
+        }
+        i += 1
+      }
+
+      val newData = PCA.pca(matrix, desiredDimension)
+      var newVectors = scala.collection.mutable.HashMap[String, DenseVector[Double]]()
+
+      i = 0
+      iter = oldCorpus.vectors.iterator
+      for ((text, _) <- iter) {
+        var vector = newData(i, 0 until desiredDimension).toDenseVector
+        val min = vector.min
+        vector = vector - min + SMALL
+        vector = vector / vector.sum
+        newVectors += ((text -> vector))
+        i += 1
+      }
+
+      println("pca done")
+
+      new NGramCorpus(oldCorpus.ngrams, newVectors.toMap, oldCorpus.stories)
+    }
+  def loadPCABasis(dimension: Int): DenseMatrix[Double] =
+    {
+      val matrix = DenseMatrix.zeros[Double](dimension, 1000)
+      val lines = scala.io.Source.fromFile("pcabasis.txt").getLines
+
+      for (i <- 0 until dimension) {
+        val array = lines.next.split(", ")
+        for (j <- 0 until 1000) {
+          matrix(i, j) = array(j).trim.toDouble
+        }
+      }
+
+      matrix
+    }
+
+  def performLargerPCA(oldCorpus: NGramCorpus, desiredDimension: Int): NGramCorpus =
+    {
+
+      val basis = loadPCABasis(desiredDimension)
+
+      var newVectors = scala.collection.mutable.HashMap[String, DenseVector[Double]]()
+
+      val iter = oldCorpus.vectors.iterator
+      for ((text, vector) <- iter) {
+        var newVector = basis * vector
+        val min = newVector.min
+        newVector = newVector - min + SMALL
+        newVector = newVector / newVector.sum
+        newVectors += ((text -> newVector))
+      }
+
+      println("pca done")
+
+      new NGramCorpus(oldCorpus.ngrams, newVectors.toMap, oldCorpus.stories)
+    }
 
   /**
    * Input = a discrete probability distribution in log space, which has not been normalized

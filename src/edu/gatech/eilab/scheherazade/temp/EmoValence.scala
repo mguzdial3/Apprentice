@@ -1,6 +1,6 @@
 package edu.gatech.eilab.scheherazade.temp
 
-import edu.gatech.eilab.scheherazade.nlp.GoogleQuery
+import edu.gatech.eilab.scheherazade.nlp._
 import java.io._
 
 object EmoValence {
@@ -13,8 +13,8 @@ object EmoValence {
       val word = arr(0)
       val valence = arr(1)
 
-      val ficProb = GoogleQuery.queryFictionCorpus(word)
-      val engProb = GoogleQuery.queryEnglishCorpus(word)
+      val ficProb = WordFreqCrawler.queryFictionCorpus(word)
+      val engProb = WordFreqCrawler.queryEnglishCorpus(word)
 
       pw.println(word + "," + valence + ", " + ficProb + ", " + engProb + ", " + (ficProb / engProb) + ", " +
         ficProb * math.log(ficProb / engProb))

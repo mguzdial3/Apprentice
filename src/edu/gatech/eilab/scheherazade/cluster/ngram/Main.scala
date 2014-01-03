@@ -42,7 +42,7 @@ package cluster.ngram {
 
       val ngramDB: NGramStore = new NGramMemory()
 
-      Global.switchDataSet("Movie")
+      Global.switchDataSet("Coffee")
       val configFile = Global.configFile
       val parseFile = Global.parseFile
 
@@ -120,7 +120,7 @@ package cluster.ngram {
 
         new NGramCorpus(ngramsArray, map.toMap, sentIdMap)
 
-      }(new File("MovieNgram.lzma"))
+      }(new File("CoffeeNgram.lzma"))
 
       println("reading ngram data...")
 
@@ -197,30 +197,38 @@ package cluster.ngram {
 
     def cluster(sents: List[Sentence], corpus: NGramCorpus, gold: List[Cluster]): List[Cluster] = {
 
-      val clustering = HMMModel2.train(corpus, sents, gold)
-      peelClusters(clustering, sents)
+      //val clustering = HMMModel2.train(corpus, sents, gold)
+      val clustering = ILPModel4.train(corpus, sents, gold)
+      peelClusters(clustering, sents, true)
     }
 
-    def peelClusters(clustering: DenseVector[Int], sents: List[Sentence]): List[Cluster] = {
-
+    def peelClusters(clustering: DenseVector[Int], sents: List[Sentence], verbose: Boolean = false): List[Cluster] = {
       val length = clustering.max
       var clusters = List[Cluster]()
-
       for (i <- 0 to length) {
         var members = List[Sentence]()
-        //println("Cluster: " + i)
+        if (verbose) {
+          println("Cluster: " + i)
+        }
+
         for (s <- sents) {
           if (clustering(s.id) == i) {
-            //println(s.toSimpleString)
+            if (verbose) {
+              println(s.toSimpleString)
+            }
             members = s :: members
           }
         }
-        //println("*****\n")
+
+        if (verbose) {
+          println("*****\n")
+        }
         if (members != Nil) {
           val newCluster = new Cluster("C" + i, members)
           clusters = newCluster :: clusters
         }
       }
+
       clusters
     }
 

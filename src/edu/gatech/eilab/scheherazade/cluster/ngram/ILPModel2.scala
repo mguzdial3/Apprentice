@@ -32,42 +32,6 @@ object ILPModel2 {
       new DenseVector(array)
     }
 
-  def loadPCABasis(dimension: Int): DenseMatrix[Double] =
-    {
-      val matrix = DenseMatrix.zeros[Double](dimension, 1000)
-      val lines = scala.io.Source.fromFile("pcabasis.txt").getLines
-
-      for (i <- 0 until dimension) {
-        val array = lines.next.split(", ")
-        for (j <- 0 until 1000) {
-          matrix(i, j) = array(j).trim.toDouble
-        }
-      }
-
-      matrix
-    }
-
-  def performLargerPCA(oldCorpus: NGramCorpus): NGramCorpus =
-    {
-
-      val basis = loadPCABasis(DESIRED_DIMENSION)
-
-      var newVectors = scala.collection.mutable.HashMap[String, DenseVector[Double]]()
-
-      val iter = oldCorpus.vectors.iterator
-      for ((text, vector) <- iter) {
-        var newVector = basis * vector
-        val min = newVector.min
-        newVector = newVector - min + SMALL
-        newVector = newVector / newVector.sum
-        newVectors += ((text -> newVector))
-      }
-
-      println("pca done")
-
-      new NGramCorpus(oldCorpus.ngrams, newVectors.toMap, oldCorpus.stories)
-    }
-
   /**
    * generates n DenseVectors which will be used as parameters for Dirichlet distributions
    *
@@ -133,7 +97,7 @@ object ILPModel2 {
 
   def train(oldCorpus: NGramCorpus): DenseVector[Int] = {
     println("s = " + ALPHA_SUM + " vector length = " + DESIRED_DIMENSION)
-    val corpus = performLargerPCA(oldCorpus)
+    val corpus = Utils.performLargerPCA(oldCorpus, DESIRED_DIMENSION)
     val numSents = corpus.ngrams.length
     // number of unique ngrams
     val numNgrams = corpus.vectors.keys.size
@@ -141,7 +105,7 @@ object ILPModel2 {
     val numStories = corpus.stories.size
     // manually set parameters
 
-    val maxIterations = 35
+    val maxIterations = 10
 
     //val baseObservation = DenseVector.ones[Double](numClusters) * math.max(1.0, numSents / numClusters / 4)
     //var yPrior = Multinomial(baseObservation / baseObservation.sum)
@@ -200,6 +164,8 @@ object ILPModel2 {
 
             prob(i)(j) = product
           }
+          
+          prob(i) = Utils.normalizeLogProb(prob(i))
         }
 
         // run the ILP
