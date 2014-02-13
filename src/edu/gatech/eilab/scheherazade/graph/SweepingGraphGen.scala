@@ -32,7 +32,7 @@ package graph {
      *  The results are summarized in the summary.csv file
      */
     def generateGraphs() {
-      val reader = new ConfigReader("configAir.txt")
+      val reader = new ConfigReader("configNewMv.txt")
       val (stories, clusters) = reader.initData()
       //val (stories, clusters) = reader.initDataFiltered()
 

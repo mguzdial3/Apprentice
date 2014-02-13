@@ -8,11 +8,11 @@ import scala.collection.mutable.ListBuffer
 import java.io._
 
 package generation {
-  
+
   object StoryGenerator {
 
     def main(args: Array[String]) {
-      val reader = new ConfigReader("configRobBest.txt")
+      val reader = new ConfigReader("configNewMvBest.txt")
       var (stories, clusters) = reader.initDataFiltered()
 
       val para = reader.properties.allParameters()(0)
@@ -24,13 +24,33 @@ package generation {
       val gen = new GraphGenerator(insideStories, insideClusters)
       var graph: Graph = gen.generate(para)("mutualExcl")._1
 
+      graph.draw("aaaa")
       var walk = Walk(graph)
-      for (i<- 0 to 10)
-    	  randomWalk(walk)
+      //for (i <- 0 to 10)
+        LFFWalk(walk)
+    }
+
+    /**
+     *   always selecting the least frequent walk
+     */
+    def LFFWalk(firstWalk: Walk) {
+      println(); println()
+      var walk = firstWalk
+
+      while (walk.hasMoreSteps) {
+        val fringe = walk.fringe
+        
+        val lfStep = fringe.minBy(cluster => cluster.size)
+        //val i = math.floor(math.random * fringe.size).toInt
+        //val step = fringe(i)
+
+        println(lfStep.name)
+        walk = walk.forward(lfStep)
+      }
     }
 
     def randomWalk(firstWalk: Walk) {
-      println();println()
+      println(); println()
       var walk = firstWalk
 
       while (walk.hasMoreSteps) {

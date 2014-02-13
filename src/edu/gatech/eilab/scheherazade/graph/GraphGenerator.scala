@@ -60,22 +60,22 @@ package graph {
       var allRelations: List[ObservedLink] = GraphGenerator.computeRelations(storyList, clusterList)
 
       // create the graph that contains every link
-//      val links = allRelations filter thresholdFilter
-//      var totalGraph = new Graph(clusterList, links)
-//
-//      if (totalGraph.containsLoop()) {
-//        hashmap += ("withLoops" -> (totalGraph, 0))
-//        // find the loops and break them
-//        try {
-//          totalGraph = breakLoops(totalGraph, links)
-//        } catch {
-//          case ge: GraphException =>
-//            println(ge.msg)
-//            hashmap += ("original" -> (totalGraph, 0))
-//            return hashmap
-//        }
-//      }
-      
+      //      val links = allRelations filter thresholdFilter
+      //      var totalGraph = new Graph(clusterList, links)
+      //
+      //      if (totalGraph.containsLoop()) {
+      //        hashmap += ("withLoops" -> (totalGraph, 0))
+      //        // find the loops and break them
+      //        try {
+      //          totalGraph = breakLoops(totalGraph, links)
+      //        } catch {
+      //          case ge: GraphException =>
+      //            println(ge.msg)
+      //            hashmap += ("original" -> (totalGraph, 0))
+      //            return hashmap
+      //        }
+      //      }
+
       allRelations = allRelations.filter(_.confidence > 0.5)
       val totalGraph = EdgeIntegerProblem.selectEdges(clusterList, allRelations)
 
@@ -88,18 +88,18 @@ package graph {
       hashmap += (("original", (compactGraph, avg)))
 
       // improve the graph
-//      val improvedGraph = updateBadPaths2(errorChecker.getBadPaths, compactGraph, allRelations)
-//      avg = errorChecker.checkErrors(storyList, improvedGraph)._2
-//      errorAfter = avg
-//      hashmap += (("improved", (improvedGraph, avg)))
+      //      val improvedGraph = updateBadPaths2(errorChecker.getBadPaths, compactGraph, allRelations)
+      //      avg = errorChecker.checkErrors(storyList, improvedGraph)._2
+      //      errorAfter = avg
+      //      hashmap += (("improved", (improvedGraph, avg)))
 
       // compute mutual exclusions below
       val mes = findMtlExcl(storyList, clusterList, MUTUAL_INFO_THRESHOLD)
       val meGraph = new Graph(compactGraph.nodes, compactGraph.links, mes);
-//
+      //
       val optionals = Walk.findOptionals(meGraph)
       meGraph.optionals = optionals
-      
+
       hashmap += (("mutualExcl", (meGraph, avg)))
 
       hashmap
@@ -117,12 +117,12 @@ package graph {
             val pairs = loopPairs(loop)
             pairs.exists(pair => pair.head == link.source && pair.last == link.target)
           }
-        
+
         var allLinks = links
         var answer = graph
         var loops = answer.simpleLoops.distinct // TODO need to find all cycles in a graph. Find the link from stack overflow
         while (loops != Nil) {
-          
+
           println("loops: " + loops.map(_.map(_.name)).mkString("\n"))
 
           //println("links: " + allLinks)
@@ -222,6 +222,9 @@ package graph {
         val c2 = clusters(j)
 
         val mi = Cooccurence.mutualInfo(c1, c2, stories)
+        if (mi._2 > 0) {
+          println(c1.name + " -/- " + c2.name + "\t " + (mi._1 + mi._2))
+        }
         if (mi._1 + mi._2 > threshold && mi._2 > 0)
           melinks += new MutualExcl(c1, c2)
       }
