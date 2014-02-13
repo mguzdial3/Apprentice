@@ -48,19 +48,26 @@ package nlp {
       //println(unigramProb.mkString("\n"))
     }
 
+    /** loads a list of probabilities from a text file
+     *  
+     */
     def loadProbability(filename: String): HashMap[String, Double] =
       {
-        val text = scala.io.Source.fromFile(filename).getLines
-
+        val inputFile = new File(filename)
         val hashmap = new HashMap[String, Double]()
 
-        text.foreach {
-          l =>
-            val line = l.trim
-            if (line != "") {
-              val p = l.split(" ")
-              hashmap += ((p(0).replaceAll(",", "") -> p(1).toDouble))
-            }
+        if (inputFile.exists) { // if file exists, process it. Otherwise, return an empty file
+          val text = scala.io.Source.fromFile(filename).getLines
+
+          text.foreach {
+            l =>
+              val line = l.trim
+              if (line != "") {
+                val p = l.split(" ")
+                hashmap += ((p(0).replaceAll(",", "") -> p(1).toDouble))
+              }
+          }
+
         }
 
         hashmap

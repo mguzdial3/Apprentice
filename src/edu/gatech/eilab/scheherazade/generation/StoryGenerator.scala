@@ -24,9 +24,15 @@ package generation {
       val gen = new GraphGenerator(insideStories, insideClusters)
       var graph: Graph = gen.generate(para)("mutualExcl")._1
 
-      var walk = Walk(graph)
-      for (i<- 0 to 10)
-    	  randomWalk(walk)
+      println("MUTEX:")
+      for (me <- graph.mutualExcls)
+      {
+        println(me.toString)
+      }
+      
+//      var walk = Walk(graph)
+//      for (i<- 0 to 10)
+//    	  randomWalk(walk)
     }
 
     def randomWalk(firstWalk: Walk) {

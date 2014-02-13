@@ -264,7 +264,7 @@ object PageRank {
    */
   def getGraph(): Graph =
     {
-      val reader = new ConfigReader("configNewMvBest.txt")
+      val reader = new ConfigReader("configRobBest.txt")
       //var (stories, clusters) = reader.initDataFiltered()
       var (stories, clusters) = reader.initData()
       val para = reader.properties.allParameters()(0)
@@ -274,7 +274,7 @@ object PageRank {
       val insideStories = reader.filterUnused(stories, insideClusters)
 
       val gen = new GraphGenerator(insideStories, insideClusters)
-      var graph: Graph = gen.generate(para)("mutualExcl")._1
+      var graph: Graph = gen.oldGenerate(para)("mutualExcl")._1
 
       graph
     }

@@ -44,6 +44,7 @@ package graph {
      * Generates the graph according to the property
      * returns everything in a hashmap:
      * GraphName:String -> (graph:Graph, graphError:Double)
+     * This is the Quadratic Integer Programming version
      */
     def generate(property: SingleProperty): HashMap[String, (Graph, Double)] = {
 
@@ -60,22 +61,22 @@ package graph {
       var allRelations: List[ObservedLink] = GraphGenerator.computeRelations(storyList, clusterList)
 
       // create the graph that contains every link
-//      val links = allRelations filter thresholdFilter
-//      var totalGraph = new Graph(clusterList, links)
-//
-//      if (totalGraph.containsLoop()) {
-//        hashmap += ("withLoops" -> (totalGraph, 0))
-//        // find the loops and break them
-//        try {
-//          totalGraph = breakLoops(totalGraph, links)
-//        } catch {
-//          case ge: GraphException =>
-//            println(ge.msg)
-//            hashmap += ("original" -> (totalGraph, 0))
-//            return hashmap
-//        }
-//      }
-      
+      //      val links = allRelations filter thresholdFilter
+      //      var totalGraph = new Graph(clusterList, links)
+      //
+      //      if (totalGraph.containsLoop()) {
+      //        hashmap += ("withLoops" -> (totalGraph, 0))
+      //        // find the loops and break them
+      //        try {
+      //          totalGraph = breakLoops(totalGraph, links)
+      //        } catch {
+      //          case ge: GraphException =>
+      //            println(ge.msg)
+      //            hashmap += ("original" -> (totalGraph, 0))
+      //            return hashmap
+      //        }
+      //      }
+
       allRelations = allRelations.filter(_.confidence > 0.5)
       val totalGraph = EdgeIntegerProblem.selectEdges(clusterList, allRelations)
 
@@ -88,18 +89,79 @@ package graph {
       hashmap += (("original", (compactGraph, avg)))
 
       // improve the graph
-//      val improvedGraph = updateBadPaths2(errorChecker.getBadPaths, compactGraph, allRelations)
-//      avg = errorChecker.checkErrors(storyList, improvedGraph)._2
-//      errorAfter = avg
-//      hashmap += (("improved", (improvedGraph, avg)))
+      //      val improvedGraph = updateBadPaths2(errorChecker.getBadPaths, compactGraph, allRelations)
+      //      avg = errorChecker.checkErrors(storyList, improvedGraph)._2
+      //      errorAfter = avg
+      //      hashmap += (("improved", (improvedGraph, avg)))
 
       // compute mutual exclusions below
       val mes = findMtlExcl(storyList, clusterList, MUTUAL_INFO_THRESHOLD)
       val meGraph = new Graph(compactGraph.nodes, compactGraph.links, mes);
-//
+      //
       val optionals = Walk.findOptionals(meGraph)
       meGraph.optionals = optionals
-      
+
+      hashmap += (("mutualExcl", (meGraph, avg)))
+
+      hashmap
+
+    }
+
+    /**
+     * Generates the graph according to the property
+     * returns everything in a hashmap:
+     * GraphName:String -> (graph:Graph, graphError:Double)
+     */
+    def oldGenerate(property: SingleProperty): HashMap[String, (Graph, Double)] = {
+
+      PROBABILITY_THRESHOLD = property.doubleParam("probThresholds")
+      MUTUAL_INFO_THRESHOLD = property.doubleParam("miThresholds")
+
+      println("generating plot graph using the following parameters: \n" +
+        property.toString)
+
+      val hashmap = new HashMap[String, (Graph, Double)]()
+      var errorBefore = -1.0
+      var errorAfter = -1.0
+
+      val allRelations: List[ObservedLink] = GraphGenerator.computeRelations(storyList, clusterList)
+
+      // create the graph that contains every link
+      val links = allRelations filter thresholdFilter
+      var totalGraph = new Graph(clusterList, links)
+
+      if (totalGraph.containsLoop()) {
+        hashmap += ("withLoops" -> (totalGraph, 0))
+        // find the loops and break them
+        try {
+          //TODO: fix loop breaking. Does not work for gas
+          totalGraph = breakLoops(totalGraph, links)
+        } catch {
+          case ge: GraphException =>
+            println(ge.msg)
+            hashmap += ("original" -> (totalGraph, 0))
+            return hashmap
+        }
+      }
+
+      var compactGraph = totalGraph.compact
+
+      //println(compactGraph.links.mkString("\n"))
+      var (sum, avg) = errorChecker.checkErrors(storyList, compactGraph)
+      //println("before improvement, avg err = " + avg)
+
+      hashmap += (("original", (compactGraph, avg)))
+
+      // improve the graph
+      val improvedGraph = updateBadPaths2(errorChecker.getBadPaths, compactGraph, allRelations)
+      avg = errorChecker.checkErrors(storyList, improvedGraph)._2
+      errorAfter = avg
+      hashmap += (("improved", (improvedGraph, avg)))
+
+      // TODO compute mutual exclusions below
+      val mes = findMtlExcl(storyList, clusterList, MUTUAL_INFO_THRESHOLD)
+      val meGraph = new Graph(improvedGraph.nodes, improvedGraph.links, mes);
+
       hashmap += (("mutualExcl", (meGraph, avg)))
 
       hashmap
@@ -108,106 +170,35 @@ package graph {
 
     def breakLoops(graph: Graph, links: List[ObservedLink]): Graph =
       {
-
-        def loopPairs(loop: List[Cluster]) =
-          List(loop.last, loop.head) :: loop.sliding(2).toList
-
-        def loopContains(loop: List[Cluster], link: ObservedLink): Boolean =
-          {
-            val pairs = loopPairs(loop)
-            pairs.exists(pair => pair.head == link.source && pair.last == link.target)
-          }
-        
+        val loops = graph.simpleLoops
         var allLinks = links
-        var answer = graph
-        var loops = answer.simpleLoops.distinct // TODO need to find all cycles in a graph. Find the link from stack overflow
-        while (loops != Nil) {
-          
-          println("loops: " + loops.map(_.map(_.name)).mkString("\n"))
+        for (loop <- loops) {
 
-          //println("links: " + allLinks)
+          // find all relations in the loop
+          val slidingWindows = List(loop.last, loop.head) :: loop.sliding(2).toList
 
-          /** converting every loop into a list of links **/
-          val loopLinks: HashMap[ObservedLink, Int] = new HashMap[ObservedLink, Int]()
+          var loopLinks = slidingWindows.map {
+            pair =>
+              val s = pair.head
+              val t = pair.last
+              allLinks.find(l => l.source == s && l.target == t).get.asInstanceOf[ObservedLink]
+          }
 
-          for (loop <- loops) {
-
-            //TODO fix bug: breaking one loop may also breaks other loops. so we cannot find other loops when we try to break them
-
-            // find all relations in the loop
-            val slidingWindows = loopPairs(loop)
-
-            slidingWindows foreach {
-              pair =>
-                val s = pair.head
-                val t = pair.last
-                val option = allLinks.find(l => l.source == s && l.target == t)
-                option match {
-                  case Some(o) =>
-                    val l = o.asInstanceOf[ObservedLink]
-                    if (loopLinks.contains(l)) {
-                      val cnt = loopLinks(l)
-                      loopLinks.update(l, cnt + 1)
-                    } else {
-                      loopLinks += ((l, 1))
-                    }
-                  case None =>
-                    throw new RuntimeException("cannot find " + s.name + " -> " + t.name)
-                }
+          // find the link with the minimum confidence
+          var minLink: ObservedLink = null
+          var min = 1.0
+          for (link <- loopLinks) {
+            if (link.confidence < min) {
+              min = link.confidence
+              minLink = link
             }
           }
 
-          while (loops != Nil) {
-            // find the link with the minimum confidence
-            var brokenLink: ObservedLink = null
-            var min = 1.0
-            for (p <- loopLinks) {
-              val link = p._1
-              if (link.confidence < min) {
-                min = link.confidence
-                brokenLink = link
-              }
-            }
-
-            // remove that link
-            allLinks = allLinks filterNot (_ == brokenLink)
-            loopLinks.remove(brokenLink)
-            //println("link removed " + brokenLink)
-
-            // delete broken loops
-            val (broken, unbroken) = loops.partition(loop => loopContains(loop, brokenLink))
-            loops = unbroken
-            //println("broken " + broken.size + " loops")
-
-            /* For each broken loop, decrement the loop link counter
-           * If the counter reaches zero, delete it.
-           */
-            for (bLoop <- broken) {
-              loopPairs(bLoop) foreach {
-                pair =>
-                  val keys = loopLinks.keySet
-                  keys.find(p => p.source == pair.head && p.target == pair.last) match {
-                    case Some(link) =>
-                      val cnt = loopLinks(link)
-                      if (cnt == 1) {
-                        loopLinks.remove(link)
-                      } else {
-                        loopLinks.update(link, cnt - 1)
-                      }
-                    case None =>
-                  }
-              }
-
-            }
-
-          }
-
-          answer = new Graph(graph.nodes, allLinks) //.compact()
-          loops = answer.simpleLoops.distinct
+          // remove that link
+          allLinks = allLinks filterNot (_ == minLink)
         }
-        //loops = answer.simpleLoops.distinct
-        //println("loops: " + loops.map(_.map(_.name)).mkString("\n"))
-        println("breaking complete")
+
+        val answer = new Graph(graph.nodes, allLinks).compact()
         if (answer.containsLoop)
           throw new GraphException("Encountered complex loop structure that cannot be removed by this simple procedure")
         else return answer
