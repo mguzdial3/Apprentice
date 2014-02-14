@@ -43,7 +43,7 @@ object EdgeIntegerProblem {
         objective.addTerm(link.confidence, yVar) // add term to the objective
       }
       
-      println("number of variables = " + edges.size)
+      //println("number of variables = " + edges.size)
       model.update()
 
       // set objective
@@ -80,9 +80,9 @@ object EdgeIntegerProblem {
       env.dispose()
       model.dispose()
       
-      goodEdges foreach{
-        e => println(e.toString)
-      }
+//      goodEdges foreach{
+//        e => println(e.toString)
+//      }
       
       new Graph(clusters, goodEdges.toList)
     }

@@ -265,7 +265,7 @@ object PageRank {
    */
   def getGraph(): Graph =
     {
-      val reader = new ConfigReader("configNewMvBest.txt")
+      val reader = new ConfigReader("configRobBest.txt")
       //var (stories, clusters) = reader.initDataFiltered()
       var (stories, clusters) = reader.initData()
       val para = reader.properties.allParameters()(0)

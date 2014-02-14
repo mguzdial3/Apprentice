@@ -99,7 +99,7 @@ package graph {
       val meGraph = new Graph(compactGraph.nodes, compactGraph.links, mes);
       //
       val optionals = Walk.findOptionals(meGraph)
-      meGraph.optionals = optionals
+      meGraph.optionals = optionals._1 // _._2 contains the condtional events
 
       hashmap += (("mutualExcl", (meGraph, avg)))
 

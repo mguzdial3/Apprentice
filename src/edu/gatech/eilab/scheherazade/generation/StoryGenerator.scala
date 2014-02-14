@@ -26,6 +26,8 @@ package generation {
 
       graph.draw("aaaa")
       var walk = Walk(graph)
+      
+      //Walk.debug = true
       //for (i <- 0 to 10)
         LFFWalk(walk)
     }

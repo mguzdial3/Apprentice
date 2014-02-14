@@ -58,7 +58,7 @@ package generation {
           println("excluded because of ME: " + newlyExcluded.map(_.name).mkString("(", ", ", ")"))
           //println("excluded because of symmetry: " + parallel.map(_.name).mkString("(", ", ", ")"))
           println("excluded because of temporal ordering: " + expired.map(_.name).mkString("(", ", ", ")"))
-          println("excluded by parent: " + allExcluded.map(_.name).mkString("(", ", ", ")"))          
+          println("excluded by parent: " + allExcluded.map(_.name).mkString("(", ", ", ")"))
 
           newGraph.draw("valid")
 
@@ -77,7 +77,7 @@ package generation {
      */
     def hasMoreSteps() = !(ends exists { history contains })
 
-    protected def maxFringe(newGraph:Graph, newHistory:List[Cluster]) =
+    protected def maxFringe(newGraph: Graph, newHistory: List[Cluster]) =
       {
         // if all of its parents are either included in the history or optionals, it is on the fringe
         val parents = optional ::: newHistory
@@ -185,10 +185,11 @@ package generation {
       // remove from the graph nodes without predecessors that are not sources
       //graph = eGraph.removeIrregularSourceEnds()
 
-      val optionals = findOptionals(graph)
+      val (optionals, conditionals) = findOptionals(graph)
 
-      //println("optionals 1 : " + optionals.map(_.name).mkString("\n"))
-      val finalGraph = graph.addSkipLinks(optionals)
+      val canSkip = (optionals ::: conditionals).distinct
+      println("can Skip : " + canSkip.map(_.name).mkString("\n"))
+      val finalGraph = graph.addSkipLinks(canSkip)
 
       sources = finalGraph.nodes.filter(n => (!sources.contains(n)) &&
         finalGraph.links.filter(l => l.target == n).map(_.source).forall(optionals contains)) ::: sources
@@ -198,13 +199,16 @@ package generation {
       new Walk(finalGraph, sources, ends, me, optionals, sources)
     }
 
-    /** Finds the optional events. Update: Only the first of the event pair becomes optional
-     *  
-     */ 
-    def findOptionals(graph: Graph): List[Cluster] =
+    /**
+     * Finds the optional events and conditional events.
+     *  Update: Only the first of the event pair becomes optional, the second is conditioned on the first event
+     *
+     */
+    def findOptionals(graph: Graph): (List[Cluster], List[Cluster]) =
       {
-       var optionals = ListBuffer[Cluster]()
-      
+        var optional = ListBuffer[Cluster]()
+        var conditional = ListBuffer[Cluster]()
+
         // condition 1: c1 and c2 share a mutual exclusion but there is also a path from c1 to c2 on the graph
         val candidates = graph.mutualExcls.filter(m => graph.ordered(m.c1, m.c2)).map(m => (m.c1, m.c2))
         //println("candidates:\n" + candidates.mkString("\n"))
@@ -221,21 +225,24 @@ package generation {
               late = c1
             }
 
-            val bool = graph.mutualExcls.exists(m =>
+            val prevented = graph.mutualExcls.exists(m =>
               (m.c1 == early && m.c2 != late && graph.shortestDistance(m.c2, late) != -1) ||
                 (m.c2 == early && m.c1 != late && graph.shortestDistance(m.c1, late) != -1))
 
             // the following commented block finds the predecessor that prevents this pair to become a optional events pair
-            /*    if (bool) {
+            /*
+                println(early.name + ", " + late.name + " optional " + !prevented)
+            if (prevented) {
               val prevent = graph.mutualExcls.filter(m =>
                 (m.c1 == early && graph.shortestDistance(m.c2, late) != -1) ||
                   (m.c2 == early && graph.shortestDistance(m.c1, late) != -1))
 
-              println(prevent.mkString(" ") + " prevents " + early.name + " " + late.name);
+              println(prevent.mkString(", ") + " prevents " + early.name + " " + late.name);
             }*/
-            if (bool)
-            {
-              optionals += early
+
+            if (!prevented) {
+              optional += early
+              conditional += late
             }
         }
 
@@ -249,7 +256,7 @@ package generation {
             println(m + " prevents " + early.name + " " + late.name);
         }*/
 
-        optionals.toList
+        (optional.distinct.toList, conditional.distinct.toList)
       }
   }
 }
