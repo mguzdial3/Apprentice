@@ -198,13 +198,18 @@ package generation {
       new Walk(finalGraph, sources, ends, me, optionals, sources)
     }
 
+    /** Finds the optional events. Update: Only the first of the event pair becomes optional
+     *  
+     */ 
     def findOptionals(graph: Graph): List[Cluster] =
       {
+       var optionals = ListBuffer[Cluster]()
+      
         // condition 1: c1 and c2 share a mutual exclusion but there is also a path from c1 to c2 on the graph
         val candidates = graph.mutualExcls.filter(m => graph.ordered(m.c1, m.c2)).map(m => (m.c1, m.c2))
         //println("candidates:\n" + candidates.mkString("\n"))
         // condition 2: c1 is not mutually exclusive to another (direct or indirect) predecessor of c2
-        val real = candidates.filterNot {
+        candidates.foreach {
           case (c1, c2) =>
             var early: Cluster = null
             var late: Cluster = null
@@ -220,14 +225,18 @@ package generation {
               (m.c1 == early && m.c2 != late && graph.shortestDistance(m.c2, late) != -1) ||
                 (m.c2 == early && m.c1 != late && graph.shortestDistance(m.c1, late) != -1))
 
-            if (bool) {
+            // the following commented block finds the predecessor that prevents this pair to become a optional events pair
+            /*    if (bool) {
               val prevent = graph.mutualExcls.filter(m =>
                 (m.c1 == early && graph.shortestDistance(m.c2, late) != -1) ||
                   (m.c2 == early && graph.shortestDistance(m.c1, late) != -1))
 
-              //println(prevent.mkString(" ") + " prevents " + early.name + " " + late.name);
+              println(prevent.mkString(" ") + " prevents " + early.name + " " + late.name);
+            }*/
+            if (bool)
+            {
+              optionals += early
             }
-            bool
         }
 
         /*
@@ -240,7 +249,7 @@ package generation {
             println(m + " prevents " + early.name + " " + late.name);
         }*/
 
-        real.flatMap(x => List(x._1, x._2))
+        optionals.toList
       }
   }
 }

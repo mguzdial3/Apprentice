@@ -193,8 +193,9 @@ object PageRank {
     val map = g.nodes.map {
       node =>
         val score = events.find(pair => pair._1 == node.name).get._2
-        val newName = node.name + " " + ("%1.2f" format (score / median)) // median normalized to 1
-        node -> newName
+        val newName = node.name + "\t" + ("%1.2f" format (score / median)) // median normalized to 1
+        println(newName)
+        node -> newName        
     }.toMap
 
     g.drawWithNames("./pagerank", map)
@@ -274,7 +275,7 @@ object PageRank {
       val insideStories = reader.filterUnused(stories, insideClusters)
 
       val gen = new GraphGenerator(insideStories, insideClusters)
-      var graph: Graph = gen.generate(para)("mutualExcl")._1
+      var graph: Graph = gen.oldGenerate(para)("mutualExcl")._1
 
       graph
     }

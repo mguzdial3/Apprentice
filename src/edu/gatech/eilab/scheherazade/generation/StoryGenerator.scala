@@ -12,7 +12,7 @@ package generation {
   object StoryGenerator {
 
     def main(args: Array[String]) {
-      val reader = new ConfigReader("configNewMvBest.txt")
+      val reader = new ConfigReader("configRobBest.txt")
       var (stories, clusters) = reader.initDataFiltered()
 
       val para = reader.properties.allParameters()(0)
