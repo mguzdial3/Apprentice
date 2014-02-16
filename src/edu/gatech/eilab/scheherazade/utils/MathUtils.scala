@@ -10,4 +10,12 @@ object MathUtils {
       }
       product
     }
+
+  def logFactorial(n: Int): Double =
+    {
+      var result = 0.0
+      for (i <- 2 to n) result += math.log(i)
+
+      result
+    }
 }

@@ -32,7 +32,7 @@ object SFParser {
 
     var count = 0
 
-    val nlp = new NLPWrapper()
+    val nlp = new StanfordParserWrapper()
     val newStoryList = storyList.map {
       story =>
 
@@ -81,47 +81,74 @@ object SFParser {
     }
     
     newStoryList
+  }
+  
+  /** parsing clusters
+   *  
+   */
+  def parse(clusterList: List[Cluster])(implicit d: DummyImplicit): List[Cluster] = {
+
+    // the dummy implicit is a workaround for JVM's lack of support for generics
     
-    /*
-      val text = storyList.flatMap { _.members.map { _.tokens.map(_.word).mkString(" ") } }.mkString("\n")
-      val nlp = new NLPWrapper()
-      //println("parsing: ************************************")
-      //println(text)
-      //println("parsed: ************************************")
-      var count = 0
-      
-      nlp.getParsed(text)
-      val newStories = storyList map { story =>
-        val newSents = story.members map { sent =>
+    clusterList foreach { s =>
+      s.members foreach {
+        sent =>
+          if (!properEnding(sent))
+            throw new RuntimeException("sentence \"" + sent.toSimpleString() + " \" does not end with a proper ending")
+      }
+    }
 
-          if (!nlp.hasNextSentence()) throw new RuntimeException("parsed sentence exhausted prematurely")
-          nlp.processNextSentence();
+    var count = 0
 
-          var tokensArray = nlp.getTokens()
-          if (tokensArray.length > 1 || tokensArray(0)(0) != ".") { // filters out empty sentences with a single period
+    val nlp = new StanfordParserWrapper()
+    val newClusters = clusterList.map {
+      cluster =>
 
-            var tokenBuffer = new ListBuffer[Token]()
-            for (i <- 0 to tokensArray.length - 1) {
-              val t = tokensArray(i)
-              tokenBuffer += new Token(i, t(0), t(1), t(2), { if (t(3) == "O") "" else t(3) })
+        val newMembers = cluster.members.map {
+          sent =>
+            val text = sent.tokens.map(_.word).mkString(" ") + "\n"
+            nlp.getParsed(text)
+
+            if (!nlp.hasNextSentence()) {
+              throw new RuntimeException("parsing " + sent.id + " " + text + " failed.")
             }
 
-            val tokens = tokenBuffer.toArray
+            nlp.processNextSentence()
+            var newSentence:Sentence = null
+            
+            var tokensArray = nlp.getTokens()
+            if (tokensArray.length > 1 || tokensArray(0)(0) != ".") { // filters out empty sentences with a single period
 
-            val tree = nlp.getParseTree()
-            val graph = nlp.getSemanticGraph()
+              var tokenBuffer = new ListBuffer[Token]()
+              for (i <- 0 to tokensArray.length - 1) {
+                val t = tokensArray(i)
+                tokenBuffer += new Token(i, t(0), t(1), t(2), { if (t(3) == "O") "" else t(3) })
+              }
 
-            val relations = graphToRelations(graph, tokens)
-            //println("parsed: " + sent.id + " " + tokens.map(x => x.word).mkString(" "))
-            count += 1
-            Sentence(sent.id, tokens, null, relations, sent.location)
-          } else throw new RuntimeException("empty sentence " + sent.id)
+              val tokens = tokenBuffer.toArray
+
+              val tree = nlp.getParseTree()
+              val graph = nlp.getSemanticGraph()
+
+              val relations = graphToRelations(graph, tokens)
+              //println("parsed: " + sent.id + " " + tokens.map(_.toString()).mkString(" "))
+              count += 1
+              newSentence = Sentence(sent.id, tokens, null, relations, sent.location)
+            } else {
+              throw new RuntimeException("empty sentence " + sent.id)
+            }
+            
+            if (nlp.hasNextSentence()) {
+              throw new RuntimeException("parsing " + sent.id + " " + text + " produced two sentences.")
+            }
+            
+            newSentence
         }
-        new Story(newSents)
-      }
-      println(count + " sentences parsed successfully.")
-      newStories
-      */
+        
+        new Cluster(cluster.name, newMembers)
+    }
+    
+    newClusters
   }
 
   /**

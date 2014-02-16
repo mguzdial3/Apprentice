@@ -1,7 +1,9 @@
 package edu.gatech.eilab.scheherazade.generation.sentselect
+
 import edu.gatech.eilab.scheherazade.data._
 import scala.collection.mutable.HashMap
 import java.io._
+import edu.gatech.eilab.scheherazade.utils.MathUtils._
 
 class UniGramModel {
 
@@ -22,9 +24,25 @@ class UniGramModel {
       map
     }
 
-  def probability(sent: Sentence) =
+  def logProbability(sent: Sentence) =
     {
+	  val tokens = sent.tokens.filter(x => isUsefulPOS(x.pos)).map(x => x.lemma + toGooglePOS(x.pos))
+	  val countMap = tokens.groupBy(x => x).map(pair => (pair._1 -> pair._2.size))
+	  println(countMap)
+	  val counts = countMap.map(_._2)
+	  val total = counts.sum
 	  
+	  val coeff = logFactorial(total) - counts.map(logFactorial).sum
+	  
+	  var prob = 0.0
+	  for (wordCount <- countMap)
+	  {
+	    val word = wordCount._1
+	    val c = wordCount._2
+	    prob += math.log(probabilityMap.getOrElse(word, 1e-10)) * c
+	  }
+	  
+	  prob
     }
 
   def isUsefulPOS(pos: String): Boolean =

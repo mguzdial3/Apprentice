@@ -13,7 +13,7 @@ import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.ling.CoreAnnotations.*;
 import edu.stanford.nlp.ling.*;
 
-public class NLPWrapper {
+public class StanfordParserWrapper {
 
 	Properties props = null;
 	StanfordCoreNLP pipeline;
@@ -21,7 +21,7 @@ public class NLPWrapper {
 	Iterator<CoreMap> sentIt;
 	CoreMap curSentence;
 
-	public NLPWrapper() {
+	public StanfordParserWrapper() {
 		// creates a StanfordCoreNLP object, with POS tagging, lemmatization,
 		// NER, parsing.
 		props = new Properties();
