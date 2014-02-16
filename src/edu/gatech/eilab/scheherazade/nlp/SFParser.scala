@@ -21,10 +21,12 @@ object SFParser {
       properEnding.exists(end => lastword.endsWith(end))
     }
 
+  def parse(sentence:String): Sentence = parse(1, sentence)
+  
   /** parse a freeform text and turn it into a sentence object
    *  The input text should contain only a single sentence
    */
-  def parse(sentence: String): Sentence = {
+  def parse(number:Int, sentence: String): Sentence = {
     val text = sentence.trim
     if (!properEnding.exists(end => text.endsWith(end))) {
       throw new RuntimeException("sentence \"" + sentence + " \" does not end with a proper ending")
@@ -55,7 +57,7 @@ object SFParser {
 
       val relations = graphToRelations(graph, tokens)
 
-      newSentence = Sentence(1, tokens, null, relations, 0)
+      newSentence = Sentence(number, tokens, null, relations, 0)
     } else {
       throw new RuntimeException("empty sentence " + text)
     }

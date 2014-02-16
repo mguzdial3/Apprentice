@@ -40,6 +40,14 @@ object UniGramModel {
 	    val word = wordCount._1
 	    val c = wordCount._2
 	    prob += math.log(probabilityMap.getOrElse(word, 1e-10)) * c
+	    if (!probabilityMap.contains(word))
+	    {
+	      println("not found word: " + word)
+	    }
+	    else
+	    {
+	      println(word + ": " + math.log(probabilityMap(word)) + " * " + c)
+	    }
 	  }
 	  
 	  prob
