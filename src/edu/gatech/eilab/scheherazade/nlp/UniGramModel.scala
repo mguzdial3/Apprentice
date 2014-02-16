@@ -1,14 +1,14 @@
-package edu.gatech.eilab.scheherazade.generation.sentselect
+package edu.gatech.eilab.scheherazade.nlp
 
-import edu.gatech.eilab.scheherazade.data._
 import scala.collection.mutable.HashMap
 import java.io._
 import edu.gatech.eilab.scheherazade.utils.MathUtils._
+import edu.gatech.eilab.scheherazade.data._
 
-class UniGramModel {
+object UniGramModel {
 
-  val probabilityMap = loadMap("unigram_prob.txt")
-  val fictionalProbMap = loadMap("unigram_prob_fiction.txt")
+  private val probabilityMap = loadMap("unigram_prob.txt")
+  private val fictionalProbMap = loadMap("unigram_prob_fiction.txt")
 
   private def loadMap(filename: String) =
     {
@@ -26,7 +26,7 @@ class UniGramModel {
 
   def logProbability(sent: Sentence) =
     {
-	  val tokens = sent.tokens.filter(x => isUsefulPOS(x.pos)).map(x => x.lemma + toGooglePOS(x.pos))
+	  val tokens = sent.tokens.filter(x => isUsefulPOS(x.pos) && (!StopWordStore.isStopWord(x.lemma))).map(x => x.lemma + toGooglePOS(x.pos))
 	  val countMap = tokens.groupBy(x => x).map(pair => (pair._1 -> pair._2.size))
 	  println(countMap)
 	  val counts = countMap.map(_._2)
@@ -45,7 +45,7 @@ class UniGramModel {
 	  prob
     }
 
-  def isUsefulPOS(pos: String): Boolean =
+  private def isUsefulPOS(pos: String): Boolean =
     {
 	  pos.startsWith("NN") || pos.startsWith("VB") || pos.startsWith("JJ") || pos.startsWith("RB")
     }
@@ -53,7 +53,7 @@ class UniGramModel {
   /** return the google POS in the form of "_NOUN" or "_VERB"
    *  
    */
-  def toGooglePOS(pos: String): String =
+  private def toGooglePOS(pos: String): String =
     {
       if (pos.startsWith("N")) "_NOUN"
       else if (pos.startsWith("V")) "_VERB"

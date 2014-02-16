@@ -6,6 +6,7 @@ import data._
 import xml._
 import javanlp._
 import graph._
+import nlp._
 import similarity._
 import utils.SuperProperties
 import java.io._
@@ -19,8 +20,8 @@ import edu.stanford.nlp.semgraph.SemanticGraph
 import edu.stanford.nlp.ling.IndexedWord
 import breeze.linalg.DenseMatrix
 
-package nlp {
-  object NLPMain {
+package cluster {
+  object ClusteringMain {
 
     def main(args: Array[String]) {
       clusterDataSet("Coffee")

@@ -1,11 +1,12 @@
-package edu.gatech.eilab.scheherazade.nlp
+package edu.gatech.eilab.scheherazade.nlp.googlecrawler
 
 import spray.json._
-import DefaultJsonProtocol._
+import spray.json.DefaultJsonProtocol._
 import scalaj.http._
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.ListBuffer
 import java.io._
+import NGItemProtocol.listFormat
 
 case class NGItem(ngram: String, timeseries: List[Double]) {
   def averageFreq() =

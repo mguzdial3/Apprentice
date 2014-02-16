@@ -10,10 +10,10 @@ import graph._
 import similarity._
 import scala.collection.mutable.HashSet
 import scala.collection.mutable.HashMap
-
 import java.io._
+import edu.gatech.eilab.scheherazade.nlp.googlecrawler.GoogleQuery
 
-package nlp {
+package nlp.googlecrawler {
 
   object Crawler {
     def takeABreak() {

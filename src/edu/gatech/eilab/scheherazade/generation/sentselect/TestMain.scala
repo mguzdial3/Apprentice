@@ -5,19 +5,10 @@ import edu.gatech.eilab.scheherazade.nlp._
 object TestMain {
 
   def main(args: Array[String]) {
-    val reader = new ConfigReader("configRobBest.txt")
-    var (stories, clusters) = reader.initDataFiltered()
+    val sent = SFParser.parse("John approached the bank door, which was a revolving door, and put his hands on the glass to turn the door.")
 
-    for (sent <- clusters(0).members) {
-      println(sent)
-
-    }
-
-    clusters = SFParser.parse(clusters)
-
-    for (sent <- clusters(0).members) {
-      println(sent)
-
-    }
+    println(sent)
+    val prob = UniGramModel.logProbability(sent)
+    println(prob)
   }
 }

@@ -1,6 +1,6 @@
 package edu.gatech.eilab.scheherazade.nlp
 
-class StopWordStore {
+object StopWordStore {
 
   private val stopwords = loadStopWords()
   
