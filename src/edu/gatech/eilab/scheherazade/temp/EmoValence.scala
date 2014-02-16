@@ -1,6 +1,7 @@
 package edu.gatech.eilab.scheherazade.temp
 
 import edu.gatech.eilab.scheherazade.nlp._
+import edu.gatech.eilab.scheherazade.nlp.googlecrawler._
 import java.io._
 
 object EmoValence {

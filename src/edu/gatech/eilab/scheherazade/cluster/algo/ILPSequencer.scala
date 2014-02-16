@@ -6,6 +6,7 @@ import data._
 import nlp._
 import io._
 import cluster.metric._
+import cluster._
 
 import scala.collection.mutable.ListBuffer
 import utils.Matrix
@@ -33,7 +34,7 @@ package cluster.algo {
       //val sentFreq = sentenceFreq(wordBags.values, words)
 
       
-      var clusters = NLPMain.cluster(stories, 4)
+      var clusters = ClusteringMain.cluster(stories, 4)
       val numClusters = clusters.length
 
       println("Starting with OPTICS clusters: ")

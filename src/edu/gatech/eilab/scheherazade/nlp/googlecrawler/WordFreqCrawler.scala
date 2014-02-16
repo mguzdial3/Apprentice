@@ -1,11 +1,12 @@
 package edu.gatech.eilab.scheherazade
 
 import main._
+import nlp._
 import io._
 import data._
 import data.serialize._
 import xml._
-import javanlp._
+//import javanlp._
 import graph._
 import similarity._
 import scala.collection.mutable.HashSet

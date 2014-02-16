@@ -1,6 +1,5 @@
 package edu.gatech.eilab.scheherazade
 
-import nlp.NLPMain
 import data._
 import data.serialize._
 import main._
