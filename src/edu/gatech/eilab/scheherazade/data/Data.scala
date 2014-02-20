@@ -11,15 +11,22 @@ object Token {
   def apply(word: String, pos: String): Token = new Token(0, word, pos, "", "")
 }
 
+abstract class SingleDescription(val id: Int) {
+	def toText():String
+	def allTokens():List[Token]
+}
+
 case class Sentence(
-  val id: Int,
+  override val id: Int,
   val tokens: Array[Token],
   var parse: Tree,
   var deps: List[Dependency],
   var location: Double,
   var next: Sentence = null,
-  var cluster: Cluster = null) extends XStreamable[Sentence] {
+  var cluster: Cluster = null) extends SingleDescription(id) with XStreamable[Sentence] {
 
+  override def toText() = tokens.map(_.word).mkString(" ")
+  override def allTokens() = tokens.toList
   //var location:Double = 0
   def bagOfWords(): Array[String] = tokens.map(t => regularize(t.word)).filter(_ != "")
 
@@ -40,17 +47,28 @@ case class Sentence(
   def toSimpleString() =
     id + " " + tokens.map { _.word }.mkString(" ")
 
-  // these two override methods are only temporary. Should delete after Mar 15
+  /**
+   * checks equality based on id
+   *
+   */
   override def equals(o: Any) = o match {
     case s: Sentence => this.id == s.id
     case _ => false
   }
 
   override def hashCode() = id.hashCode()
-  
-  def commonAncestor(token1:Token, token2:Token) =
-  {
-    val tree1 = parse.getNodeNumber(token1.id)
+
+  def commonAncestor(token1: Token, token2: Token) =
+    {
+      val tree1 = parse.getNodeNumber(token1.id)
+    }
+
+  /**
+   * structurally eqivalence, not implemented yet
+   *
+   */
+  def seq(s: Sentence) = {
+    false // TODO: implement this
   }
 }
 
@@ -59,13 +77,19 @@ object Sentence {
   def apply(id: Int, tokens: Array[Token]) = new Sentence(id, tokens, null, null, 0)
 }
 
-class Cluster(
+abstract class ClusterLike(
   val name: String,
-  val members: List[Sentence]) extends XStreamable[Cluster] {
+  val members: List[SingleDescription]) {
 
   def size(): Int = members.size
+  def contains(s: SingleDescription) = members.contains(s)
+}
 
-  def contains(s: Sentence) = members.contains(s)
+class Cluster(
+  name: String,
+  override val members: List[Sentence]) extends ClusterLike(name, members) with XStreamable[Cluster] {
+
+  //def contains(s: Sentence) = members.contains(s)
 
   /**
    * average similarity of a cluster, computed from a given similarity matrix

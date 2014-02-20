@@ -12,6 +12,13 @@ package generation {
   object StoryGenerator {
 
     def main(args: Array[String]) {
+      val story = genStory()
+      val text = story.map(_.name).mkString("\n")
+      println("--------------------------------")
+      println(text)
+    }
+    
+    def genStory():List[Cluster] = {
       val reader = new ConfigReader("configRobBest.txt")
       var (stories, clusters) = reader.initDataFiltered()
 
@@ -35,8 +42,9 @@ package generation {
     /**
      *   always selecting the least frequent walk
      */
-    def LFFWalk(firstWalk: Walk) {
-      println(); println()
+    def LFFWalk(firstWalk: Walk):List[Cluster] = {
+      var trace = List[Cluster]()
+      
       var walk = firstWalk
 
       while (walk.hasMoreSteps) {
@@ -46,9 +54,11 @@ package generation {
         //val i = math.floor(math.random * fringe.size).toInt
         //val step = fringe(i)
 
-        println(lfStep.name)
+        trace = lfStep :: trace 
         walk = walk.forward(lfStep)
       }
+      
+      trace.reverse
     }
 
     def randomWalk(firstWalk: Walk) {

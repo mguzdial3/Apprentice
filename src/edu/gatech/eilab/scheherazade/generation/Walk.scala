@@ -188,7 +188,7 @@ package generation {
       val (optionals, conditionals) = findOptionals(graph)
 
       val canSkip = (optionals ::: conditionals).distinct
-      println("can Skip : " + canSkip.map(_.name).mkString("\n"))
+      //println("can Skip : " + canSkip.map(_.name).mkString("\n"))
       val finalGraph = graph.addSkipLinks(canSkip)
 
       sources = finalGraph.nodes.filter(n => (!sources.contains(n)) &&

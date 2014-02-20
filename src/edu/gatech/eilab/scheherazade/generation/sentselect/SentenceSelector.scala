@@ -9,7 +9,7 @@ import scala.collection.mutable.ListBuffer
  *  It takes two functions as parameters: evalSentence, which returns the weights for individual sentences in a cluster.
  *  evalAjacentSent, which returns the preference for a pair of sentences
  */
-class SentenceSelector(evalSentence: Cluster => List[(Sentence, Double)], evalAdjacentSent: (Sentence, Cluster) => List[(Sentence, Double)]) {
+class SentenceSelector(evalSentence: ClusterLike => List[(SingleDescription, Double)], evalAdjacentSent: (SingleDescription, ClusterLike) => List[(SingleDescription, Double)]) {
 
   
 
@@ -20,8 +20,8 @@ class SentenceSelector(evalSentence: Cluster => List[(Sentence, Double)], evalAd
    *  This assumption is subjective to tuning.
    *  The objective function is assumed to be a product of the weights.
    */
-  def bestSentenceSequence(clusters: List[Cluster]): List[Sentence] = {
-    var bestSequences = List[(List[Sentence], Double)]()
+  def bestSentenceSequence(clusters: List[ClusterLike]): List[String] = {
+    var bestSequences = List[(List[SingleDescription], Double)]()
 
     // initialization   
     bestSequences = evalSentence(clusters(0)).map { x => (List(x._1), x._2) }
@@ -29,8 +29,8 @@ class SentenceSelector(evalSentence: Cluster => List[(Sentence, Double)], evalAd
     // one event by one event
     for (nextCluster <- clusters.tail) {
 
-      var allSequences = ListBuffer[(List[Sentence], Double)]()
-      var nextBestSequences = ListBuffer[(List[Sentence], Double)]()
+      var allSequences = ListBuffer[(List[SingleDescription], Double)]()
+      var nextBestSequences = ListBuffer[(List[SingleDescription], Double)]()
 
       val sentFit = evalSentence(nextCluster)
 
@@ -55,7 +55,7 @@ class SentenceSelector(evalSentence: Cluster => List[(Sentence, Double)], evalAd
     }
 
     val bestSeq = bestSequences.maxBy(_._2)
-    bestSeq._1.reverse
+    bestSeq._1.reverse.map(_.toText)
   }
 
   /**

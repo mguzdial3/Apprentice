@@ -6,6 +6,8 @@ import edu.stanford.nlp.semgraph.SemanticGraph
 import edu.stanford.nlp.ling.IndexedWord
 import scala.collection.mutable.ListBuffer
 
+class ParsingException(message: String) extends Exception(message)
+
 /**
  * Parsing a list of stories using the Stanford Parser
  *
@@ -21,87 +23,41 @@ object SFParser {
       properEnding.exists(end => lastword.endsWith(end))
     }
 
-  def parse(sentence:String): Sentence = parse(1, sentence)
-  
-  /** parse a freeform text and turn it into a sentence object
+  def parse(sentence: String): Sentence = parse(1, sentence)
+
+  /**
+   * parse a freeform text and turn it into a sentence object
    *  The input text should contain only a single sentence
    */
-  def parse(number:Int, sentence: String): Sentence = {
+  def parse(id: Int, sentence: String): Sentence = {
     val text = sentence.trim
     if (!properEnding.exists(end => text.endsWith(end))) {
-      throw new RuntimeException("sentence \"" + sentence + " \" does not end with a proper ending")
+      throw new ParsingException("sentence \"" + sentence + " \" does not end with a proper ending")
     }
 
     nlp.getParsed(text)
 
     if (!nlp.hasNextSentence()) {
-      throw new RuntimeException("parsing sentence" + text + " failed.")
+      throw new ParsingException("parsing sentence" + text + " failed.")
     }
 
-    nlp.processNextSentence()
-    var newSentence: Sentence = null
-
-    var tokensArray = nlp.getTokens()
-    if (tokensArray.length > 1 || tokensArray(0)(0) != ".") { // filters out empty sentences with a single period
-
-      var tokenBuffer = new ListBuffer[Token]()
-      for (i <- 0 to tokensArray.length - 1) {
-        val t = tokensArray(i)
-        tokenBuffer += new Token(i, t(0), t(1), t(2), { if (t(3) == "O") "" else t(3) })
-      }
-
-      val tokens = tokenBuffer.toArray
-
-      val tree = nlp.getParseTree()
-      val graph = nlp.getSemanticGraph()
-
-      val relations = graphToRelations(graph, tokens)
-
-      newSentence = Sentence(number, tokens, null, relations, 0)
-    } else {
-      throw new RuntimeException("empty sentence " + text)
-    }
-
-    newSentence
+    getSentence(nlp, id, 0)
   }
 
   def parse(sentence: Sentence): Sentence = {
     if (!properEnding(sentence)) {
-      throw new RuntimeException("sentence \"" + sentence.toSimpleString() + " \" does not end with a proper ending")
+      throw new ParsingException("sentence \"" + sentence.toSimpleString() + " \" does not end with a proper ending")
     }
 
     val text = sentence.tokens.map(_.word).mkString(" ") + "\n"
     nlp.getParsed(text)
 
     if (!nlp.hasNextSentence()) {
-      throw new RuntimeException("parsing sentence" + text + " failed.")
+      throw new ParsingException("parsing sentence" + text + " failed.")
     }
 
-    nlp.processNextSentence()
-    var newSentence: Sentence = null
+    getSentence(nlp, sentence.id, sentence.location)
 
-    var tokensArray = nlp.getTokens()
-    if (tokensArray.length > 1 || tokensArray(0)(0) != ".") { // filters out empty sentences with a single period
-
-      var tokenBuffer = new ListBuffer[Token]()
-      for (i <- 0 to tokensArray.length - 1) {
-        val t = tokensArray(i)
-        tokenBuffer += new Token(i, t(0), t(1), t(2), { if (t(3) == "O") "" else t(3) })
-      }
-
-      val tokens = tokenBuffer.toArray
-
-      val tree = nlp.getParseTree()
-      val graph = nlp.getSemanticGraph()
-
-      val relations = graphToRelations(graph, tokens)
-
-      newSentence = Sentence(sentence.id, tokens, null, relations, sentence.location)
-    } else {
-      throw new RuntimeException("empty sentence " + sentence.id)
-    }
-
-    newSentence
   }
 
   def parse(storyList: List[Story]): List[Story] = {
@@ -110,7 +66,7 @@ object SFParser {
       s.members foreach {
         sent =>
           if (!properEnding(sent))
-            throw new RuntimeException("sentence \"" + sent.toSimpleString() + " \" does not end with a proper ending")
+            throw new ParsingException("sentence \"" + sent.toSimpleString() + " \" does not end with a proper ending")
       }
     }
 
@@ -125,36 +81,14 @@ object SFParser {
             nlp.getParsed(text)
 
             if (!nlp.hasNextSentence()) {
-              throw new RuntimeException("parsing " + sent.id + " " + text + " failed.")
+              throw new ParsingException("parsing " + sent.id + " " + text + " failed.")
             }
 
-            nlp.processNextSentence()
-            var newSentence: Sentence = null
-
-            var tokensArray = nlp.getTokens()
-            if (tokensArray.length > 1 || tokensArray(0)(0) != ".") { // filters out empty sentences with a single period
-
-              var tokenBuffer = new ListBuffer[Token]()
-              for (i <- 0 to tokensArray.length - 1) {
-                val t = tokensArray(i)
-                tokenBuffer += new Token(i, t(0), t(1), t(2), { if (t(3) == "O") "" else t(3) })
-              }
-
-              val tokens = tokenBuffer.toArray
-
-              val tree = nlp.getParseTree()
-              val graph = nlp.getSemanticGraph()
-
-              val relations = graphToRelations(graph, tokens)
-              //println("parsed: " + sent.id + " " + tokens.map(_.toString()).mkString(" "))
-              count += 1
-              newSentence = Sentence(sent.id, tokens, null, relations, sent.location)
-            } else {
-              throw new RuntimeException("empty sentence " + sent.id)
-            }
+            val newSentence = getSentence(nlp, sent.id, sent.location)
+            count += 1
 
             if (nlp.hasNextSentence()) {
-              throw new RuntimeException("parsing " + sent.id + " " + text + " produced two sentences.")
+              throw new ParsingException("parsing " + sent.id + " " + text + " produced two sentences.")
             }
 
             newSentence
@@ -167,7 +101,12 @@ object SFParser {
   }
 
   /**
-   * parsing clusters
+   * parsing clusters. This is a shorthand for the other parse function. By default,
+   * we do not allow multiple sentences to exist in one Sentence object.
+   *
+   * @input
+   * clusterList a list of clusters to be parsed
+   * allowMultiple a boolean variable specifying if we allow multiple sentences to exist in one Sentence object
    *
    */
   def parse(clusterList: List[Cluster])(implicit d: DummyImplicit): List[Cluster] = {
@@ -178,7 +117,7 @@ object SFParser {
       s.members foreach {
         sent =>
           if (!properEnding(sent))
-            throw new RuntimeException("sentence \"" + sent.toSimpleString() + " \" does not end with a proper ending")
+            throw new ParsingException("sentence \"" + sent.toSimpleString() + " \" does not end with a proper ending")
       }
     }
 
@@ -194,38 +133,16 @@ object SFParser {
             nlp.getParsed(text)
 
             if (!nlp.hasNextSentence()) {
-              throw new RuntimeException("parsing " + sent.id + " " + text + " failed.")
+              throw new ParsingException("parsing " + sent.id + " " + text + " failed.")
             }
 
-            nlp.processNextSentence()
-            var newSentence: Sentence = null
-
-            var tokensArray = nlp.getTokens()
-            if (tokensArray.length > 1 || tokensArray(0)(0) != ".") { // filters out empty sentences with a single period
-
-              var tokenBuffer = new ListBuffer[Token]()
-              for (i <- 0 to tokensArray.length - 1) {
-                val t = tokensArray(i)
-                tokenBuffer += new Token(i, t(0), t(1), t(2), { if (t(3) == "O") "" else t(3) })
-              }
-
-              val tokens = tokenBuffer.toArray
-
-              val tree = nlp.getParseTree()
-              val graph = nlp.getSemanticGraph()
-
-              val relations = graphToRelations(graph, tokens)
-              //println("parsed: " + sent.id + " " + tokens.map(_.toString()).mkString(" "))
-              count += 1
-              newSentence = Sentence(sent.id, tokens, null, relations, sent.location)
-            } else {
-              throw new RuntimeException("empty sentence " + sent.id)
-            }
+            var newSentence = getSentence(nlp, sent.id, sent.location)
 
             if (nlp.hasNextSentence()) {
-              throw new RuntimeException("parsing " + sent.id + " " + text + " produced two sentences.")
+              throw new ParsingException("parsing " + sent.id + " " + text + " produced two sentences.")
             }
 
+            count += 1
             newSentence
         }
 
@@ -234,6 +151,87 @@ object SFParser {
 
     newClusters
   }
+
+  def parseSnippets(clusterList: List[Cluster])(implicit d: DummyImplicit): List[SnippetCluster] = {
+    // the dummy implicit is a workaround for JVM's lack of support for generics
+
+    clusterList foreach { s =>
+      s.members foreach {
+        sent =>
+          if (!properEnding(sent))
+            throw new ParsingException("sentence \"" + sent.toSimpleString() + " \" does not end with a proper ending")
+      }
+    }
+
+    var count = 0
+
+    val nlp = new StanfordParserWrapper()
+    val newClusters = clusterList.map {
+      cluster =>
+
+        val snippets = cluster.members map {
+          sent =>
+            val text = sent.tokens.map(_.word).mkString(" ") + "\n"
+            nlp.getParsed(text)
+
+            if (!nlp.hasNextSentence()) {
+              throw new ParsingException("parsing " + sent.id + " " + text + " failed.")
+            }
+
+            val sentList = new ListBuffer[Sentence]()
+
+            var exist = false
+            while (nlp.hasNextSentence()) {
+              try {
+                sentList += getSentence(nlp, count, sent.location)
+                count += 1
+                exist = true
+              } catch {
+                case ex: ParsingException =>
+                  if (exist) {
+                    // if we already have one sentence, just issue a warning
+                    System.err.println("WARNING: " + ex.getMessage())
+                  } else {
+                    throw ex
+                  }
+              }
+
+            }
+
+            TextSnippet(sent.id, sentList.toList)
+        }
+
+        new SnippetCluster(cluster.name, snippets)
+    }
+
+    newClusters
+  }
+
+  private def getSentence(nlp: StanfordParserWrapper, id: Int, location: Double): Sentence =
+    {
+      nlp.processNextSentence()
+      var tokensArray = nlp.getTokens()
+      if (tokensArray.length > 1 || tokensArray(0)(0) != ".") { // filters out empty sentences with a single period
+
+        var tokenBuffer = new ListBuffer[Token]()
+        for (i <- 0 to tokensArray.length - 1) {
+          val t = tokensArray(i)
+          tokenBuffer += new Token(i, t(0), t(1), t(2), { if (t(3) == "O") "" else t(3) })
+        }
+
+        val tokens = tokenBuffer.toArray
+
+        val tree = nlp.getParseTree()
+        val graph = nlp.getSemanticGraph()
+
+        val relations = graphToRelations(graph, tokens)
+        //println("parsed: " + id + " " + tokens.map(_.toString()).mkString(" "))
+
+        Sentence(id, tokens, null, relations, location)
+      } else {
+        throw new ParsingException("empty sentence " + id)
+      }
+    }
 
   /**
    * convert the Standford Semantic Graph to a list of relations

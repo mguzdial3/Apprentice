@@ -1,6 +1,7 @@
 package edu.gatech.eilab.scheherazade.nlp
 
 import scala.collection.mutable.HashMap
+import scala.collection.mutable.ListBuffer
 import java.io._
 import edu.gatech.eilab.scheherazade.utils.MathUtils._
 import edu.gatech.eilab.scheherazade.data._
@@ -9,6 +10,8 @@ object UniGramModel {
 
   private val probabilityMap = loadMap("unigram_prob.txt")
   private val fictionalProbMap = loadMap("unigram_prob_fiction.txt")
+  
+  private val nonexistent = ListBuffer[String]() 
 
   private def loadMap(filename: String) =
     {
@@ -24,11 +27,11 @@ object UniGramModel {
       map
     }
 
-  def logProbability(sent: Sentence) =
+  def logProbability(sent: SingleDescription) =
     {
-	  val tokens = sent.tokens.filter(x => isUsefulPOS(x.pos) && (!StopWordStore.isStopWord(x.lemma))).map(x => x.lemma + toGooglePOS(x.pos))
+	  val tokens = sent.allTokens.filter(x => isUsefulPOS(x.pos) && (!StopWordStore.isStopWord(x.lemma))).map(x => x.lemma + toGooglePOS(x.pos))
 	  val countMap = tokens.groupBy(x => x).map(pair => (pair._1 -> pair._2.size))
-	  println(countMap)
+	  //println(countMap)
 	  val counts = countMap.map(_._2)
 	  val total = counts.sum
 	  
@@ -43,15 +46,27 @@ object UniGramModel {
 	    if (!probabilityMap.contains(word))
 	    {
 	      println("not found word: " + word)
+	      nonexistent += word
 	    }
 	    else
 	    {
-	      println(word + ": " + math.log(probabilityMap(word)) + " * " + c)
+	      //println(word + ": " + math.log(probabilityMap(word)) + " * " + c)
 	    }
 	  }
 	  
+	  
 	  prob
     }
+  
+  def printNon()
+  {
+    val pw = new PrintWriter(new BufferedOutputStream(new FileOutputStream("nonexistent.txt")))
+    nonexistent.distinct foreach {
+      word =>
+        pw.println(word)
+    }
+    pw.close
+  }
 
   private def isUsefulPOS(pos: String): Boolean =
     {
@@ -65,9 +80,13 @@ object UniGramModel {
     {
       if (pos.startsWith("N")) "_NOUN"
       else if (pos.startsWith("V")) "_VERB"
-      else if (pos == "JJ") "_ADJ"
+      else if (pos.startsWith("JJ")) "_ADJ"
       else if (pos.startsWith("RB")) "_ADV"
-      else ""
+      else 
+      {
+        System.err.println("WARNING: WHAT POS IS THIS ? " + pos)
+        ""
+      }
     }
 
 }
