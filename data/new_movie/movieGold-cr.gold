@@ -1,0 +1,1239 @@
+@ John drives to Sally's
+89 John drove his car to Sally's house.
+392 John drove to Sally's house.
+654 John drove to Sally's house.
+817 John went to Sally's house.
+863 John drove to Sally's house.
+5000 John unlocked his car, got in and started the engine, and then quickly drove to Sally's house.
+5001 John filled his car with gas before he drove to Sally's house.
+5002 John got into his car and made his way to Sally's house.
+5003 John turned the key and swiftly drove over to Sally's house.
+5004 John was nervous as he drove to Sally's house.
+5005 John, running late for his date, sped in his Corvette over to Sally's house.
+5006 John drove quickly to Sally's house, nearly hitting an old man with his car.
+5007 John quickly drove over to Sally's house.
+5008 John drove down the winding lane toward Sally's house.
+5009 John was nervous as he drove his brand new red car to Sally's house.
+5010 With sweaty palms and heart racing, John drove to Sally's house for their first date.
+5011 John drove to Sally's house, and nervously checked himself out in the rearview mirror before ringing her doorbell.
+5012 John drove his red car to Sally's house to pick her up for their movie date.
+5013 John quickly drove the short distance from his house to Sally's house.
+5014 John took the back roads to Sally's house, hoping to avoid traffic.
+5015 John drove to the bank to get money out of the ATM machine for his date with Sally.
+5016 John was nervous about his date as he arrived at Sally's house.
+5017 John thought about the night that he was going to have as he drove to Sally's house.
+5018 John drove over to Sally's house, to pick her up for their first date.
+###
+@ Sally enters car
+90 Sally joined John in the car.
+263 Sally got into John's car.
+373 Sally entered John's car.
+393 Sally got into John's car.
+5019 Sally was glad to get out of the heat and get into the air conditioned car.
+5020 Sally entered the car and buckled her seat belt.
+5021 Sally quickly got into the car.
+5022 Sally carefully entered the car with a smile.
+5023 Sally smiled at John when she got in the car.
+5024 Sally, her pretty white dress flowing in the wind, carefully entered John's car.
+5025 Sally slid in to the car, enjoying the feel of the heated seats on her bare legs.
+5026 Sally jumped in the car right away.
+5027 Sally, waiting for John on the front porch, slid into the passenger seat with a smile.
+5028 Sally, in her sexy yellow dress climbed into the sleek sports car.
+5029 Wearing a white dress cut just above the knee, Sally entered John's red Elantra.
+5030 After an awkward greeting, John led Sally to the car and she got in.
+5031 Sally ran down the sidewalk, entered the car, and smiled at John with anticipation.
+5032 Sally opened the door, leaned down and entered the car.
+5033 Sally brushed the cracker crumbs and took out wrappers from the seat and sat down.
+5034 When John pulled up to Sally's house, she came down the steps and got into his car.
+5035 Sally opened the car door and beamed at John.
+5036 Sally gave John a flirtatious smile as she entered his car.
+5037 Sally got into the car, her heart racing with excitement.
+###
+@ John meets Sally
+147 John and Sally met at the movie theater.
+211 John and Sally met at the theater.
+277 John met Sally at the movie theater.
+328 John and Sally met at the movie theater.
+356 John met Sally at the cinema.
+363 John and Sally met at the movie theater.
+406 John met Sally outside.
+487 John and Sally met each other outside the theater.
+536 John met Sally at the movie theater.
+546 John and Sally met outside the theater.
+566 John and Sally met in the parking lot.
+615 John met Sally at the movie theater.
+655 Sally met John on the sidewalk.
+736 John and Sally met at the movie theater.
+748 John and Sally met outside.
+849 John and Sally met in front of the movie theater.
+###
+@ pick Sally up
+19 John picked Sally up.
+59 John picked Sally up for the arranged date.
+103 John picked Sally up in his car.
+342 John picked up Sally for their date at 7 pm.
+386 John picked up Sally.
+584 John picked up Sally.
+705 John picked Sally up from her house.
+781 John picked Sally up.
+864 John picked up Sally.
+###
+@ drive to theater
+20 John drove to the theater.
+35 John gave Sally a ride to the theater.
+60 John drove Sally to the theater.
+138 John drove Sally to the theater.
+253 John drove Sally to the movie theatre.
+264 John drove to the theatre.
+305 John and Sally drove to the movies.
+343 John drove Sally to the theater.
+374 John drove Sally to the movie theater.
+394 John and Sally drove to the theater.
+420 John and Sally drove to the theater.
+526 John drove Sally to the movie theater.
+585 John and Sally drove to the theater.
+668 John and Sally drove to the movie theater.
+680 John and Sally drove to the movie theater.
+692 John and Sally drove to the movie theater.
+706 John and Sally drove to the movie theater.
+715 John and Sally drove to the movie theater.
+729 John and Sally drove to the movie theater.
+782 John and Sally drove to the movies.
+820 John and Sally went to the movie theater together.
+828 John and Sally went to the movie theater.
+865 John and Sally drove to the movie theater.
+###
+@ arrive at theater
+116 John and Sally arrived at the movie theater.
+317 John and Sally arrived at the movie theater.
+387 John and Sally arrived at the movie theatre.
+473 John and Sally arrived at the movie theater.
+###
+@ park car
+0 John parked his car in the big lot.
+21 John parked the car.
+92 John found a parking spot by the theater.
+681 John and Sally parked the car in the parking lot.
+###
+@ buy tickets
+2 John bought two tickets.
+12 John bought movie tickets.
+25 John purchased movie tickets.
+36 John paid for the tickets.
+46 John and Sally bought movie tickets.
+52 John bought tickets for the movie.
+62 John and Sally bought tickets.
+74 John bought two tickets.
+93 John paid for their tickets.
+117 John bought the tickets for the movie.
+160 John purchased two tickets.
+169 John bought movie tickets.
+182 John bought two movie tickets.
+189 John bought the tickets to the movie.
+203 John and Sally bought movie tickets.
+212 John bought movie tickets.
+240 John paid for the tickets.
+265 John bought two tickets.
+279 John purchased tickets to the movie.
+291 John and Sally bought tickets.
+307 John and Sally bought tickets.
+318 Sally purchased John a ticket.
+329 John bought the movie tickets.
+344 John purchased tickets and refreshments.
+366 John bought two movie tickets.
+388 John got the tickets.
+407 John paid for the tickets.
+422 John and Sally bought tickets.
+450 John and Sally bought tickets at the movie theater.
+474 John bought the movie tickets.
+489 John bought two movie tickets.
+499 John bought the movie tickets.
+527 John paid for Sally at the ticket booth.
+537 John and Sally purchased tickets.
+549 John purchased two tickets for a movie.
+556 John bought 2 movie tickets from the cashier.
+575 John and Sally bought tickets for the movie.
+587 John and Sally bought movie tickets.
+606 John and Sally paid for their tickets.
+623 John bought Sally a ticket.
+633 John purchased two tickets.
+647 John and Sally bought tickets.
+657 John bought tickets.
+669 John bought the tickets.
+683 John bought the tickets at the ticket counter.
+693 John bought two tickets.
+707 John bought movie tickets for Sally and John.
+717 John bought movie tickets.
+730 John paid for the movie tickets.
+739 John bought the movie tickets.
+771 John bought a ticket.
+772 John bought Sally her ticket.
+783 John bought the tickets.
+792 John paid for two tickets.
+807 John paid for two tickets.
+821 John bought tickets for the movie.
+838 John purchased movie tickets.
+867 John bought John and Sally tickets for a movie.
+5038 John stepped up to the ticket counter, having patiently waited in line, and asked for two tickets to the movie.
+5039 John bought tickets with his credit card.
+5040 John and Sally bought movie tickets after waiting in line.
+5041 When they got to the theater, John bought two tickets to the movie.
+5042 John bought expensive tickets.
+5043 John and Sally stood in line and bought the tickets to the movie.
+5044 John whipped out his credit card, hoping to impress, and bought tickets for the Hobbit movie.
+5045 John bought his ticket, and then Sally bought hers.
+5046 John and Sally bought the tickets in a rush.
+5047 John and Sally bought their movie tickets at "The Dame", a local theater that had been restored to its former 1940's glory.
+5048 Wanting to feel prepared, John had already bought tickets to the movie in advance.
+5049 John bought the tickets for him and Sally.
+5050 They were both quiet on the way to the theater, where John bought their tickets.
+5051 John and Sally arrived at the theater just before the movie was scheduled to start and rushed to buy their tickets for the movie.
+5052 John approached the ticket booth and bought two tickets from the clerk.
+5053 John bought two tickets for the film and handed one to Sally.
+5054 When they arrived at the movie hall, John went and bought tickets while Sally went to the bathroom.
+5055 John and Sally stood in line and got tickets for the show.
+5056 John paid for Sally and his movie tickets.
+5057 John paid for two tickets, and handed one to Sally.
+###
+@ buy popcorn and soda
+106 John bought Sally popcorn and a soda.
+125 John bought Sally popcorn and a soda.
+149 John and Sally bought popcorn and pretzels.
+191 John bought popcorn and soda for John and Sally.
+255 John bought popcorn and a drink.
+281 Sally bought popcorn and sodas at the concession counter.
+367 John and Sally purchased popcorn and soda.
+389 Sally got popcorn and sodas.
+528 John bought Sally popcorn and soda at the concession stand.
+548 John purchased popcorn and soda.
+607 John and Sally purchased popcorn and soda.
+685 John bought Sally some popcorn and a soda.
+711 John and Sally went and bought popcorn and sodas.
+731 John bought popcorn and coke.
+868 Sally bought popcorn and a soda from the concession stand.
+###
+@ buy popcorn
+37 Sally bought some popcorn.
+48 John and Sally bought popcorn.
+83 John bought Sally popcorn at the theater.
+118 John bought some popcorn.
+140 Sally bought popcorn.
+171 Sally bought popcorn.
+204 John bought popcorn.
+215 John bought some popcorn.
+266 Sally bought popcorn.
+330 Sally bought the popcorn.
+357 John bought popcorn.
+376 John and Sally bought popcorn.
+408 Sally bought popcorn.
+435 John bought popcorn.
+443 Sally ordered popcorn.
+451 John bought Sally popcorn.
+461 John bought popcorn.
+491 John purchased popcorn.
+502 John bought popcorn.
+538 John ordered popcorn.
+588 John bought popcorn.
+616 John and Sally bought popcorn.
+624 Sally bought popcorn.
+635 John and Sally bought popcorn.
+648 John and Sally bought popcorn.
+659 John bought popcorn.
+670 John and Sally bought popcorn.
+741 Sally bought popcorn.
+750 John bought popcorn for Sally.
+784 John bought popcorn.
+793 Sally bought a large tub of popcorn.
+831 John bought a bag of popcorn.
+839 John and Sally bought popcorn.
+###
+@ buy drinks
+139 John bought drinks.
+214 Sally bought a coke.
+331 Sally bought the drinks.
+358 Sally bought drinks.
+436 Sally bought a soda.
+444 John ordered a drink.
+453 John went back to buy drinks.
+492 Sally purchased soda.
+539 Sally ordered a soda.
+589 Sally bought a soda.
+660 Sally bought drinks.
+671 Sally bought a soda.
+5117 John approached the counter and, looking over the menu, asked for two small sodas. A root beer for himself and one for his date, Sally.
+5118 John bought drinks and returned to his seat.
+5119 John and Sally purchased soft drinks and water.
+5120 John then bought two drinks to go with their popcorn.
+5121 John and Sally bought delicious drinks.
+5122 Sally decided she was thirsty so they each bought a beverage.
+5123 Inside, John and Sally saw a waiter taking orders for alcoholic beverages, so two margaritas were purchased.
+5124 Sally realized she was thirsty, so she went and bought a large soda.
+5125 After doing so, John and Sally ordered their drinks.
+5126 Remembering that he forgot to purchase drinks, John dashed back out to the lobby while Sally waited.
+5127 John decided that he wanted to buy a beer, so he asked Sally if she wanted a glass of red or white wine and John proceeded to buy them.
+5128 After realizing they forgot to buy drinks, John told Sally to go ahead and find seats while he bought the drinks.
+5129 John realized they hadn't bought drinks for themselves, which caused them both to laugh before they went back to the snack bar.
+5131 John went to the refreshment stand and bought two Cokes from the attendant.
+5132 Sally finished her soda, so John went and bought them a large to share.
+5133 After they sat down, John realized that they bought snacks but forgot to buy any drinks.
+5134 John and Sally put enough money together to buy the expensive snacks.
+5135 Sally decided that she was thirsty and went to buy some drinks for herself and John.
+5136 John purchased drinks for himself and Sally.
+###
+@ buy refreshments
+13 Sally bought refreshments.
+63 John and Sally bought refreshments.
+94 Sally bought their snacks.
+161 Sally bought the snacks.
+241 Sally paid for the snacks.
+694 Sally bought refreshments.
+5077 While Sally waited, John went through another line and bought two small drinks and bags of popcorn for them to enjoy during the show.
+5078 John bought refreshments and handed some to Sally.
+5079 Sally and John purchased popcorn and candy.
+5080 John and Sally made their way through the line at the concession stand to buy some popcorn to split.
+5081 John and Sally bought large refreshments.
+5082 John bought popcorn to share with Sally.
+5083 John and Sally picked out popcorn, candy, and other treats to snack on during the epic film.
+5084 John bought himself a soda and some candy.
+5085 John and Sally bought refreshments.
+5086 John bought a large tub of popcorn and two boxes of malted milk balls, Sally's favorite.
+5087 John and Sally went to the refreshment stands where John ordered a soda and Sally ordered water.
+5088 John bought refreshments after asking what Sally would like.
+5089 John asked Sally if she'd like some popcorn for the movie, and when she said yes, they went to the counter to buy refreshments.
+5090 John led Sally to the snack counter and bought refreshments to enjoy during the movie.
+5091 Sally went to the refreshment stand and bought popcorn from the attendant.
+5092 Sally bought herself a small soda, while John got nachos and some sour patch kids.
+5093 Before going into the hall for the beginning of the movie, John and Sally stopped to buy some refreshments.
+5094 John and Sally were surprised how expensive the snacks were.
+5095 John and Sally decided that they wanted some popcorn.
+5096 John asked Sally what she preferred for refreshments, and purchased some.
+###
+@ show tickets
+3 John handed the tickets to the usher.
+229 John and Sally went into the theater hall and waited to give tickets to the ticket taker.
+282 John and Sally gave the tickets to the usher.
+319 John and Sally gave their tickets to an usher.
+518 John handed his tickets to the usher.
+5058 John and Sally showed their tickets to the attendant who smiled and waited for them at the entrance to the theater.
+5059 John showed the tickets to the usher.
+5060 John and Sally waited in line to show the employee the movie tickets.
+5061 When they got to the person checking the tickets and ripping the stubs, John handed the person the tickets.
+5062 John and Sally gladly showed the tickets at the entrance.
+5063 John flashed the tickets to the ticket collector.
+5064 A pale-faced usher stood before the door, John showed the tickets and the couple entered.
+5065 Sally and John showed their tickets to the suspicious clerk.
+5066 John and Sally quickly whipped out their tickets for the ticket checker.
+5067 John showed the tickets to the attendant, arm and arm Sally and John strolled into the lobby.
+5068 John showed the worker the tickets at the entrance to the theater.
+5069 The tattooed, male attendant gave John a smile and a wink as he whispered the words "what a catch," while John showed the tickets at the entrance.
+5070 John gave Sally her ticket, and they showed them to the attendant at the entrance.
+5071 John pulled the door open for Sally and showed their tickets to the usher waiting inside the entrance.
+5072 John showed the tickets to the usher.
+5073 John and Sally showed their tickets to the usher, who let them through the door.
+5074 John reached in his pocket and produced the two tickets.
+5075 John and Sally showed the movie theater officer their tickets.
+5076 John and Sally showed their tickets at the entrance to the newly built movie theater.
+###
+@ enter theater
+4 Sally and John went into the theater.
+23 John and Sally walked inside the theater.
+38 John and Sally entered the theater.
+53 John and Sally walked into the theater.
+61 John and Sally went into the theater.
+73 John and Sally walked inside the theater.
+126 John and Sally walked into the theater.
+150 John and Sally entered the movie theater.
+172 John and Sally entered the theater.
+181 John and Sally entered the movie theater.
+193 John and Sally entered the theatre.
+202 John and Sally entered the movie theater.
+213 John and Sally entered the theater.
+225 After parking, John and Sally went into the Mall and walked to the movie theater.
+230 John and Sally walked into the movie theater.
+242 John and Sally went into the theater.
+267 John and Sally entered the theatre.
+280 John and Sally went into the movie theater.
+292 John and Sally entered the theater.
+306 John and Sally entered the theater.
+375 John and Sally entered the theater.
+434 John and Sally entered the movie theater.
+442 John and Sally entered the movie theater.
+471 John went back to the theater.
+475 John and Sally entered the movie theater.
+490 John and Sally entered the theater.
+501 John and Sally went into the theater.
+550 John and Sally entered the theater.
+557 John and Sally walked to theater 2 for their movie.
+567 John and Sally walked inside the theater.
+576 John and Sally entered the movie theater.
+586 John and Sally walked into the theater.
+590 John and Sally went into the theater.
+598 John and Sally entered the movie theater.
+604 John and Sally entered the movie theater.
+636 John and Sally entered the movie theater.
+658 John and Sally entered the theatre.
+682 Sally followed John in to the movie theater.
+686 John and Sally entered the auditorium.
+708 John and Sally entered the dark room.
+718 John and Sally entered the movie theater.
+732 John and Sally entered the movie theater.
+742 John and Sally entered the movie.
+749 John and Sally entered the theatre.
+759 John and Sally walked into the theater.
+773 John and Sally entered the movie.
+805 John and Sally walked into the movie theatre.
+840 John and Sally entered the movie room.
+866 John and Sally entered the movie theater.
+5098 John and Sally smiled at each other and engaged in small talk as they found and entered the theater showing their movie.
+5099 John and Sally entered the theater and admired the big screen.
+5100 John held the door open, as Sally entered the theater.
+5101 John and Sally quickly entered the theater.
+5102 John and Sally went to the theater the movie they were seeing was playing in.
+5103 John and Sally stepped inside the theater anxious to see the movie.
+5104 John and Sally went into the theater, hearts pounding in excitement over the anticipation of the film.
+5105 John and Sally entered the theater amongst a crowd of eager movie goers.
+5106 After ordering their drinks, John and Sally ran into the theater.
+5107 John and Sally walked into the dim interior of the movie theater. Trailers were showing on the screen.
+5108 Hand in hand, John and Sally entered the theater.
+5109 Sally entered the theater following John.
+5110 After getting everything they needed from the snack bar, Sally and John entered the theater their film was playing in.
+5111 John and Sally entered the darkened theater and paused letting their eyes adjust to the dimness.
+5112 John and Sally walked down the aisle on the right side of the theater.
+5113 John and Sally entered the dimly lit theater, careful not to trip on the raised carpet.
+5114 After they bought the refreshments, John and Sally entered the theater.
+5115 John and Sally found the right theater room for their movie and proceeded to go inside.
+5116 John and Sally walked hand in hand into the theater.
+5117 John and Sally entered the theater.
+###
+@ find seats
+28 John found two empty seats.
+55 John and Sally found good seats.
+64 John and Sally found seats in the theater.
+75 John found two empty seats.
+84 John and Sally sat in the front row.
+95 Sally found seats in the back of the theater.
+119 John and Sally found their seats.
+127 John and Sally found seats in the back.
+173 John and Sally found seats.
+183 John and Sally found seats.
+194 John and Sally found two secluded seats.
+207 John and Sally found seats.
+243 John and Sally found seats.
+256 John and Sally picked out seats in the movie theatre.
+268 Sally found seats.
+283 John and Sally found seats inside the theater.
+308 John and Sally picked seats.
+321 With their popcorn Sally and John found seats in the back.
+333 John found a seat at the back.
+345 Sally and John chose a pair of seats.
+377 John and Sally found empty seats.
+396 John and Sally found two seats.
+409 John found seats.
+423 John and Sally found seats.
+437 John and Sally found their seats.
+452 Sally picked out the seats.
+462 Sally chose the seats.
+476 John and Sally found seats.
+494 John and Sally found seats.
+503 John and Sally found seats.
+511 Sally found a seat.
+529 John and Sally found their seats at the theater.
+551 Sally found their seats.
+577 John found a set of seats for John and Sally.
+591 John and Sally found seats.
+599 John found two seats.
+608 John and Sally found seats.
+625 John chose two seats.
+637 John and Sally found seats.
+649 John and Sally found a place to sit.
+661 John and Sally found two seats.
+672 John and Sally found a seat.
+695 John and Sally found seats.
+709 John and Sally found a place to sit.
+719 John chose a pair of seats.
+751 John and Sally found seats in the theater.
+785 Sally found some seats.
+809 John and Sally found seats.
+842 John and Sally found seats in the middle of theater.
+853 John and Sally found a seat.
+869 John and Sally found seats in their theater.
+5137 Stumbling through the darkness of the theater, John and Sally eventually found their seats.
+5138 John and Sally found seats they liked in the front.
+5139 After walking through a crowded hall, John and Sally found seats.
+5140 John and Sally made their way to their seats.
+5141 John and Sally found seats in the front row.
+5142 After quickly scanning the theater, John and Sally found two seats on the aisle.
+5143 John and Sally scoured the theater for the best seats in the house, and found a perfect pair right in the center of the theater.
+5144 John and Sally found seats near the middle of the room.
+5145 Sally ran up the stairs to secure their seats.
+5146 Drinks in hand, John and Sally found two seats near the back row.
+5147 John and Sally located their seats in the theater.
+5148 Sally found the seats and quickly texted her friends expressing how nervous she was.
+5149 After getting their drinks, Sally and John talked about where to sit and found seats that worked for both of them.
+5150 John took Sally's hand and led her to an empty row of seats near the back of the theater.
+5151 John and Sally found two empty seats in the middle of the theater and decided to sit there.
+5152 John and Sally found two good seats near the back.
+5153 John decided to try and run to get some drinks before the movie started and when he came back the lights had already been turned off and it took him a while until he found the seats.
+5154 John and Sally looked around before finding the perfect place to sit.
+5155 John and Sally found a pair of seats towards the middle of the theater.
+5156 John and Sally found their seats in the dimly-lit room.
+###
+@ sit down
+5 Sally sat in a middle row.
+6 John sat next to Sally.
+14 John and Sally sat.
+29 John and Sally sat down.
+39 John and Sally sat down.
+47 John and Sally sat in the front row.
+56 John and Sally sat down.
+65 John and Sally sat down in the theater.
+76 John and Sally sat down.
+96 John and Sally sat down.
+120 John and Sally sat down.
+151 John and Sally sat down.
+162 John and Sally sat in the back row.
+174 John and Sally sat down.
+184 John and Sally sat down.
+195 John and Sally sat down in the seats.
+208 John and Sally sat down.
+216 John and Sally sat down in the theater.
+231 John and Sally sat down.
+244 John and Sally sat down.
+257 John and Sally sat down.
+269 John and Sally sat down.
+284 John and Sally sat down.
+293 John and Sally sat down.
+309 John and Sally sat down.
+334 John sat down.
+335 Sally sat down next to John.
+346 John and Sally sat in their chosen seats.
+359 John and Sally sat down in the theater.
+368 John and Sally sat down in the theater.
+378 John and Sally sat down.
+397 Sally sat down.
+398 John sat beside Sally.
+410 Sally and John sat down.
+424 John and Sally sat down.
+438 John and Sally sat down.
+445 John and Sally took their seats.
+454 John and Sally got settled in the seats.
+463 John and Sally sat down.
+472 John sat down.
+477 John and Sally sat down.
+495 John and Sally sat down.
+504 John and Sally sat down.
+513 John sat next to Sally.
+530 John and Sally sat next to each other.
+541 John and Sally sat next to each other.
+552 John and Sally sat in their seats.
+558 John and Sally sat in the front row of the theater.
+568 John and Sally sat in chairs.
+578 John and Sally sat down.
+592 John and Sally sat down.
+600 Jack and Sally sat down.
+609 John and Sally sat down.
+618 John and Sally sat down.
+626 John and Sally sat down.
+638 John and Sally sat down.
+662 John and Sally sat down.
+673 John and Sally sat down.
+689 John and Sally sat down in the seats near the front of the theater.
+696 John and Sally sat down.
+712 John and Sally went back to their chairs and sat down.
+720 John and Sally sat down.
+733 John and Sally sat down.
+744 John and Sally sat down.
+752 John and Sally sat down.
+762 John and Sally sat in the back.
+786 John and Sally sat down.
+794 John and Sally sat in the middle of the theater.
+810 John and Sally sat down.
+823 John and Sally sat down.
+832 John and Sally sat near the front.
+843 John and Sally sat down.
+854 John and Sally sat down.
+870 John and Sally sat down in their seats.
+5157 It was still a few minutes before show time so the theater was still empty, making it easier for John and Sally to move down the row to their seats.
+5158 John and Sally sat down and got comfortable.
+5159 John and Sally proceeded to sit down in the middle seats of the aisle.
+5160 John and Sally sat down, put their drinks in their drink holders on the chairs and Sally took her drink.
+5161 John and Sally sat down quietly.
+5162 After taking off their coats, John and Sally sat down.
+5163 John and Sally sat down, sitting as close to one other as possible.
+5164 Sally and John sat down and put their feet on the seats in front of them.
+5165 When they both got there, John and Sally sat down.
+5166 John and Sally sat down in the velvet covered seats, and took in the richly appointed theater.
+5167 John awkwardly grabbed Sally's coat and then they both sat down.
+5168 John arrived with the drinks and saw Sally waving at him and went and sat down next to her.
+5169 John and Sally sat down in the still-lit theater near the middle.
+5170 John and Sally sat down in the seats and made themselves comfortable in anticipation of enjoying the movie.
+5171 John and Sally made their way from the aisle to the seats and sat down.
+5172 John sat down and raised the arm rest so that he and Sally could snuggle.
+5173 Once John found the seats he was excited to finally sit down.
+5174 John and Sally found the seat they thought was best.
+5175 John took a seat to the left of Sally.
+5176 John and Sally sat down into the comfy seats.
+###
+@ talk
+7 John and Sally talked quietly for a few minutes.
+353 Sally discussed the movie with John during the trip.
+425 John and Sally talked.
+483 John and Sally talked about the movie.
+582 John and Sally talked about the movie.
+639 John and Sally chatted during the previews.
+663 John and Sally talked.
+725 John and Sally talked.
+737 John and Sally discussed the films.
+5177 Having sat down, John asked Sally about her day and they enjoyed a bit of small talk while waiting for the show to begin.
+5178 John spoke about how his day was going.
+5179 John and Sally spoke while waiting for the movie to begin.
+5180 John and Sally spoke about how good they think the movie will go and hope that it's not boring.
+5181 John and Sally discussed mutual interests.
+5182 John and Sally made small talk while they waited for the movie to start.
+5183 John and Sally whispered sweet nothings to each other, a passionate prelude to the date ahead.
+5184 John and Sally spoke curtly to each other about politics.
+5185 John and Sally quickly whispered to each other.
+5186 Sally and John both agreed that the theater restoration was remarkable.
+5187 John and Sally chatted about various topics, such as the weather and how dates are awkward, before the start of the show. 
+5188 John arrived with the drinks and saw Sally waving at him and went and sat down next to her.
+5189 John and Sally spoke quietly to each other about the ads being shown before the lights went down.
+5190 John leaned toward Sally and they spoke in whispers to each other while previews played on the screen.
+5191 John and Sally discussed what they thought the movie would be about.
+5192 Even though the previews hard started, John and Sally continued to talk about their love of llamas.
+5193 John and Sally were enjoying the snacks so much that neither of them spoke to the other.
+5194 John made nervous small talk to Sally before the movie started.
+5195 John and Sally laughed as they made delightful conversation with each other.
+5196 John and Sally asked each other questions about their lives, in order to get to know one another better.
+###
+@ movie begins
+8 The movie started with loud music.
+15 The movie began.
+121 The movie began.
+130 The movie began to play.
+185 The movie started.
+270 The movie started.
+294 The movie started.
+478 The movie started.
+496 The movie began to play.
+664 The movie started.
+796 The movie began.
+844 The movie started.
+5197 Just as Sally had finished relating the events of that day to John, the theater fully darkened, the screen was unveiled, and the show began.
+5198 John and Sally were excited when the movie began.
+5199 The theater dimmed, and the movie started.
+5200 After a few minutes, the movie started.
+5201 The lights in the theater dimmed and the movie started.
+5202 The movie suddenly started.
+5203 Finally, after about a million trailers, the film started, bringing a hush to the crowd.
+5204 The movie began and a hush fell over the crowd.
+5205 Once the movie began, John and Sally sat quietly.
+5206 The lights dimmed as the movie began.
+5207 After the lengthy and irritating previews, the movie finally began.
+5208 The lights dimmed slowly as the movie began.
+5209 Their movie finally began, and they settled in.
+5210 As the movie began, John and Sally stopped talking and concentrated on the plot of the movie.
+5211 The movie started and John and Sally looked up at the screen.
+5212 As the movie began, John and Sally stopped talking.
+5213 After a few minutes and some good snacks, the movie began.
+5214 The lights dimmed and the movie started showing.
+5215 The movie began with a loud sound of thunder.
+5216 The movie started, and John and Sally settled into their seats.
+###
+@ watch movie
+9 Sally and John watched the movie quietly.
+30 John and Sally watched the movie.
+57 John and Sally watched the movie.
+67 John and Sally watched the movie.
+78 John and Sally watched the movie.
+85 John and Sally watched the movie.
+107 John and Sally watched the movie.
+131 John and Sally watched the movie.
+141 John and Sally watched the movie.
+152 John and Sally watched the romantic comedy.
+175 John and Sally watched the movie.
+199 John and Sally watched the movie.
+209 John and Sally watched the movie.
+217 John and Sally watched the movie.
+233 John and Sally watched the movie.
+245 John and Sally watched the movie.
+285 John and Sally watched the movie.
+310 John and Sally watched the movie.
+339 John and Sally watched the movie.
+349 John and Sally watched the feature presentation.
+360 John and Sally watched the movie.
+379 John and Sally watched the beginning of the movie.
+399 John and Sally watched the movie.
+412 John and Sally watched the movie.
+427 John and Sally watched the movie.
+456 John and Sally watched the movie.
+468 Sally watched the movie.
+480 John and Sally watched the movie.
+553 John and Sally watched the movie.
+569 John and Sally watched the movie.
+579 John and Sally watched the movie.
+601 John and Sally watched the movie.
+612 John and Sally watched the movie.
+619 John and Sally watched the movie.
+641 John and Sally watched the movie.
+651 John and Sally watched the movie.
+697 John and Sally watched the movie.
+714 John and Sally watched the movie.
+721 John and Sally watched the movie.
+734 John and Sally watched the movie.
+745 John and Sally watched the film.
+753 John and Sally watched the movie.
+787 John and Sally watched the movie.
+798 John and Sally watched the movie together.
+811 John and Sally watched the movie.
+824 John and Sally watched the movie.
+855 John and Sally started watching the movie.
+873 John and Sally watched the movie.
+5276 Both feeling unsure of the others' next move, they watched the movie in silence.
+5277 John and Sally felt calm as they watched the movie.
+5278 John and Sally watched the movie silently.
+5279 John and Sally both continued to enjoy their snacks and the movie that was playing.
+5280 John and Sally carefully viewed the movie.
+5281 John and Sally sat captivated by the movie.
+5282 John and Sally watched the wonderful film and laughed at all the appropriate moments.
+5283 The two watched the movie in silence.
+5284 John and Sally watched the movie.
+5285 The movie they chose to see was a well-reviewed comedy.
+5286 John and Sally continued to watch the movie.
+5287 Sally watched the movie with a smile because of how happy she was to be with John.
+5288 John and Sally watched the movie together, whispering about plot twists to each other.
+5289 Sally and John snuggled together and watched the movie for a while.
+5290 John and Sally silently watched the interesting movie.
+5291 The two watched the movie quietly, enjoying it very much.
+5292 While holding on to each other and enjoying that sensation, John and Sally watched the movie.
+5293 The two sat in silence and enjoyed the film.
+5294 Sally and John laughed as they watched the comedy.
+5295 John and Sally intently watched the action movie.
+###
+@ enjoy movie
+40 John and Sally enjoyed the movie.
+86 John and Sally enjoyed the movie.
+390 John and Sally enjoyed the movie.
+448 John and Sally enjoyed the movie.
+428 John and Sally enjoyed the movie.
+542 Joh and Sally enjoyed the movie.
+593 John and Sally enjoyed the movie.
+627 John and Sally enjoyed the movie.
+5317 When John returned, he once again put his arm around Sally and they enjoyed watching the rest of the movie together.
+5318 Sally and John both said they enjoyed the movie.
+5319 Sally and John were enjoying the movie.
+5320 Both John and Sally enjoyed the movie, it was just as good as they thought it would be.
+5321 John and Sally really enjoyed the movie overall.
+5322 John and Sally sat with big smiles on their faces as they watched the movie.
+5323 John and Sally felt endlessly fulfilled by the movie and enjoyed it immensely.
+5324 John and Sally both enjoyed the very funny movie.
+5325 John and Sally both enjoyed the movie.
+5326  The movie was well written and John and Sally both enjoyed it.
+5327 Both John and Sally enjoyed the movie a great deal.
+5328 John returned to the theater and saw Sally as she enjoyed the movie.
+5329 Once Sally returned, they went back to enjoying the movie.
+5330 John and Sally both had fun on the date and really enjoyed watching the movie together.
+5331 John and Sally laughed and smiled at the movie plot.
+5332 John and Sally enjoyed the movie very much, even though it was quite sad.
+5333 John and Sally both really enjoyed the movie and each others company and were very happy.
+5334 Both John and Sally found the movie to be funny.
+5335 John and Sally thought that the movie was really enjoyable.
+5336 Both John and Sally enjoyed the action-packed movie.
+###
+@ movie ends
+10 The movie ended.
+98 The movie finished.
+187 The movie ended.
+246 The movie ended.
+273 The movie ended.
+299 The movie ended.
+481 The movie ended.
+629 The movie finished.
+667 The movie ended.
+698 The movie ended.
+775 The movie ended.
+846 The movie ended.
+5371 As the movie ended, Sally moved away from John and he was forced to remove his arm from around her.
+5372 The movie ended and they watched the closing credits.
+5373 The movie had a shocking, twisted ending.
+5374 When the movie ended, John and Sally waited for the lights to come on.
+5375 The movie finally ended.
+5376 The credits began to roll as the movie ended. 
+5377 The movie ended, and John and Sally waited through the credits to catch every moment.
+5378 The movie ended, and John made them stay to watch the credits.
+5379 The movie finally finished.
+5380 The movie had a delightful and surprising ending.
+5381 The movie ended, but the couple was still holding hands and chatting about the movie.
+5382 Much to John's dismay, the movie ended.
+5383 The movie ended before either of them wanted it to.
+5384 The movie ended and John and Sally remained seated for a few minutes, waiting for the crowd to leave the theater.
+5385 John and Sally smiled as the movie ended and the lights came on.
+5386 The movie ended, and John and Sally watched the credits.
+5387 John and Sally discussed how sad they both were that the movie ended as they both wanted it to continue as the story was so good.
+5388 John and Sally both applauded as the credits rolled.
+5389 The credits to the movie scrolled as it came to an end.
+5390 The movie ended, and John and Sally were satisfied with what they saw.
+###
+@ eat popcorn
+41 John and Sally ate the popcorn.
+49 John and Sally ate popcorn.
+97 John and Sally shared popcorn.
+198 John and Sally ate the popcorn.
+218 John ate the popcorn.
+232 John and Sally ate the popcorn before the movie started.
+258 John and Sally shared the popcorn and drink.
+272 John and Sally ate popcorn.
+286 John ate the popcorn.
+336 John ate the popcorn.
+411 John and Sally ate popcorn.
+446 Sally ate her popcorn.
+465 Sally ate popcorn.
+505 John and Sally ate the popcorn.
+514 John shared his popcorn with Sally.
+515 Sally ate the popcorn.
+543 John shared popcorn with Sally.
+580 John and Sally ate popcorn during the movie.
+610 John and Sally ate popcorn.
+650 John and Sally ate popcorn.
+713 John and Sally ate popcorn.
+746 John and Sally shared popcorn.
+845 John and Sally ate popcorn.
+852 John bought Sally some popcorn and a soda.
+858 John and Sally shared Sally's popcorn.
+871 John and Sally ate some popcorn.
+5217 Sally watched the opening scenes intently while she snacked on her popcorn.
+5218 Sally ate most of the popcorn.
+5219 While watching the movie intensely, John and Sally ate popcorn.
+5220 Both John and Sally took turns taking popcorn throughout the movie.
+5221 John and Sally ate the tasty buttered popcorn inside the theater.
+5222 John put the popcorn between him and Sally so they could share.
+5223 John and Sally shared popcorn during the movie, feeding each other and laughing.
+5224 Sally pulled a bag of popcorn out of her purse and began to eat it.
+5225 The couple devoured the popcorn they ordered.
+5226 John and Sally leaned in close to each other and munched on popcorn as the opening credits rolled.
+5227 During the movie, John and Sally were eating popcorn. 
+5228 John at popcorn in the theatre and offered some to Sally.
+5229 Sally offered John some of her popcorn and they both ate as the credits began. 
+5230 Sally held the popcorn between them and John ate it throughout the movie.
+5231 Both John and Sally ate some handfuls of popcorn as the movie played.
+5232 John found a bag of popcorn under one of the chair, and he and Sally ate it.
+5233 Throughout the movie, during the silent moments, one could hear other people as they ate popcorn.
+5234 John thought the popcorn was extra buttery.
+5235 Sally and John dug into their popcorn and enjoyed it.
+5236 John and Sally ate the buttered popcorn as they watched the movie in the theater.
+###
+@ drink sodas
+219 Sally drank the coke.
+338 Sally took a drink.
+447 John drank his drink.
+611 John and Sally drank soda.
+872 John and Sally drank some soda.
+5237 John paid more attention to Sally while the movie rolled and nervously sipped his drink.
+5238 Sally and John slowly drank their sodas.
+5239 The salty popcorn forced John and Sally to drink soda.
+5240 John and Sally both drank from their sodas from time to time.
+5241 John and Sally drank the sugary sodas.
+5242 The popcorn was salty so John and Sally kept reaching for their sodas.
+5243 John and Sally both had a soda. John had a Dr. Pepper, Sally a Coke.
+5244 John and Sally each sipped on their own giant sodas.
+5245 To quench their thirst, John and Sally drank their sodas.
+5246 Sipping their sodas, John and Sally both settled down to watch the movie.
+5247 Because John's throat became dry from the popcorn, John drank his soda.
+5248 Sally and John drank sodas to wash down the popcorn.
+5249 John and Sally drank their sodas because the popcorn made them thirsty.
+5250 John and Sally sipped on their Cokes through straws as the movie played.
+5251 John and Sally sipped their gigantic soda together.
+5252 After eating popcorn, John and Sally both drank sodas as the popcorn had been quite salty.
+5253 The fountain drinks really hit the spot for Sally.
+5254 John and Sally took a drink of their beverages to wash down the popcorn.
+5255 John and Sally drank the ice-cold sodas, which went perfectly with the buttered popcorn.
+###
+@ use bathroom
+110 John got up to use the bathroom.
+132 John and Sally used the restrooms after the movie.
+205 Sally used the restroom.
+235 John and Sally walked to the restrooms.
+431 John went to the restroom.
+470 John went to the bathroom.
+559 Sally got up to go to the bathroom.
+5296 John, having drank too much soda, excused himself to use the bathroom.
+5297 Sally used the restroom twice.
+5298 Sally got up to use the restroom before the movie ended.
+5299 John got up to use the restroom for only a few minutes before returning to his seat next to Sally.
+5300 John and Sally both used the restroom during the movie.
+5301 John got up twice to pee during the movie.
+5302 The sodas went through John and Sally so they both got up to use the restroom.
+5303 Sally stood up to use the restroom during the movie, smiling coyly at John before that exit.
+5304 John had to get up to use the bathroom.
+5305 Sally left once during the movie to use the restroom, hoping she wouldn't miss anything important.
+5306 At one point during the movie, Sally got up and used the bathroom during the movie.
+5307 John used the restroom during the movie, making a very quick trip to make sure not to miss any of the movie.
+5308 John and Sally both drank some of their soda after finishing the popcorn.
+5309 Sally excused herself and went to the restroom during the movie.
+5310 Sally needed to use the restroom during the movie, so John had to tell Sally what had happened in the movie during her absence.
+5311 John and Sally both walked to the restrooms and used the facilities.
+5312 Sally had to get up twice to pee, because she drank so much of the giant soda. 
+5313 About halfway through the movie John used the restroom as he had forgotten to before the movie started.
+5314 During the movie, the drinks really went through John and he needed to excuse himself.
+5315 Sally had to use the restroom, so she got up in the middle of an unimportant part.
+5316 Sally had to use the restroom during the movie, and returned a few minutes later.
+###
+@ stand up
+42 John and Sally stood up.
+247 John and Sally got up from their seats.
+288 Sally and John rose from their seats.
+300 John and Sally stood up.
+312 John and Sally stood up.
+415 John and Sally stood up.
+507 John and Sally got up.
+564 Sally got up.
+570 John and Sally got out of chairs.
+581 John and Sally got up after the movie.
+594 John and Sally got up.
+620 John and Sally stood up.
+722 John and Sally stood up.
+800 John and Sally stood up.
+812 John and Sally got up from their seats.
+847 John and Sally stood up.
+874 John and Sally stood up from their seats.
+5391 Sally stood up first, followed by John, and they both stretched quickly to revive their bodies after a long time of sitting.
+5392 John and Sally stood up at the same time to leave.
+5393 John helped Sally stand up.
+5394 John and Sally stood up and grabbed the empty popcorn bucket and drinks from the seats.
+5395 John and Sally slowly got up from their seats.
+5396 John and Sally got up to leave the theater and go home.
+5397 John and Sally stood up, still holding hands, ready to continue the date.
+5398 As soon as the credits were over, John and Sally got up and left.
+5399 John and Sally got up before the credits even started.
+5400 Standing up, John retrieved the popcorn tub from the floor.
+5401 After some time, John and Sally reluctantly stood up from their seats.
+5402 John and Sally stood up from their seats during the ending credits.
+5403 John and Sally stood up from their seats and cleaned up after themselves.
+5404 John and Sally stood up from their seats and gathered their things as they prepared to leave.
+5405 John and Sally stood up and started moving out of the theater.
+5406 Once the credits were over, John and Sally rose quickly from their seats.
+5407 With a stretch John stood up and waited for Sally.
+5408 John and Sally talked about what they thought of the movie as they stood out of their seats.
+5409 John and Sally stood up from their seats and stretched out a bit.
+###
+@ leave theater
+11 John and Sally left the theater.
+17 John and Sally exited the theater.
+31 John and Sally left the theater.
+43 John and Sally exited the theater.
+79 John and Sally left the theater.
+144 John and Sally left the theater.
+157 John and Sally left the theater.
+176 John and Sally left the theater.
+188 John and Sally left the movie theater.
+201 John and Sally walked out of the movie theatre.
+222 John and Sally left the theater.
+274 John and Sally left the theatre.
+301 John and Sally exited the theater.
+313 John and Sally left the movie theater.
+341 John and Sally left the movie theater.
+351 John and sally exited the theater after the movie.
+362 John and Sally left the cinema.
+370 John and Sally exited the theater when the movie ended.
+401 John and Sally left the theater.
+469 John left the theater.
+485 John and Sally left the movie theater.
+508 John and Sally left the theater.
+544 John and Sally left the movie theater.
+554 After the movie, John and Sally exited the theater.
+565 Sally walked out of the theater.
+602 John and Sally left the theater.
+613 John and Sally exited the movie theater.
+644 John and Sally exited the theater.
+653 John and Sally left the movie.
+676 John and Sally left the theater.
+723 John and Sally exited the theater.
+735 John and Sally exited the movie theater.
+755 John and Sally went outside the theater.
+776 John and Sally left the theater.
+801 John and Sally left the theater together.
+813 John and Sally left the movie theatre.
+848 John and Sally left the theater.
+851 John and Sally entered the theater.
+860 John and Sally leave the theater.
+875 John and Sally exited the movie theater.
+5429 The bright sunshine temporarily blinded John as he opened the doors and held them for Sally as they left the dark theater and stepped back out onto the street.
+5430 John and Sally left the theater and enjoyed the fresh night air.
+5431 After checking the mirrors of the car, John proceeded to back out of the parking space.
+5432 John and Sally left the theater, happy with what they had seen.
+5433 John and Sally left the movie theatre from the front exit.
+5434 John held the door open for Sally as they exited the theater.
+5435 John and Sally sped out of the theater and drove back toward Sally's home, reluctant to end the date.
+5436 John drove quickly away from the movie theater.
+5437 John and Sally quickly sped out of the parking lot.
+5438 John drove slowly away from the theater as he and Sally recounted their favorite parts of the movie.
+5439 John and Sally exited the theater.
+5440 John took Sally home after they left the movie theatre.
+5441 John and Sally left the movie theater and headed back to Sally's house.
+5442 John drove the car out of the movie theater parking lot and turned toward Sally's house.
+5443 John drove the car to the exit and onto the street away from the theater.
+5444 John and Sally carefully left the movie theater parking lot, not wanting to be hit by another car.
+5445 After buckling up, John and Sally decided to head home.
+5446 Once in the car, John pulled out of the movie theater parking lot.
+5447 John and Sally left the movie theater, hoping to have another date in the near future.
+###
+@ walk to car
+69 John and Sally went to the car after the movie.
+133 John and Sally walked to their car.
+237 John and Sally walked to the car.
+248 John and Sally walked to Sally's car.
+314 John and Sally went to the car.
+595 John and Sally walked to the car.
+621 John and Sally walked to their car.
+5410 Still holding hands, John walked Sally back to his car through the maze of people all scurrying out of the theater.
+5411 John and Sally walked to the car in the parking garage.
+5412 While passing through the crowd, John and Sally returned to the car.
+5413 John and Sally walked back to the car talking about the movie and other things in general.
+5414 John and Sally slowly strolled out to the car.
+5415 John and Sally walked to the car while they talked about the movie.
+5416 Laughing over the memorable moments of the film, John and Sally meandered back to the red Corvette.
+5417 John and Sally walked to the car together, not saying a word to each other.
+5418 John and Sally ran to their car.
+5419 Still holding hands, John and Sally walked back to the car.
+5420 Still holding hands, John and Sally slowly walked to the car.
+5421 John put his coat around Sally as they walked to his car.
+5422 John and Sally talked about the movie while walking to the car.
+5423 John and Sally slowly walked to the car and got inside, dreading the end of the date.
+5424 John and Sally walked through the theater and then through the parking lot to get to their car.
+5425 John and Sally left the theater, holding hands on the way to the car.
+5426 John and Sally discussed what they liked about the movie on the way to the car.
+5427 John told Sally that he had a great time as they headed back to his car.
+5428 John and Sally walked to the car, holding hands while doing so.
+###
+@ go home
+18 John and Sally drove home.
+32 John took Sally home.
+44 John gave Sally a ride home.
+51 John and Sally drove home from the theater.
+70 John and Sally drove back to Sally's house.
+71 Sally went home.
+72 John drove home.
+87 John walked Sally home.
+101 John drove Sally home.
+114 John took Sally back home.
+134 John drove Sally home.
+136 John drove John home.
+210 John and Sally went home.
+238 John and Sally drove home.
+250 Sally drove John home.
+259 John drove Sally home.
+275 John drove Sally home.
+304 John and Sally went home.
+316 John drove Sally home.
+326 Sally drove John home after a good time.
+383 John drove Sally back to her home.
+385 John drove back to his own home.
+391 John took Sally home.
+402 John and Sally drove to Sally's house.
+405 John drove home.
+449 John and Sally went home.
+486 John and Sally walked home.
+533 John drove Sally home after the movie is over.
+545 Sally and John went home.
+583 John and Sally went home.
+597 John drove home.
+603 John drove Sally home.
+630 John took Sally home.
+645 John drove Sally home.
+677 John drove Sally home.
+700 John drove Sally home.
+728 John drove home.
+780 John and Sally went home.
+788 John drove Sally home.
+790 John drove home.
+876 John drove Sally home.
+###
+@ kiss
+45 Sally kissed John.
+68 John kissed Sally during the movie.
+80 John kissed Sally.
+115 Sally gave John a goodnight kiss.
+135 Sally kissed John goodnight.
+200 John and Sally kissed.
+260 John and Sally kissed.
+302 John and Sally kissed goodnight.
+323 In the middle of the movie, John kissed Sally.
+355 Sally gave John a special goodnight kiss.
+361 John kissed Sally.
+371 John and Sally kissed goodnight.
+400 John kissed Sally.
+430 John and Sally kissed.
+441 John kissed Sally.
+484 John kissed Sally.
+498 Sally kissed John.
+509 John and Sally kissed.
+534 John kissed Sally good night.
+562 John tried to kiss Sally.
+572 John and Sally kissed outside.
+631 Sally kissed John.
+726 John kissed Sally.
+756 John and Sally kissed.
+774 John and Sally kissed each other.
+779 John and Sally kissed again.
+789 John kissed Sally at the door.
+803 John kissed Sally good night.
+826 Sally gave John a kiss.
+5449 John let go of Sally's hand and opened the passenger side door of his car for her but instead of entering the car, she stepped forward, embraced him, and gave him a large kiss.
+5450 John and Sally kissed passionately.
+5451 At the end of the night, Sally leaned over and kissed John.
+5452 They kissed after John dropped Sally off.
+5453 John and Sally very softly kissed.
+5454 John had strong feelings for Sally so he looked into her eyes and kissed her.
+5455 Finally, ready to turn in, Sally left the red car, kissing John on the way out.
+5456 John kissed Sally on the cheek.
+5457 They finally kissed when John brought Sally home.
+5458 At the end of Sally's drive they kissed and agreed to meet for lunch on Tuesday.
+5459 At the car, John looked down at Sally, embraced and kissed her.
+5460 Sally closed her eyes as she and John kissed.
+5461 John kissed Sally before she got out of the car at her house.
+5462 When John and Sally arrived at her house, before he could change his mind, John quickly pulled Sally toward him and they finally shared a kiss.
+5463 John walked Sally to her home and gave her a sweet goodnight kiss.
+5464 When John dropped Sally off, they kissed at her front door.
+5465 John pulled up to Sally's home and they kissed for several minutes before Sally finally got out of the car and went inside.
+5466 At the front door of Sally's house, John leaned in and gave Sally a peck on the lips.
+5467 Sally gave John a quick but romantic kiss on the lips.
+5468 John leaned in for a kiss, and Sally passionately kissed him back.
+###
+@ hold hands
+50 John and Sally held hands in the theater.
+58 John and Sally held hands.
+166 John held Sally's hand.
+186 John and Sally held hands.
+271 John held Sally's hand.
+340 John and Sally held hands.
+369 John and Sally held hands.
+429 John and Sally held hands.
+439 John held Sally's hand.
+457 John held Sally's hand.
+479 John and Sally held hands.
+506 John and Sally held hands.
+520 John held Sally's hand.
+628 John and Sally held hands.
+642 John and Sally held hands.
+652 John and Sally held hands.
+666 John and Sally held hands.
+747 John and Sally held hands.
+754 John and Sally held hands during the movie.
+833 John and Sally held hands.
+850 John took Sally's hand.
+861 John holds Sally's hand.
+5354 When they made their way out of the row of seats, John took Sally's hand in his and they held hands as they exited the theater down the wide aisle.
+5355 John and Sally held hands during most of the movie.
+5356 John and Sally held hands while waiting for the movie to end.
+5357 John and Sally felt romantic holding hands throughout the movie.
+5358 As John watched the movie, Sally reached over and grabbed his hand to hold. 
+5359 John and Sally also held hands during the movie, sweaty palms joined in harmony. 
+5360 John held Sally's hand to keep her from punching him.
+5361 John and Sally even held each others hands.
+5362 John sat the popcorn tub on the floor so that he and Sally could hold hands during the movie.
+5363 John and Sally also held hands throughout the movie, even though John's hands were sweaty.
+5363 Sally held John's sweaty hands throughout the movie.
+5364 Sally took John's hand and held it while watching the movie together.
+5365 John and Sally held hands throughout the movie and as the movie neared its end, John reluctantly let go of Sally's hand.
+5366 John reached out and held Sally's hand throughout the movie.
+5367 John held hands with Sally to comfort her during the sad parts.
+5368 As things got sad in the movie, John reached over and cupped Sally's hand.
+5369 John grabbed Sally's hand and rubbed it in between his own.
+5370 John grabbed Sally's hand during the movie, and they held hands throughout it.
+### 
+@ put arms around
+66 John put his arm around Sally.
+122 John put his arm around Sally.
+197 John puts his arm around Sally.
+297 John put his arm around Sally.
+350 John put his arm around Sally's shoulder.
+380 John put his arm around Sally.
+466 John put his arm around Sally.
+497 John put his arm around Sally.
+516 John put his arm around Sally.
+561 John put his arm around Sally.
+764 John put his arm around Sally's shoulders.
+797 John put his arm around Sally.
+5256 Finally working up the courage to do so, John extended his arm to embrace Sally. He was relieved and ecstatic to feel her move closer to him in response.
+5257 John put his arm around Sally's shoulder.
+5258 John acted shy while putting arms around Sally.
+5259 Halfway through the movie, John put his arms around Sally.
+5260 John put his arm around Sally's neck, and both felt good.
+5261 John decided to make a move on Sally and put his arm around her.
+5262 Sally, in an act of defying convention, put her arm around John first and ruffed at that silky blonde hair.
+5263 John tried to put his arms around Sally, but she dodged him.
+5264 When the movie slowed down, John put his arm around Sally.
+5265 John put his arms around Sally.
+5266 During the romantic parts of the movie, John pulled the classic "yawn and put arms around" move.
+5267 John, though naturally timid, put his arms around Sally.
+5268 John nervously put his arm around Sally and she snuggled into him.
+5269 During the movie, John leaned back and put his arms around Sally, pulling her closer to him.
+5270 John put his left arm around Sally's shoulders.
+5271 John put an arm over Sally's shoulder and cuddled with her.
+5272 John and Sally both managed to put their arms around each other during the movie. 
+5273 John did the classic "yawn and stretch" and put his arm around Sally.
+5274 John put his arms around Sally and they smiled at one another.
+5275 John put his arm around Sally, which she gladly allowed.
+###
+@ hug
+77 John hugged Sally.
+88 Sally hugged John.
+145 John hugged Sally.
+148 John and Sally hugged each other.
+168 John hugged Sally.
+414 John hugged Sally.
+418 John hugged Sally.
+488 John and Sally hugged each other.
+701 Sally hugged John.
+5337 As the credits rolled and they got up from their seats, Sally turned to John and embraced him in a large hug.
+5338 Sally and John hugged several times during the movie.
+5339 Sally hugged John tightly. 
+5340 John gave Sally a soft hug during the movie, and Sally returned the favor.
+5341 After a sad moment in the movie, John reached out and hugged Sally. 
+5342 John and Sally cuddled and embraced each other throughout the film, enthralled in emotion. 
+5343 John and Sally tried hugging during the movie, but realized they did not like it and stopped.
+5343 During the movie, John and Sally got quiet close to each other.
+5344 John and Sally hugged and cuddled throughout the movie.
+5345 John and Sally agreed that the best part of the movie was when they were hugging each other.
+5346 During some of the suspenseful scenes, John and Sally hugged each other.
+5347 John hugged Sally during the movie.
+5348 John and Sally had hugged each other during the movie and felt closer than before the movie started.
+5349 John and Sally hugged at a particularly moving part of the show.
+5350 John and Sally sat in the dark and hugged each other close when the main character had to shoot his Grandmother between the eyes.
+5351 John felt a connection and decided to give Sally a hug during the sad part of the movie.
+5352 Sally reached over to give John a quick hug.
+5353 John hugged Sally during the movie, and she returned the hug.
+###
+@ say goodbye
+146 Sally said goodbye to John.
+158 John and Sally said goodbye to each other.
+251 John said goodnight to Sally.
+261 John said goodnight.
+262 Sally said goodnight.
+303 John and Sally said goodbye.
+327 John told Sally goodnight.
+535 John and Sally said goodbye to each other.
+757 John and Sally said goodbye.
+827 Sally said goodnight.
+###
+@ laugh
+856 Sally laughed at a preview trailer.
+763 John and Sally laughed at the movie.
+836 John and Sally laughed out loud.
+164 John laughed at the characters.
+287 Sally and John laughed at the movie.
+322 Sally laughed more than John at the comedy.
+###
+@ like the movie
+674 Sally liked the movie.
+765 John and Sally liked the movie.
+220 Sally liked the movie.
+311 John and Sally liked the movie.
+###
+@ don't like the movie
+675 John did not like the movie.
+221 John hated the movie.
+142 John hated the movie.
+###
+@ choose a movie
+646 John and Sally chose a movie.
+###

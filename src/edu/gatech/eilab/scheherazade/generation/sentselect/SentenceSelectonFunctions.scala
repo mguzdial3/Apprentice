@@ -25,7 +25,7 @@ object SentenceSelectionFunctions {
           // for verbs, we only require the lemma to be identical
           val repeatedVerbs = currTokens.filter(tok => tok.pos.startsWith("VB") && verbs.exists(n => n.lemma == tok.lemma))
           //println("repeated nouns " + repeatedNouns.mkString("(", ", ", ")") + "repeated verbs " + repeatedVerbs.mkString("(", ", ", ")") )
-          val value = repeatedNouns.size - repeatedVerbs.size + 10
+          val value = repeatedNouns.size / (repeatedVerbs.size + 0.5) + 1
 
           (current, value.toDouble)
           //(current, 1.0)

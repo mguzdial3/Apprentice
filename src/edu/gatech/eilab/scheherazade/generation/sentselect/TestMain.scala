@@ -10,7 +10,7 @@ import edu.gatech.eilab.scheherazade.generation._
 object TestMain {
 
   def sentEval(c: ClusterLike): List[(SingleDescription, Double)] =
-    reciprocalRank(c, UniGramModel.logProbability).map(x => x._1 -> x._2)
+    reciprocalRank(c, UniGramModel.logProbability).map(x => x._1 -> x._2*3)
 
   def adjEval(prev: SingleDescription, cluster: ClusterLike): List[(SingleDescription, Double)] = adjacentHeuristic(prev, cluster)
 
