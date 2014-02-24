@@ -18,7 +18,7 @@ object TestMain {
 
   def main(args: Array[String]) {
 
-    workForHong()
+    genStory()
   }
 
   def workForHong() {
@@ -48,8 +48,8 @@ object TestMain {
 
   def genStory() {
 
-    //val clusters = SimpleParser.parseClusters("./data/new_movie/movieGold-cr.gold")
-    val clusters = SimpleParser.parseClusters("./data/robbery/robberyGold2-cr.gold")
+    val clusters = SimpleParser.parseClusters("./data/new_movie/movieGold-cr.gold")
+    //val clusters = SimpleParser.parseClusters("./data/robbery/robberyGold2-cr.gold")
     val snipClusters = SFParser.parseSnippets(clusters)
 
     val story = StoryGenerator.genStory.map {
@@ -60,41 +60,51 @@ object TestMain {
         }
     }
 
-    //    snipClusters.foreach {
-    //      c =>
-    //        val maxFictional = c.members.maxBy(s => exponentialAverage(UniGramModel.fictionality(s), 3))
-    //        println("*****")
-    //        println(c.name)
-    //        println("MF: " + maxFictional.toText)
-    //
-    //        val minProbable = c.members.minBy(s => UniGramModel.logProbability(s))
-    //        println("LP: " + minProbable.toText)
-    //
-    //        val positive = c.members.maxBy(s => exponentialAverage(UniGramModel.sentiments(s), 2))
-    //        val negative = c.members.minBy(s => exponentialAverage(UniGramModel.sentiments(s), 2))
-    //        println("positive: " + positive.toText)
-    //        println("negative: " + negative.toText)
-    //    }
+    snipClusters.foreach {
+      c =>
+        val maxFictional = c.members.maxBy(s => exponentialAverage(UniGramModel.fictionality(s), 3))
+        println("*****")
+        println(c.name)
+        println("MF: " + maxFictional.toText)
+
+        val minProbable = c.members.minBy(s => UniGramModel.logProbability(s))
+        println("LP: " + minProbable.toText)
+
+        val positive = c.members.maxBy(s => exponentialAverage(UniGramModel.sentiments(s), 2))
+        val negative = c.members.minBy(s => exponentialAverage(UniGramModel.sentiments(s), 2))
+        println("positive: " + positive.toText)
+        println("negative: " + negative.toText)
+    }
 
     def sentiEval(cl: ClusterLike): List[(SingleDescription, Double)] = {
       val ranks = rank(cl, x => -1 * exponentialAverage(UniGramModel.sentiments(x), 2))
       ranks.map { p => (p._1, 1.0 / p._2) }
     }
 
-    //    def combinedEval(cl: ClusterLike): List[(SingleDescription, Double)] = {
-    //      val ranks = harmonicMeanRank(cl,
-    //        x => {
-    //          -1 * exponentialAverage(UniGramModel.fictionality(x), 12)
-    //        },
-    //        x => { UniGramModel.logProbability(x) })
-    //
-    //      ranks.map{p => (p._1, (2.0 / p._2))}
-    //    }
-    val sentSelector = new SentenceSelector(sentiEval, adjEval)
+    def combinedEval(cl: ClusterLike): List[(SingleDescription, Double)] = {
+      val ranks = harmonicMeanRank(cl,
+        x => {
+          -1 * exponentialAverage(UniGramModel.fictionality(x), 10)
+        },
+        x => { UniGramModel.logProbability(x) })
+
+      ranks.map { p => (p._1, (2.0 / p._2)) }
+    }
+
+    def ficEval(cl: ClusterLike): List[(SingleDescription, Double)] = {
+      val ranks = reciprocalRank(cl,
+        x => {
+          -1 * exponentialAverage(UniGramModel.fictionality(x), 10)
+        })
+
+      ranks
+    }
+
+    val sentSelector = new SentenceSelector(ficEval, adjEval)
     val result = sentSelector.bestSentenceSequence(story)
     println(result.mkString("\n"))
     //
-    //UniGramModel.printNon
+    UniGramModel.printNon
   }
 
   def test2() {

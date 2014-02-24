@@ -46,7 +46,7 @@ object SentenceSelectionFunctions {
           //println("repeated nouns " + repeatedNouns.mkString("(", ", ", ")") + "repeated verbs " + repeatedVerbs.mkString("(", ", ", ")") )
           val value = repeatedNouns.size / (repeatedVerbs.size + 0.5) + 1
 
-          (current, value.toDouble + .7)
+          (current, value.toDouble + 0.6)
         //(current, 1.0)
       }
     }
@@ -88,7 +88,7 @@ object SentenceSelectionFunctions {
       val list =
         for (sent <- cluster.members) yield {
           val r1 = rank1.find(_._1 == sent).get._2
-          val r2 = rank2.find(_._1 == sent).get._2
+          val r2 = rank2.find(_._1 == sent).get._2 * 2
           val fitness = 2 * r1 * r2 / (r1 + r2)
           (sent, fitness)
         }
