@@ -10,7 +10,7 @@ import edu.gatech.eilab.scheherazade.generation._
 object TestMain {
 
   def sentEval(c: ClusterLike): List[(SingleDescription, Double)] =
-    reciprocalRank(c, UniGramModel.logProbability).map(x => x._1 -> x._2*3)
+    reciprocalRank(c, UniGramModel.logProbability).map(x => x._1 -> x._2 * 3)
 
   def adjEval(prev: SingleDescription, cluster: ClusterLike): List[(SingleDescription, Double)] = adjacentHeuristic(prev, cluster)
 
@@ -20,13 +20,32 @@ object TestMain {
     val clusters = SimpleParser.parseClusters("./data/robbery/robberyGold2-cr.gold")
     val snipClusters = SFParser.parseSnippets(clusters)
 
-    val story = StoryGenerator.genStory.map{
-      e => snipClusters.find(c => c.name == e.name) match {
-        case Some(c) => c
-        case None => throw new RuntimeException("cannot find cluster " + e.name)
-    }}
+    val story = StoryGenerator.genStory.map {
+      e =>
+        snipClusters.find(c => c.name == e.name) match {
+          case Some(c) => c
+          case None => throw new RuntimeException("cannot find cluster " + e.name)
+        }
+    }
 
-    val sentSelector = new SentenceSelector(sentEval, adjEval)
+    //    snipClusters.foreach {
+    //      c =>
+    //        val max = c.members.maxBy(s => exponentialAverage(UniGramModel.fictionality(s), 12))
+    //        println("*****")
+    //        println(c.name)
+    //        println(max.toText)
+    //    }
+
+    def combinedEval(cl: ClusterLike): List[(SingleDescription, Double)] = {
+      val ranks = harmonicMeanRank(cl,
+        x => {
+          -1 * exponentialAverage(UniGramModel.fictionality(x), 12)
+        },
+        x => { UniGramModel.logProbability(x) })
+
+      ranks.map{p => (p._1, (2.0 / p._2))}
+    }
+    val sentSelector = new SentenceSelector(combinedEval, adjEval)
     val result = sentSelector.bestSentenceSequence(story)
     println(result.mkString("\n"))
 

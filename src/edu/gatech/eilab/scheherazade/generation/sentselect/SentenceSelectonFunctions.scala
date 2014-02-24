@@ -6,6 +6,25 @@ import edu.gatech.eilab.scheherazade.nlp._
 object SentenceSelectionFunctions {
 
   /**
+   * perform an exponential operation before doing the average, which
+   *  means that extreme values are given higher influence so that they
+   *  are not masked by a large number of small values
+   */
+  def exponentialAverage(values: List[Double], alpha: Double): Double =
+    {
+      val sum = values map {
+        v: Double =>
+          if (v != 0) {
+            val abs = math.abs(v)
+            val sign = v / abs
+            math.exp(alpha * abs) * sign
+          } else 0
+      } sum
+
+      sum / values.size
+    }
+
+  /**
    * the heuristic evaluates two adjacent sentences
    *  +1 for every overlapping noun, and -1 for every overlapping verb
    *  stopwords are filtered
@@ -16,7 +35,7 @@ object SentenceSelectionFunctions {
       val nouns = prevTokens.filter(_.pos.startsWith("N"))
       val verbs = prevTokens.filter(_.pos.startsWith("VB"))
       //println("verbs: " + verbs.mkString("(", ", ", ")"))
-      
+
       cluster.members.map {
         current =>
           val currTokens = current.allTokens.filterNot(t => StopWordStore.isStopWord(t.word))
@@ -27,8 +46,8 @@ object SentenceSelectionFunctions {
           //println("repeated nouns " + repeatedNouns.mkString("(", ", ", ")") + "repeated verbs " + repeatedVerbs.mkString("(", ", ", ")") )
           val value = repeatedNouns.size / (repeatedVerbs.size + 0.5) + 1
 
-          (current, value.toDouble)
-          //(current, 1.0)
+          (current, value.toDouble * 2)
+        //(current, 1.0)
       }
     }
 
@@ -43,7 +62,7 @@ object SentenceSelectionFunctions {
     }
   }
 
-  def rank(cluster: Cluster, func: Sentence => Double): List[(Sentence, Int)] = {
+  def rank(cluster: ClusterLike, func: SingleDescription => Double): List[(SingleDescription, Int)] = {
     val list = cluster.members.map(s => (s, func(s)))
     val sortedList = list.sortWith(_._2 < _._2)
 
@@ -61,7 +80,7 @@ object SentenceSelectionFunctions {
    * takes two functions, computes their separate ranks and their combined rank using the harmonic mean
    *
    */
-  def harmonicMeanRank(cluster: Cluster, func1: Sentence => Double, func2: Sentence => Double): List[(Sentence, Int)] =
+  def harmonicMeanRank(cluster: ClusterLike, func1: SingleDescription => Double, func2: SingleDescription => Double): List[(SingleDescription, Int)] =
     {
       val rank1 = rank(cluster, func1)
       val rank2 = rank(cluster, func1)
