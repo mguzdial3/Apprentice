@@ -23,6 +23,38 @@ object SFParser {
       properEnding.exists(end => lastword.endsWith(end))
     }
 
+  def parseMultiple(text: String): TextSnippet = {
+    var count = 1
+    
+    nlp.getParsed(text)
+
+    if (!nlp.hasNextSentence()) {
+      throw new ParsingException("parsing " + text + " failed.")
+    }
+
+    val sentList = new ListBuffer[Sentence]()
+
+    var exist = false
+    while (nlp.hasNextSentence()) {
+      try {
+        sentList += getSentence(nlp, count, 0)
+        count += 1
+        exist = true
+      } catch {
+        case ex: ParsingException =>
+          if (exist) {
+            // if we already have one sentence, just issue a warning
+            System.err.println("WARNING: " + ex.getMessage())
+          } else {
+            throw ex
+          }
+      }
+
+    }
+
+    TextSnippet(1, sentList.toList)
+  }
+
   def parse(sentence: String): Sentence = parse(1, sentence)
 
   /**

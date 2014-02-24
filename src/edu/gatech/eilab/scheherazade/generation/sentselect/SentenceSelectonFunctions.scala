@@ -17,7 +17,7 @@ object SentenceSelectionFunctions {
           if (v != 0) {
             val abs = math.abs(v)
             val sign = v / abs
-            math.exp(alpha * abs) * sign
+            (math.exp(alpha * abs) - 1) * sign
           } else 0
       } sum
 
@@ -46,7 +46,7 @@ object SentenceSelectionFunctions {
           //println("repeated nouns " + repeatedNouns.mkString("(", ", ", ")") + "repeated verbs " + repeatedVerbs.mkString("(", ", ", ")") )
           val value = repeatedNouns.size / (repeatedVerbs.size + 0.5) + 1
 
-          (current, value.toDouble * 2)
+          (current, value.toDouble + .7)
         //(current, 1.0)
       }
     }

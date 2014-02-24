@@ -10,6 +10,7 @@ object UniGramModel {
 
   private val probabilityMap = loadMap("unigram_prob.txt")
   private val fictionalProbMap = loadMap("unigram_prob_fiction.txt")
+  private val sentimentMap = loadMap("word_sentiments.txt")
 
   private val nonexistent = ListBuffer[String]()
 
@@ -27,6 +28,40 @@ object UniGramModel {
       map
     }
 
+  def sentiments(sent: SingleDescription): List[Double] =
+    {
+      val tokens = sent.allTokens.filter(x => NLPUtils.isUsefulPOS(x.pos) && (!StopWordStore.isStopWord(x.lemma))).map(x => x.lemma.toLowerCase + "/" + x.pos.take(2).toString)
+      val sentiments = tokens map {
+        key =>
+          if (sentimentMap.contains(key)) {
+            sentimentMap(key)
+          } else {
+            System.err.println("word " + key + " does not exist in our knowledge base")
+            nonexistent += key
+            0.0
+          }
+      }
+
+      sentiments
+    }
+
+  def sentimentsIDF(sent: SingleDescription, idf:InverseSentFreq): List[Double] =
+    {
+      val tokens = sent.allTokens.filter(x => NLPUtils.isUsefulPOS(x.pos) && (!StopWordStore.isStopWord(x.lemma))).map(x => (x, x.lemma.toLowerCase + "/" + x.pos.take(2).toString))
+      val sentiments = tokens map {
+        p =>
+          val key = p._2
+          if (sentimentMap.contains(key)) {
+            sentimentMap(key) * math.log(idf.freq(p._1)) * -1
+          } else {
+            System.err.println("word " + key + " does not exist in our knowledge base")
+            nonexistent += key
+            0.0
+          }
+      }
+
+      sentiments
+    }
   def logProbability(sent: SingleDescription) =
     {
       val tokens = usefulTokenKeys(sent.allTokens)
@@ -55,7 +90,7 @@ object UniGramModel {
 
   private def usefulTokenKeys(tokens: List[Token]): List[String] =
     {
-      tokens.filter(x => isUsefulPOS(x.pos) && (!StopWordStore.isStopWord(x.lemma))).map(x => x.lemma + toGooglePOS(x.pos))
+      tokens.filter(x => NLPUtils.isUsefulPOS(x.pos) && (!StopWordStore.isStopWord(x.lemma))).map(x => x.lemma + NLPUtils.toGooglePOS(x.pos))
     }
 
   def fictionality(sent: SingleDescription): List[Double] =
@@ -63,17 +98,15 @@ object UniGramModel {
       val tokens = usefulTokenKeys(sent.allTokens)
       val fictionality = tokens map {
         key =>
-          if (probabilityMap.contains(key) && fictionalProbMap.contains(key))
-          {
-            fictionalProbMap(key) / probabilityMap(key) 
-          }
-          else
-          {
+          if (probabilityMap.contains(key) && fictionalProbMap.contains(key)) {
+            fictionalProbMap(key) / probabilityMap(key)
+          } else {
             System.err.println("word " + key + " does not exist in our knowledge base")
+            nonexistent += key
             0.0
           }
       }
-      
+
       fictionality
     }
 
@@ -85,26 +118,5 @@ object UniGramModel {
     }
     pw.close
   }
-
-  private def isUsefulPOS(pos: String): Boolean =
-    {
-      pos.startsWith("NN") || pos.startsWith("VB") || pos.startsWith("JJ") || pos.startsWith("RB")
-    }
-
-  /**
-   * return the google POS in the form of "_NOUN" or "_VERB"
-   *
-   */
-  private def toGooglePOS(pos: String): String =
-    {
-      if (pos.startsWith("N")) "_NOUN"
-      else if (pos.startsWith("V")) "_VERB"
-      else if (pos.startsWith("JJ")) "_ADJ"
-      else if (pos.startsWith("RB")) "_ADV"
-      else {
-        System.err.println("WARNING: WHAT POS IS THIS ? " + pos)
-        ""
-      }
-    }
 
 }
