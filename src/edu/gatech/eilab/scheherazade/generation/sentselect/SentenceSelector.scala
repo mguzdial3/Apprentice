@@ -3,15 +3,13 @@ package edu.gatech.eilab.scheherazade.generation.sentselect
 import edu.gatech.eilab.scheherazade.data._
 
 import scala.collection.mutable.ListBuffer
-
+import edu.gatech.eilab.scheherazade.nlp._
 /**
  * this class selects sentences based on a Markov model
  *  It takes two functions as parameters: evalSentence, which returns the weights for individual sentences in a cluster.
  *  evalAjacentSent, which returns the preference for a pair of sentences
  */
 class SentenceSelector(evalSentence: ClusterLike => List[(SingleDescription, Double)], evalAdjacentSent: (SingleDescription, ClusterLike) => List[(SingleDescription, Double)]) {
-
-  
 
   /**
    * A Viterbi-like algorithm for finding best sentence sequence
@@ -20,7 +18,7 @@ class SentenceSelector(evalSentence: ClusterLike => List[(SingleDescription, Dou
    *  This assumption is subjective to tuning.
    *  The objective function is assumed to be a product of the weights.
    */
-  def bestSentenceSequence(clusters: List[ClusterLike]): List[String] = {
+  def bestSentenceSequence(clusters: List[ClusterLike], idf:InverseSentFreq): List[String] = {
     var bestSequences = List[(List[SingleDescription], Double)]()
 
     // initialization   
@@ -54,8 +52,30 @@ class SentenceSelector(evalSentence: ClusterLike => List[(SingleDescription, Dou
       bestSequences = nextBestSequences.toList
     }
 
-    val bestSeq = bestSequences.maxBy(_._2)
-    bestSeq._1.reverse.map(_.toText)
+    val best = bestSequences.maxBy(_._2)
+    val bestSeq = best._1.reverse
+    
+    println("count = " + bestSequences.filter(_._2 == best._2).size)
+
+    println("******** Best Sequence ***********")
+
+    for (i <- 0 to bestSeq.size - 2) {
+      println(bestSeq(i).toText)
+
+      val tok1 = bestSeq(i).allTokens.filterNot(t => StopWordStore.isStopWord(t.word))
+      val tok2 = bestSeq(i+1).allTokens.filterNot(t => StopWordStore.isStopWord(t.word))
+      //println("current toks: " + currTokens.mkString("(", ", ", ")"))
+      val repeatedNouns = tok1.filter(tok => tok.pos.startsWith("N") && tok2.filter(t => t.pos.startsWith("N")).exists(t => t.word == tok.word))
+      // for verbs, we only require the lemma to be identical
+      val repeatedVerbs = tok1.filter(tok => tok.pos.startsWith("VB") && tok2.filter(t => t.pos.startsWith("VB")).exists(t => t.lemma == tok.lemma))
+      println("repeated nouns " + repeatedNouns.mkString("(", ", ", ")") + "repeated verbs " + repeatedVerbs.mkString("(", ", ", ")") )
+      //val value = (repeatedNouns.size + 0.5) / (repeatedVerbs.size + 0.5)
+       val value = (repeatedNouns.map(x => math.log(idf.freq(x)) * -1).sum + 0.5) / (repeatedVerbs.map(x => math.log(idf.freq(x)) * -1).sum + 0.5)
+
+      println("score = " + value)
+    }
+
+    bestSeq.map(_.toText)
   }
 
   /**

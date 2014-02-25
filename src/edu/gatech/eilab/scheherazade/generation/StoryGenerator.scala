@@ -17,8 +17,8 @@ package generation {
       println("--------------------------------")
       println(text)
     }
-    
-    def genStory():List[Cluster] = {
+
+    def genStory(): List[Cluster] = {
       val reader = new ConfigReader("configNewMvBest.txt")
       var (stories, clusters) = reader.initDataFiltered()
 
@@ -33,31 +33,53 @@ package generation {
 
       graph.draw("aaaa")
       var walk = Walk(graph)
-      
+
       //Walk.debug = true
       //for (i <- 0 to 10)
-        LFFWalk(walk)
+      LFFWalk(walk)
     }
 
     /**
-     *   always selecting the least frequent walk
+     *   always selecting the most frequent even from the fringe
      */
-    def LFFWalk(firstWalk: Walk):List[Cluster] = {
+    def MFFWalk(firstWalk: Walk): List[Cluster] = {
       var trace = List[Cluster]()
-      
+
       var walk = firstWalk
 
       while (walk.hasMoreSteps) {
         val fringe = walk.fringe
-        
+
+        val lfStep = fringe.maxBy(cluster => cluster.size)
+        //val i = math.floor(math.random * fringe.size).toInt
+        //val step = fringe(i)
+
+        trace = lfStep :: trace
+        walk = walk.forward(lfStep)
+      }
+
+      trace.reverse
+    }
+
+    /**
+     *   always selecting the least frequent event from the fringe
+     */
+    def LFFWalk(firstWalk: Walk): List[Cluster] = {
+      var trace = List[Cluster]()
+
+      var walk = firstWalk
+
+      while (walk.hasMoreSteps) {
+        val fringe = walk.fringe
+
         val lfStep = fringe.minBy(cluster => cluster.size)
         //val i = math.floor(math.random * fringe.size).toInt
         //val step = fringe(i)
 
-        trace = lfStep :: trace 
+        trace = lfStep :: trace
         walk = walk.forward(lfStep)
       }
-      
+
       trace.reverse
     }
 

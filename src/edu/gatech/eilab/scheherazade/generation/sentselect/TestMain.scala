@@ -59,25 +59,34 @@ object TestMain {
           case None => throw new RuntimeException("cannot find cluster " + e.name)
         }
     }
+    
+    val idf = new InverseSentFreq(snipClusters.flatMap(x => x.members))
 
     snipClusters.foreach {
       c =>
-        val maxFictional = c.members.maxBy(s => exponentialAverage(UniGramModel.fictionality(s), 3))
-        println("*****")
-        println(c.name)
-        println("MF: " + maxFictional.toText)
+        //        val maxFictional = c.members.maxBy(s => exponentialAverage(UniGramModel.fictionality(s), 3))
+        //        println("*****")
+        //        println(c.name)
+        //        println("MF: " + maxFictional.toText)
+        //
+        //        val minProbable = c.members.minBy(s => UniGramModel.logProbability(s))
+        //        println("LP: " + minProbable.toText)
 
-        val minProbable = c.members.minBy(s => UniGramModel.logProbability(s))
-        println("LP: " + minProbable.toText)
-
-        val positive = c.members.maxBy(s => exponentialAverage(UniGramModel.sentiments(s), 2))
-        val negative = c.members.minBy(s => exponentialAverage(UniGramModel.sentiments(s), 2))
-        println("positive: " + positive.toText)
-        println("negative: " + negative.toText)
+        //for (i <- 1 to 10) {
+          val positive = c.members.maxBy(s => exponentialAverage(UniGramModel.sentiments(s), 3))
+          val negative = c.members.minBy(s => exponentialAverage(UniGramModel.sentiments(s), 3))
+          println("positive: " + positive.toText)
+          println("negative: " + negative.toText)
+        //}
     }
 
-    def sentiEval(cl: ClusterLike): List[(SingleDescription, Double)] = {
-      val ranks = rank(cl, x => -1 * exponentialAverage(UniGramModel.sentiments(x), 2))
+    def posiSentiEval(cl: ClusterLike): List[(SingleDescription, Double)] = {
+      val ranks = rank(cl, x => -1 * exponentialAverage(UniGramModel.sentiments(x), 3))
+      ranks.map { p => (p._1, 1.0 / p._2) }
+    }
+
+    def negaSentiEval(cl: ClusterLike): List[(SingleDescription, Double)] = {
+      val ranks = rank(cl, x => exponentialAverage(UniGramModel.sentiments(x), 3))
       ranks.map { p => (p._1, 1.0 / p._2) }
     }
 
@@ -99,12 +108,13 @@ object TestMain {
 
       ranks
     }
+    
+    def adjEvalIdf(prev: SingleDescription, cluster: ClusterLike): List[(SingleDescription, Double)] = adjacentHeuristic(prev, cluster, idf)
 
-    val sentSelector = new SentenceSelector(ficEval, adjEval)
-    val result = sentSelector.bestSentenceSequence(story)
+    val sentSelector = new SentenceSelector(posiSentiEval, adjEvalIdf)
+    val result = sentSelector.bestSentenceSequence(story, idf)
     println(result.mkString("\n"))
-    //
-    UniGramModel.printNon
+//    UniGramModel.printNon
   }
 
   def test2() {
@@ -125,8 +135,8 @@ object TestMain {
     //println(adjEval(s2, c2))
 
     val sentSelector = new SentenceSelector(sentEval _, adjEval _)
-    val result = sentSelector.bestSentenceSequence(List(c1, c2))
-    println(result.mkString("\n"))
+//    val result = sentSelector.bestSentenceSequence(List(c1, c2))
+//    println(result.mkString("\n"))
   }
 
   def test1() {

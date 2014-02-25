@@ -75,7 +75,7 @@ package generation {
      * Can we walk more? Not if the history already contains one story ending
      *
      */
-    def hasMoreSteps() = !fringe.isEmpty//!(ends exists { history contains })
+    def hasMoreSteps() = (!fringe.isEmpty) && (!(ends exists { history contains }))
 
     protected def maxFringe(newGraph: Graph, newHistory: List[Cluster]) =
       {

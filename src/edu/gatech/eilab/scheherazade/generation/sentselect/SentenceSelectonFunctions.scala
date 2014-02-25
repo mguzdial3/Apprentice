@@ -17,7 +17,7 @@ object SentenceSelectionFunctions {
           if (v != 0) {
             val abs = math.abs(v)
             val sign = v / abs
-            (math.exp(alpha * abs) - 1) * sign
+            (math.exp(alpha * abs)) * sign
           } else 0
       } sum
 
@@ -44,9 +44,57 @@ object SentenceSelectionFunctions {
           // for verbs, we only require the lemma to be identical
           val repeatedVerbs = currTokens.filter(tok => tok.pos.startsWith("VB") && verbs.exists(n => n.lemma == tok.lemma))
           //println("repeated nouns " + repeatedNouns.mkString("(", ", ", ")") + "repeated verbs " + repeatedVerbs.mkString("(", ", ", ")") )
-          val value = repeatedNouns.size / (repeatedVerbs.size + 0.5) + 1
+          val value = (repeatedNouns.size + 0.5) / (repeatedVerbs.size + 0.5)
 
-          (current, value.toDouble + 0.6)
+          (current, value.toDouble + 0.5)
+        //(current, 1.0)
+      }
+    }
+
+  /**
+   * the heuristic evaluates two adjacent sentences
+   *  +1 for every overlapping noun, and -1 for every overlapping verb
+   *  stopwords are filtered
+   */
+  def adjacentHeuristic(prev: SingleDescription, cluster: ClusterLike, idf: InverseSentFreq): List[(SingleDescription, Double)] =
+    {
+      val prevTokens = prev.allTokens.filterNot(t => StopWordStore.isStopWord(t.word))
+      val nouns = prevTokens.filter(_.pos.startsWith("N"))
+      val verbs = prevTokens.filter(_.pos.startsWith("VB"))
+      //println("verbs: " + verbs.mkString("(", ", ", ")"))
+
+      cluster.members.map {
+        current =>
+          val currTokens = current.allTokens.filterNot(t => StopWordStore.isStopWord(t.word))
+          //println("current toks: " + currTokens.mkString("(", ", ", ")"))
+          val repeatedNouns = currTokens.filter(tok => tok.pos.startsWith("N") && nouns.exists(n => n.word == tok.word))
+          val uniqueNouns = repeatedNouns.foldLeft(Seq[Token]()) {
+            (unique, curr) =>
+              {
+                if (!unique.exists(_.word == curr.word))
+                  curr +: unique
+                else
+                  unique
+              }
+          }
+          
+          // for verbs, we only require the lemma to be identical
+          val repeatedVerbs = currTokens.filter(tok => tok.pos.startsWith("VB") && verbs.exists(n => n.lemma == tok.lemma))
+          
+          val uniqueVerbs = repeatedVerbs.foldLeft(Seq[Token]()) {
+            (unique, curr) =>
+              {
+                if (!unique.exists(_.lemma == curr.lemma))
+                  curr +: unique
+                else
+                  unique
+              }
+          }
+          
+          //println("repeated nouns " + repeatedNouns.mkString("(", ", ", ")") + "repeated verbs " + repeatedVerbs.mkString("(", ", ", ")") )
+          val value = (uniqueNouns.map(x => math.log(idf.freq(x)) * -1).sum + 0.5) / (uniqueVerbs.map(x => math.log(idf.freq(x)) * -1).sum + 0.5)
+
+          (current, value.toDouble + 0.5)
         //(current, 1.0)
       }
     }
