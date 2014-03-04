@@ -99,7 +99,7 @@ object SentenceSelectionFunctions {
       }
     }
 
-  def reciprocalRank(cluster: ClusterLike, func: SingleDescription => Double): List[(SingleDescription, Double)] = {
+  def reciprocalOfRank(cluster: ClusterLike, func: SingleDescription => Double): List[(SingleDescription, Double)] = {
     val list = cluster.members.map(s => (s, func(s)))
     val sortedList = list.sortWith(_._2 < _._2)
 

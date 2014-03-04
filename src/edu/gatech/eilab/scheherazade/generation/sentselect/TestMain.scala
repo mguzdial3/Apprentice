@@ -12,7 +12,7 @@ import scala.collection.mutable.ListBuffer
 object TestMain {
 
   def sentEval(c: ClusterLike): List[(SingleDescription, Double)] =
-    reciprocalRank(c, UniGramModel.logProbability).map(x => x._1 -> x._2 * 3)
+    reciprocalOfRank(c, UniGramModel.logProbability).map(x => x._1 -> x._2 * 3)
 
   def adjEval(prev: SingleDescription, cluster: ClusterLike): List[(SingleDescription, Double)] = adjacentHeuristic(prev, cluster)
 
@@ -39,17 +39,19 @@ object TestMain {
 
     for (pair <- list) {
       val desc = pair._2
-      val sentiment = exponentialAverage(UniGramModel.sentimentsIDF(desc, idf), 2)
-      pw.println(pair._1 + " : " + sentiment)
+      val sentiment = exponentialAverage(UniGramModel.sentiments(desc), 1)
+      //pw.println(pair._1 + " : " + sentiment)
     }
 
     pw.close
+
+    UniGramModel.printNon
   }
 
   def genStory() {
 
-    val clusters = SimpleParser.parseClusters("./data/new_movie/movieGold-cr.gold")
-    //val clusters = SimpleParser.parseClusters("./data/robbery/robberyGold2-cr.gold")
+    //val clusters = SimpleParser.parseClusters("./data/new_movie/movieGold-cr.gold")
+    val clusters = SimpleParser.parseClusters("./data/robbery/robberyGold2-cr.gold")
     val snipClusters = SFParser.parseSnippets(clusters)
 
     val story = StoryGenerator.genStory.map {
@@ -59,25 +61,32 @@ object TestMain {
           case None => throw new RuntimeException("cannot find cluster " + e.name)
         }
     }
-    
+
     val idf = new InverseSentFreq(snipClusters.flatMap(x => x.members))
+
+    def rankMID(c: ClusterLike) = harmonicMeanRank(c,
+      s => UniGramModel.logProbability(s),
+      s => exponentialAverage(UniGramModel.fictionality(s), 3)).map { p => (p._1, 1.0/p._2) }
 
     snipClusters.foreach {
       c =>
         //        val maxFictional = c.members.maxBy(s => exponentialAverage(UniGramModel.fictionality(s), 3))
-        //        println("*****")
-        //        println(c.name)
+        println("*****")
+        println(c.name)
         //        println("MF: " + maxFictional.toText)
         //
         //        val minProbable = c.members.minBy(s => UniGramModel.logProbability(s))
         //        println("LP: " + minProbable.toText)
 
         //for (i <- 1 to 10) {
-          val positive = c.members.maxBy(s => exponentialAverage(UniGramModel.sentiments(s), 3))
-          val negative = c.members.minBy(s => exponentialAverage(UniGramModel.sentiments(s), 3))
-          println("positive: " + positive.toText)
-          println("negative: " + negative.toText)
+        //          val positive = c.members.maxBy(s => exponentialAverage(UniGramModel.sentiments(s), 3))
+        //          val negative = c.members.minBy(s => exponentialAverage(UniGramModel.sentiments(s), 3))
+        //          println("positive: " + positive.toText)
+        //          println("negative: " + negative.toText)
         //}
+
+        val mid = rankMID(c).minBy(p => p._2)._1
+        println("MID sentence: " + mid.toText)
     }
 
     def posiSentiEval(cl: ClusterLike): List[(SingleDescription, Double)] = {
@@ -101,20 +110,20 @@ object TestMain {
     }
 
     def ficEval(cl: ClusterLike): List[(SingleDescription, Double)] = {
-      val ranks = reciprocalRank(cl,
+      val ranks = reciprocalOfRank(cl,
         x => {
           -1 * exponentialAverage(UniGramModel.fictionality(x), 10)
         })
 
       ranks
     }
-    
+
     def adjEvalIdf(prev: SingleDescription, cluster: ClusterLike): List[(SingleDescription, Double)] = adjacentHeuristic(prev, cluster, idf)
 
-    val sentSelector = new SentenceSelector(posiSentiEval, adjEvalIdf)
+    val sentSelector = new SentenceSelector(rankMID, adjEval)
     val result = sentSelector.bestSentenceSequence(story, idf)
     println(result.mkString("\n"))
-//    UniGramModel.printNon
+    UniGramModel.printNon
   }
 
   def test2() {
@@ -135,8 +144,8 @@ object TestMain {
     //println(adjEval(s2, c2))
 
     val sentSelector = new SentenceSelector(sentEval _, adjEval _)
-//    val result = sentSelector.bestSentenceSequence(List(c1, c2))
-//    println(result.mkString("\n"))
+    //    val result = sentSelector.bestSentenceSequence(List(c1, c2))
+    //    println(result.mkString("\n"))
   }
 
   def test1() {

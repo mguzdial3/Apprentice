@@ -10,7 +10,7 @@ object UniGramModel {
 
   private val probabilityMap = loadMap("unigram_prob.txt")
   private val fictionalProbMap = loadMap("unigram_prob_fiction.txt")
-  private val sentimentMap = loadMap("word_sentiments.txt")
+  private val sentimentMap = loadMap("word_sentiments_more.txt")
 
   private val nonexistent = ListBuffer[String]()
 
