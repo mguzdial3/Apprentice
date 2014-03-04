@@ -19,7 +19,7 @@ package generation {
     }
 
     def genStory(): List[Cluster] = {
-      val reader = new ConfigReader("configRobBest.txt")
+      val reader = new ConfigReader("configNewMvBest.txt")
       var (stories, clusters) = reader.initDataFiltered()
 
       val para = reader.properties.allParameters()(0)

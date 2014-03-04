@@ -50,8 +50,8 @@ object TestMain {
 
   def genStory() {
 
-    //val clusters = SimpleParser.parseClusters("./data/new_movie/movieGold-cr.gold")
-    val clusters = SimpleParser.parseClusters("./data/robbery/robberyGold2-cr.gold")
+    val clusters = SimpleParser.parseClusters("./data/new_movie/movieGold-cr.gold")
+    //val clusters = SimpleParser.parseClusters("./data/robbery/robberyGold2-cr.gold")
     val snipClusters = SFParser.parseSnippets(clusters)
 
     val story = StoryGenerator.genStory.map {
@@ -66,7 +66,23 @@ object TestMain {
 
     def rankMID(c: ClusterLike) = harmonicMeanRank(c,
       s => UniGramModel.logProbability(s),
-      s => exponentialAverage(UniGramModel.fictionality(s), 3)).map { p => (p._1, 1.0/p._2) }
+      s => -1 * exponentialAverage(UniGramModel.fictionality(s), 12)).map { p => (p._1, 1.0 / p._2) }
+    
+    def rankCS(c: ClusterLike) = harmonicMeanRank(c,
+      s => UniGramModel.logProbability(s) * -1,
+      s => exponentialAverage(UniGramModel.fictionality(s), 12)).map { p => (p._1, 1.0 / p._2) }
+
+    def mostProbEval(c: ClusterLike) = reciprocalOfRank(c, s => UniGramModel.logProbability(s) * -1)
+    def leastProbEval(c: ClusterLike) = reciprocalOfRank(c, s => UniGramModel.logProbability(s))
+
+    def ficEval(cl: ClusterLike): List[(SingleDescription, Double)] = {
+      val ranks = reciprocalOfRank(cl,
+        x => {
+          -1 * exponentialAverage(UniGramModel.fictionality(x), 12)
+        })
+
+      ranks
+    }
 
     snipClusters.foreach {
       c =>
@@ -85,8 +101,20 @@ object TestMain {
         //          println("negative: " + negative.toText)
         //}
 
-        val mid = rankMID(c).minBy(p => p._2)._1
-        println("MID sentence: " + mid.toText)
+        val mf = ficEval(c).maxBy(p => p._2)._1
+        println("MF: " + mf.toText)
+
+        val lp = leastProbEval(c).maxBy(p => p._2)._1
+        println("LP: " + lp.toText)
+
+        val mid = rankMID(c).maxBy(p => p._2)._1
+        println("MID: " + mid.toText)
+
+        val lf = ficEval(c).minBy(p => p._2)._1
+        println("LF: " + lf.toText)
+
+        val mp = leastProbEval(c).minBy(p => p._2)._1
+        println("MP: " + mp.toText)
     }
 
     def posiSentiEval(cl: ClusterLike): List[(SingleDescription, Double)] = {
@@ -109,21 +137,12 @@ object TestMain {
       ranks.map { p => (p._1, (2.0 / p._2)) }
     }
 
-    def ficEval(cl: ClusterLike): List[(SingleDescription, Double)] = {
-      val ranks = reciprocalOfRank(cl,
-        x => {
-          -1 * exponentialAverage(UniGramModel.fictionality(x), 10)
-        })
-
-      ranks
-    }
-
     def adjEvalIdf(prev: SingleDescription, cluster: ClusterLike): List[(SingleDescription, Double)] = adjacentHeuristic(prev, cluster, idf)
 
-    val sentSelector = new SentenceSelector(rankMID, adjEval)
+    val sentSelector = new SentenceSelector(mostProbEval, adjEval)
     val result = sentSelector.bestSentenceSequence(story, idf)
     println(result.mkString("\n"))
-    UniGramModel.printNon
+    //UniGramModel.printNon
   }
 
   def test2() {

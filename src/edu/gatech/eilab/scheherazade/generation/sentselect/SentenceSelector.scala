@@ -18,7 +18,7 @@ class SentenceSelector(evalSentence: ClusterLike => List[(SingleDescription, Dou
    *  This assumption is subjective to tuning.
    *  The objective function is assumed to be a product of the weights.
    */
-  def bestSentenceSequence(clusters: List[ClusterLike], idf:InverseSentFreq): List[String] = {
+  def bestSentenceSequence(clusters: List[ClusterLike], idf: InverseSentFreq): List[String] = {
     var bestSequences = List[(List[SingleDescription], Double)]()
 
     // initialization   
@@ -36,7 +36,7 @@ class SentenceSelector(evalSentence: ClusterLike => List[(SingleDescription, Dou
       for (oldSeq <- bestSequences) {
         val adjSentFit = evalAdjacentSent(oldSeq._1.head, nextCluster)
         for (sf <- adjSentFit) {
-          val fitness = oldSeq._2 + math.log(sf._2) + math.log(sentFit.find(_._1 == sf._1).get._2)
+          val fitness = oldSeq._2 + math.log(sf._2) + math.log(sentFit.find(_._1.toText == sf._1.toText).get._2)
           allSequences += ((sf._1 :: oldSeq._1, fitness))
         }
       }
@@ -54,23 +54,23 @@ class SentenceSelector(evalSentence: ClusterLike => List[(SingleDescription, Dou
 
     val best = bestSequences.maxBy(_._2)
     val bestSeq = best._1.reverse
-    
-    println("count = " + bestSequences.filter(_._2 == best._2).size)
 
+    //    println("count = " + bestSequences.filter(_._2 == best._2).size)
+    //
     println("******** Best Sequence ***********")
 
     for (i <- 0 to bestSeq.size - 2) {
       println(bestSeq(i).toText)
 
       val tok1 = bestSeq(i).allTokens.filterNot(t => StopWordStore.isStopWord(t.word))
-      val tok2 = bestSeq(i+1).allTokens.filterNot(t => StopWordStore.isStopWord(t.word))
+      val tok2 = bestSeq(i + 1).allTokens.filterNot(t => StopWordStore.isStopWord(t.word))
       //println("current toks: " + currTokens.mkString("(", ", ", ")"))
       val repeatedNouns = tok1.filter(tok => tok.pos.startsWith("N") && tok2.filter(t => t.pos.startsWith("N")).exists(t => t.word == tok.word))
       // for verbs, we only require the lemma to be identical
       val repeatedVerbs = tok1.filter(tok => tok.pos.startsWith("VB") && tok2.filter(t => t.pos.startsWith("VB")).exists(t => t.lemma == tok.lemma))
-      println("repeated nouns " + repeatedNouns.mkString("(", ", ", ")") + "repeated verbs " + repeatedVerbs.mkString("(", ", ", ")") )
+      println("repeated nouns " + repeatedNouns.mkString("(", ", ", ")") + "repeated verbs " + repeatedVerbs.mkString("(", ", ", ")"))
       //val value = (repeatedNouns.size + 0.5) / (repeatedVerbs.size + 0.5)
-       val value = (repeatedNouns.map(x => math.log(idf.freq(x)) * -1).sum + 0.5) / (repeatedVerbs.map(x => math.log(idf.freq(x)) * -1).sum + 0.5)
+      val value = (repeatedNouns.map(x => math.log(idf.freq(x)) * -1).sum + 0.5) / (repeatedVerbs.map(x => math.log(idf.freq(x)) * -1).sum + 0.5)
 
       println("score = " + value)
     }

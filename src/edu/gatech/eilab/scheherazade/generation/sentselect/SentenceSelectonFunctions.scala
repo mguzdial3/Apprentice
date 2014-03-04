@@ -46,7 +46,7 @@ object SentenceSelectionFunctions {
           //println("repeated nouns " + repeatedNouns.mkString("(", ", ", ")") + "repeated verbs " + repeatedVerbs.mkString("(", ", ", ")") )
           val value = (repeatedNouns.size + 0.5) / (repeatedVerbs.size + 0.5)
 
-          (current, value.toDouble + 0.5)
+          (current, value.toDouble)
         //(current, 1.0)
       }
     }
@@ -77,10 +77,10 @@ object SentenceSelectionFunctions {
                   unique
               }
           }
-          
+
           // for verbs, we only require the lemma to be identical
           val repeatedVerbs = currTokens.filter(tok => tok.pos.startsWith("VB") && verbs.exists(n => n.lemma == tok.lemma))
-          
+
           val uniqueVerbs = repeatedVerbs.foldLeft(Seq[Token]()) {
             (unique, curr) =>
               {
@@ -90,7 +90,7 @@ object SentenceSelectionFunctions {
                   unique
               }
           }
-          
+
           //println("repeated nouns " + repeatedNouns.mkString("(", ", ", ")") + "repeated verbs " + repeatedVerbs.mkString("(", ", ", ")") )
           val value = (uniqueNouns.map(x => math.log(idf.freq(x)) * -1).sum + 0.5) / (uniqueVerbs.map(x => math.log(idf.freq(x)) * -1).sum + 0.5)
 
@@ -100,7 +100,7 @@ object SentenceSelectionFunctions {
     }
 
   def reciprocalOfRank(cluster: ClusterLike, func: SingleDescription => Double): List[(SingleDescription, Double)] = {
-    val list = cluster.members.map(s => (s, func(s)))
+    val list = uniques(cluster.members).map(s => (s, func(s)))
     val sortedList = list.sortWith(_._2 < _._2)
 
     var i = 0
@@ -111,6 +111,8 @@ object SentenceSelectionFunctions {
   }
 
   def rank(cluster: ClusterLike, func: SingleDescription => Double): List[(SingleDescription, Int)] = {
+    val distinct = uniques(cluster.members)
+
     val list = cluster.members.map(s => (s, func(s)))
     val sortedList = list.sortWith(_._2 < _._2)
 
@@ -120,6 +122,23 @@ object SentenceSelectionFunctions {
       (item._1, i)
     }
   }
+
+  def uniques(list: List[SingleDescription]): List[SingleDescription] =
+    {
+      val answer = list.foldRight(List[SingleDescription]()) {
+        (elem, distincts) =>
+          if (!distincts.exists(e => e.toText == elem.toText)) {
+            elem :: distincts
+          } else {
+            distincts
+          }
+      }
+
+//      println("************distinct***********")
+//      println(answer.map(_.toText).mkString("\n"))
+
+      answer
+    }
 
   def exponentiateRank(ranks: List[(Sentence, Int)]): List[(Sentence, Double)] =
     ranks.map(r => (r._1, math.exp(-1 * r._2)))
@@ -131,12 +150,19 @@ object SentenceSelectionFunctions {
   def harmonicMeanRank(cluster: ClusterLike, func1: SingleDescription => Double, func2: SingleDescription => Double): List[(SingleDescription, Int)] =
     {
       val rank1 = rank(cluster, func1)
-      val rank2 = rank(cluster, func1)
+      val rank2 = rank(cluster, func2)
 
       val list =
-        for (sent <- cluster.members) yield {
-          val r1 = rank1.find(_._1 == sent).get._2
-          val r2 = rank2.find(_._1 == sent).get._2 * 2
+        for (sent <- uniques(cluster.members)) yield {
+          val r1 = rank1.find(_._1.toText == sent.toText).get._2
+          val r2 = rank2.find(_._1.toText == sent.toText).get._2
+          
+//          println("sentence: ***")
+//          println(sent.toText)
+//          println(r1: )
+//          println(sent.toText)
+//          println("******")
+          
           val fitness = 2 * r1 * r2 / (r1 + r2)
           (sent, fitness)
         }
