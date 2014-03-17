@@ -68,7 +68,7 @@
 63 Sally cried.
 64 John put on his clothes.
 65 Sally ran downstairs.
-66 John chased after her.
+66 John chased after Sally.
 67 Sally exited the house.
 68 Sally entered her car.
 69 Sally drove away.
@@ -89,7 +89,7 @@
 ###
 83 John and Sally walked in the park.
 84 John noticed Amy in a bikini.
-85 Amy gave John that "look."
+85 Amy gave John that "look".
 86 John returned the "look" to Amy.
 87 John noticed Amy's dog.
 88 John left Sally at the picnic table.
@@ -125,7 +125,7 @@
 117 Sally drove for hours until she felt somewhat better.
 118 Sally stayed at a hotel for a couple months.
 119 Sally filed for a divorce from John, immediately.
-120 Sally divorced John after a couple of months
+120 Sally divorced John after a couple of months.
 121 John and Amy continued their relationship.
 ###
 122 John and Sally have been married for fifteen years.
@@ -149,7 +149,7 @@
 ###
 140 Sally left work early.
 141 Sally arrived home.
-142 Sally saw john's car in the driveway.
+142 Sally saw John's car in the driveway.
 143 Sally parked her car.
 144 Sally went to the front door.
 145 The front door was locked.
@@ -250,7 +250,7 @@
 234 Sally opened the front door.
 235 Sally heard a woman.
 236 Sally entered her bedroom.
-237 Sally seen John in bed.
+237 Sally saw John in bed.
 238 John was in bed with Amy.
 239 John and Amy gasped.
 240 Sally screamed at John.
@@ -668,7 +668,7 @@
 627 Sally opened the door.
 628 Sally entered the room.
 629 John and Amy panicked.
-630 Sally sees John and Amy together in bed.
+630 Sally saw John and Amy together in bed.
 631 Sally screamed at John and Amy.
 632 John and Amy were kicked out of the house.
 ###
@@ -763,7 +763,7 @@
 716 Amy ran out of the house.
 717 John followed Amy.
 718 Sally started to cry.
-719 John drove Amy home.
+719 John drove to Amy home.
 ###
 720 Sally left work early.
 721 Sally drove home.
@@ -789,15 +789,15 @@
 740 Sally ran to the bedroom door.
 741 Sally listened for a moment at the door.
 742 Sally opened the bedroom door slowly.
-743 Sally sees John and Amy naked on the bed.
-744 John and Amy are making love on the bed.
-745 Sally screams at John and Amy.
-746 John and Amy keep making love.
-747 Sally runs out of the house.
-748 Sally jumps in her car.
-749 Sally drives off to cool down.
+743 Sally saw John and Amy naked on the bed.
+744 John and Amy were making love on the bed.
+745 Sally screamed at John and Amy.
+746 John and Amy keept making love.
+747 Sally ran out of the house.
+748 Sally jumped in her car.
+749 Sally drove off to cool down.
 ###
-750 Sally left work early because Sally was sick.
+750 Sally left work early.
 751 Sally noticed her husband was home early too.
 752 Sally entered the house.
 753 Sally heard noises coming from upstairs.
@@ -915,7 +915,7 @@
 858 John was ashamed.
 859 John apologized to Sally.
 860 Sally was angry.
-861 Sally kicked John in his cheating head.
+861 Sally kicked John in his head.
 ###
 862 Sally washed John's clothing.
 863 Sally saw lipstick on the collar of John's dress shirt.
@@ -1189,7 +1189,7 @@
 1114 Sally heard the commotion in the bedroom.
 1115 Sally went to the bedroom quickly.
 1116 John and Amy both jumped out of bed.
-1117 Sally screamed at Amy as she dressed.
+1117 Sally screamed at Amy.
 1118 Amy ran out of the house.
 1119 Sally threw a lamp at John.
 1120 John did try to explain.
