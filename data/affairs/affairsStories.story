@@ -9,9 +9,9 @@
 8 Sally convinced John to a dinner and a movie.
 9 Sally and John arrived at the movies early.
 10 Sally stood off to the side from John.
-11 Five minutes later, a woman happily walks straight up to John.
-12 John tried to push her away.
-13 Sally asked the girl her name.
+11 Five minutes later, Amy happily walks straight up to John.
+12 John tried to push Amy away.
+13 Sally asked Amy her name.
 14 Sally whispered into John's ears.
 15 Sally walked away.
 16 John chased after Sally.
@@ -110,7 +110,7 @@
 102 Sally came home from a long day at work.
 103 All Sally wanted to do was shower.
 104 Sally walked upstairs to take her shower in the master bathroom.
-105 Sally heard her husband John's voice and a female voice coming from the bathroom
+105 Sally heard her husband John's voice and a female voice coming from the bathroom.
 106 Sally opened the door.
 107 John and Amy, Sally's coworker, were poised on the bathroom sink having sex.
 108 John and Amy both froze.
@@ -621,7 +621,7 @@
 584 John and Amy shrieked in surprise.
 585 Sally closed the door behind her.
 ###
-586 Sally worked late at work but got off early.
+586 Sally got off work early.
 587 Sally drove home.
 588 Sally opened the door to her house.
 589 Sally walked to her bedroom.
@@ -1168,8 +1168,8 @@
 1095 Sally drove away.
 ###
 1096 Sally came home from work early.
-1097 She heard noise coming from the bedroom.
-1098 She walked into the bedroom.
+1097 Sally heard noise coming from the bedroom.
+1098 Sally walked into the bedroom.
 1099 John was lying on the bed with Amy.
 1100 Amy and John were having sex.
 1101 Sally yelled at John.
@@ -1250,10 +1250,11 @@
 1171 Sally noticed John spent a lot of time on the phone with Amy.
 1172 Sally searched through John's phone.
 1173 Sally found provocative text from Amy to John.
-1174 Sally returned from work one day to see Amy's car at their home.
-1175 Sally stepped inside.
-1176 Sally saw John and Amy lying together.
-1177 John pleaded to Sally not to over react.
-1178 Sally refused to listen to the two of them.
-1179 Sally filed for divorce afterwards.
+1174 Sally returned from work one day.
+1175 Sally saw Amy's car at their home.
+1176 Sally stepped inside.
+1177 Sally saw John and Amy lying together.
+1178 John pleaded to Sally not to over react.
+1179 Sally refused to listen to the two of them.
+1180 Sally filed for divorce afterwards.
 ###
