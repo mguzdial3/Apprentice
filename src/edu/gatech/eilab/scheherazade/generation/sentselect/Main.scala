@@ -4,12 +4,12 @@ import edu.gatech.eilab.scheherazade.data._
 import edu.gatech.eilab.scheherazade.io._
 import edu.gatech.eilab.scheherazade.nlp._
 import edu.gatech.eilab.scheherazade.utils.MathUtils._
-import SentenceSelectionFunctions._
+import SentenceEvalFunctions._
 import edu.gatech.eilab.scheherazade.generation._
 import java.io._
 import scala.collection.mutable.ListBuffer
 
-object TestMain {
+object Main {
 
   def sentEval(c: ClusterLike): List[(SingleDescription, Double)] =
     reciprocalOfRank(c, UniGramModel.logProbability).map(x => x._1 -> x._2 * 3)
@@ -48,6 +48,20 @@ object TestMain {
     UniGramModel.printNon
   }
 
+  def fakeOutline() =
+    {
+      val names = List("John drives to bank", "John opens bank door", "John covers face",
+        "John enters bank", "John scans the bank", "John sees Sally", "waits in line", "John approaches Sally",
+        "Sally scared", "John pulls out gun", "John points gun at Sally", "Sally screams", "John demands money",
+        "John gives Sally bag", "Sally puts money in bag", "John collects money", "Sally cries",
+        "Sally calls police", "John gets in car", "John drives away")
+
+      val clusters = SimpleParser.parseClusters("./data/robbery/robberyGold2-cr.gold")
+
+      names.map(name => clusters.find(_.name == name).get)
+
+    }
+
   def genStory() {
 
     //val clusters = SimpleParser.parseClusters("./data/new_movie/movieGold-cr.gold")
@@ -55,6 +69,7 @@ object TestMain {
     val snipClusters = SFParser.parseSnippets(clusters)
 
     val story = StoryGenerator.genStory.map {
+    //val story = fakeOutline().map {
       e =>
         snipClusters.find(c => c.name == e.name) match {
           case Some(c) => c
@@ -64,16 +79,49 @@ object TestMain {
 
     val idf = new InverseSentFreq(snipClusters.flatMap(x => x.members))
 
-    def rankMID(c: ClusterLike) = harmonicMeanRank(c,
+    def MIDEval(c: ClusterLike) = harmonicMeanRank(c,
       s => UniGramModel.logProbability(s),
       s => -1 * exponentialAverage(UniGramModel.fictionality(s), 12)).map { p => (p._1, 1.0 / p._2) }
-    
+
     def rankCS(c: ClusterLike) = harmonicMeanRank(c,
       s => UniGramModel.logProbability(s) * -1,
       s => exponentialAverage(UniGramModel.fictionality(s), 12)).map { p => (p._1, 1.0 / p._2) }
 
     def mostProbEval(c: ClusterLike) = reciprocalOfRank(c, s => UniGramModel.logProbability(s) * -1)
     def leastProbEval(c: ClusterLike) = reciprocalOfRank(c, s => UniGramModel.logProbability(s))
+
+    def leastWords(c: ClusterLike) = reciprocalOfRank(c, s => s.allTokens.size)
+
+    def MID2Eval(cluster: ClusterLike): List[(SingleDescription, Double)] =
+      {
+        val rank1 = rank(cluster, s => UniGramModel.logProbability(s))
+        val rank2 = rank(cluster, s => -1 * exponentialAverage(UniGramModel.fictionality(s), 12))
+        val rank3 = rank(cluster, s => s.allTokens.size)
+
+        val list =
+          for (sent <- uniques(cluster.members)) yield {
+            val r1 = rank1.find(_._1.toText == sent.toText).get._2
+            val r2 = rank2.find(_._1.toText == sent.toText).get._2
+            val r3 = rank3.find(_._1.toText == sent.toText).get._2
+
+            //          println("sentence: ***")
+            //          println(sent.toText)
+            //          println(r1: )
+            //          println(sent.toText)
+            //          println("******")
+
+            val fitness = 3.0 / ((1.0 / r1) + (1.0 / r2) + (1.0 / r3))
+            (sent, fitness)
+          }
+
+        val sortedList = list.sortWith(_._2 < _._2)
+
+        var i = 0
+        for (item <- sortedList) yield {
+          i += 1 
+          (item._1, 1.0 / i) // this is a reciprocal
+        }
+      }
 
     def ficEval(cl: ClusterLike): List[(SingleDescription, Double)] = {
       val ranks = reciprocalOfRank(cl,
@@ -82,6 +130,16 @@ object TestMain {
         })
 
       ranks
+    }
+
+    def positiveEval(cl: ClusterLike): List[(SingleDescription, Double)] = {
+      val ranks = rank(cl, x => -1 * exponentialAverage(UniGramModel.sentiments(x), 2))
+      ranks.map { p => (p._1, 1.0 / p._2) }
+    }
+
+    def negativeEval(cl: ClusterLike): List[(SingleDescription, Double)] = {
+      val ranks = rank(cl, x => exponentialAverage(UniGramModel.sentiments(x), 6))
+      ranks.map { p => (p._1, 1.0 / p._2) }
     }
 
     snipClusters.foreach {
@@ -107,24 +165,23 @@ object TestMain {
         val lp = leastProbEval(c).maxBy(p => p._2)._1
         println("LP: " + lp.toText)
 
-        val mid = rankMID(c).maxBy(p => p._2)._1
+        val mid = MIDEval(c).maxBy(p => p._2)._1
         println("MID: " + mid.toText)
+        
+        val mid2 = MID2Eval(c).maxBy(p => p._2)._1
+        println("MID2: " + mid2.toText)
 
-        val lf = ficEval(c).minBy(p => p._2)._1
-        println("LF: " + lf.toText)
-
-        val mp = leastProbEval(c).minBy(p => p._2)._1
-        println("MP: " + mp.toText)
-    }
-
-    def posiSentiEval(cl: ClusterLike): List[(SingleDescription, Double)] = {
-      val ranks = rank(cl, x => -1 * exponentialAverage(UniGramModel.sentiments(x), 3))
-      ranks.map { p => (p._1, 1.0 / p._2) }
-    }
-
-    def negaSentiEval(cl: ClusterLike): List[(SingleDescription, Double)] = {
-      val ranks = rank(cl, x => exponentialAverage(UniGramModel.sentiments(x), 3))
-      ranks.map { p => (p._1, 1.0 / p._2) }
+//        val lf = ficEval(c).minBy(p => p._2)._1
+//        println("LF: " + lf.toText)
+//
+//        val mp = leastProbEval(c).minBy(p => p._2)._1
+//        println("MP: " + mp.toText)
+//
+//        val positive = positiveEval(c).maxBy(p => p._2)._1
+//        println("Positive: " + positive.toText)
+//
+//        val negative = negativeEval(c).maxBy(p => p._2)._1
+//        println("Negative: " + negative.toText)
     }
 
     def combinedEval(cl: ClusterLike): List[(SingleDescription, Double)] = {
@@ -137,10 +194,10 @@ object TestMain {
       ranks.map { p => (p._1, (2.0 / p._2)) }
     }
 
-    def adjEvalIdf(prev: SingleDescription, cluster: ClusterLike): List[(SingleDescription, Double)] = adjacentHeuristic(prev, cluster, idf)
+    def adjEvalIdf(prev: SingleDescription, cluster: ClusterLike): List[(SingleDescription, Double)] = adjacentHeuristic(prev, cluster)
 
-    val sentSelector = new SentenceSelector(mostProbEval, adjEval)
-    val result = sentSelector.bestSentenceSequence(story, idf)
+    val sentSelector = new SentenceSelector(MID2Eval, adjEval)
+    val result = sentSelector.bestSentenceSequence(story)
     println(result.mkString("\n"))
     //UniGramModel.printNon
   }
