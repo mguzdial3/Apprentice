@@ -50,8 +50,8 @@ object TestMain {
 
   def genStory() {
 
-    val clusters = SimpleParser.parseClusters("./data/new_movie/movieGold-cr.gold")
-    //val clusters = SimpleParser.parseClusters("./data/robbery/robberyGold2-cr.gold")
+    //val clusters = SimpleParser.parseClusters("./data/new_movie/movieGold-cr.gold")
+    val clusters = SimpleParser.parseClusters("./data/robbery/robberyGold2-cr.gold")
     val snipClusters = SFParser.parseSnippets(clusters)
 
     val story = StoryGenerator.genStory.map {

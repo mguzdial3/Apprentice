@@ -18,7 +18,7 @@ package utils {
     }
 
     def clusterMinusStory() {
-      val configFile = "configRobExp.txt"
+      val configFile = "configAffairs.txt"
         
       val properties = new SuperProperties()
       val in = new FileInputStream(configFile)
@@ -33,8 +33,10 @@ package utils {
 
       val sent1 = stories.flatMap(_.members)
       val sent2 = clusters.flatMap(_.members)
+      
+      //println(sent2.map(_.toSimpleString()).mkString("\n"))
 
-      val unused = sent2.filterNot(sent1 contains)
+      val unused = sent1.filterNot(sent2 contains)
 
       println(unused.map(_.toSimpleString()).mkString("\n"))
     }
