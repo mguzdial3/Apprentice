@@ -14,10 +14,23 @@ package graph {
 
     def this(nodes: List[Cluster], links: List[Link]) = this(nodes, links, List[MutualExcl]())
 
-    def findSources() =
-      nodes.filterNot(n => links.exists(l => l.target == n))
+    /**
+     * finds all the source nodes, i.e. nodes without temporal predecessors
+     *
+     */
+    def findSources() = nodes.filterNot(n => links.exists(l => l.target == n))
 
+    /**
+     * finds all the sink nodes, i.e. nodes without temporal successors
+     *
+     */
     def findEnds() = nodes.filterNot(n => links.exists(l => l.source == n))
+
+    /**
+     * finds all middle nodes, i.e. nodes that are neither sources or sinks
+     *
+     */
+    def findMiddle() = nodes.filter(n => links.exists(l => l.target == n || l.source == n))
 
     // this alias is used in XStreamable
     override def alias() = "plot-graph"
