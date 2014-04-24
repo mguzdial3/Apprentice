@@ -10,10 +10,15 @@ import edu.gatech.eilab.scheherazade.data.serialize.XStreamable
 package graph {
   class Graph(val nodes: List[Cluster], val links: List[Link], val mutualExcls: List[MutualExcl]) extends XStreamable[Graph] {
 
-    var optionals:List[Cluster] = Nil
-    
+    var optionals: List[Cluster] = Nil
+
     def this(nodes: List[Cluster], links: List[Link]) = this(nodes, links, List[MutualExcl]())
-    
+
+    def findSources() =
+      nodes.filterNot(n => links.exists(l => l.target == n))
+
+    def findEnds() = nodes.filterNot(n => links.exists(l => l.source == n))
+
     // this alias is used in XStreamable
     override def alias() = "plot-graph"
 
@@ -244,22 +249,27 @@ package graph {
       println(file.getCanonicalPath())
       val writer = new PrintWriter(new BufferedOutputStream(new FileOutputStream(file)))
       writer.println("digraph G {")
-      
-      for (node <- optionals)
-      {
-        writer.println("\"" + node.name + "\" [shape=box]" )
+
+      for (node <- optionals) {
+        writer.println("\"" + node.name + "\" [shape=box]")
       }
       //writer.println(causalLinks.map { l => "\"" + l.source.name + "\" -- \"" + l.target.name + "\" [style = \"dashed\"]" }.mkString("\n"))
       writer.println(temporalLinks.map { l => "\"" + l.source.name + "\" -> \"" + l.target.name + "\"" }.mkString("\n"))
-      
+
       writer.println(mutualExcls.map { m => "\"" + m.c1.name + "\" -> \"" + m.c2.name + "\" [style=dashed, dir=none]" }.mkString(";\n"))
-      
+
       //writer.println(mutualExcls.map { m => "\"" + m.c1.name + """" -- [style = "dashed"]" """ + m.c2.name + "\""}.mkString(";\n"))      
       writer.println("}")
       writer.close()
 
-      println("writing graph to " + fn + ".png")
-      Runtime.getRuntime().exec("dot -Tpng -o" + fn + ".png " + filename)
+      try {
+        Runtime.getRuntime().exec("dot -Tpng -o" + fn + ".png " + filename)
+        println("graph written to " + fn + ".png")
+      } catch {
+        case ioex: IOException =>
+          print("Graph drawing failed: " + ioex.getMessage())
+          println(". Possible Cause: Graphviz not installed properly.")
+      }
       //file.deleteOnExit()
     }
 
@@ -269,7 +279,7 @@ package graph {
      * @param fn The filename of the png file to be saved
      * @param dict The Map from the clusters to their new names
      */
-    def drawWithNames(fn: String, dict:Map[Cluster,String]) {
+    def drawWithNames(fn: String, dict: Map[Cluster, String]) {
 
       val filename = fn + ".txt"
       val file = new File(filename)

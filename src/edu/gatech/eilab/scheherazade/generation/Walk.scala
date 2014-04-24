@@ -174,9 +174,9 @@ package generation {
       val me = graph.mutualExcls
 
       // starting point:
-      var sources = graph.nodes.filterNot(n => graph.links.exists(l => l.target == n))
+      var sources = graph.findSources()
       //println(sources.map(_.name).mkString("sources 1: ", "\n", ""))
-      val ends = graph.nodes.filterNot(n => graph.links.exists(l => l.source == n))
+      val ends = graph.findEnds()
       //println(ends.map(_.name).mkString("ends : ", "\n", ""))
       //readLine()
 
