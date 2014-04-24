@@ -1,5 +1,8 @@
 package edu.gatech.eilab.scheherazade.graph.structure
 
+import edu.gatech.eilab.scheherazade.graph._
+import edu.gatech.eilab.scheherazade.data._
+
 /**
  * This code finds independent units in plot graphs.
  *  An independent unit is like
@@ -14,3 +17,5 @@ package edu.gatech.eilab.scheherazade.graph.structure
 object UnitAnalysis {
 
 }
+
+class UnitLabel(val source:Cluster, val target:Cluster, val split:Int, val inSplit:Int)
