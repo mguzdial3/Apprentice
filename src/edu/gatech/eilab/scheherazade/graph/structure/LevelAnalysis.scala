@@ -19,9 +19,9 @@ object LevelAnalysis {
   }
 
   def testLevelAssignment() {
-    val graph = SampleGraph.randomDAG(10, 15)
+    val graph = SampleGraph.sample3//.randomDAG(10, 15)
     graph.draw("unit-analysis")
-    val lvlMap = possibleLevels(graph)
+    val lvlMap = assignLevelFromTop2(graph)
     lvlMap.foreach(
       p =>
         println(p._1.name + " : " + p._2))
@@ -52,7 +52,7 @@ object LevelAnalysis {
           l =>
             // enqueue
             val target = l.target
-            queue = queue.filterNot(elem => elem._1 == target) += ((target, curCount + 1))
+            queue = queue.filterNot(elem => elem._1 == target) += ((target, curCount + 1)) // push to the last position of the queue
         }
 
         if (lvlMap.contains(curNode)) {
@@ -61,6 +61,52 @@ object LevelAnalysis {
             println("error in assigning small levels: old count > cur count " + curNode.name)
           }
         }
+        lvlMap.put(curNode, curCount)
+      }
+
+      lvlMap.toMap
+    }
+  
+  /** an alternative implementation
+   *  
+   */
+  def assignLevelFromTop2(graph: Graph): Map[Cluster, Int] =
+    {
+      val lvlMap = HashMap[Cluster, Int]()
+      val parentMap = HashMap[Cluster, Cluster]()
+      val root = new Cluster("parent", Nil)
+      lvlMap.put(root, -1)
+      
+      var queue = ListBuffer[Cluster]()
+      val sources = graph.findSources
+      for (s <- sources) {
+        queue += s
+        parentMap.put(s, root)
+      }
+
+      while (!queue.isEmpty) {
+        // take the first element
+        val head = queue.head
+//        println("visit " + head.name)
+        val curNode = head
+        val curCount = lvlMap(parentMap(head)) + 1
+        queue = queue.tail
+
+        graph.links.filter(l => l.source == curNode) foreach {
+          l =>
+            // enqueue
+            val target = l.target
+            queue = queue.filterNot(_ == target) += target
+            parentMap.put(target, curNode)
+        }
+
+        if (lvlMap.contains(curNode)) {
+          val oldCount = lvlMap(curNode)
+          if (oldCount > curCount) {
+            println("error in assigning small levels: old count > cur count " + curNode.name)
+          }
+        }
+        
         lvlMap.put(curNode, curCount)
       }
 
