@@ -159,17 +159,17 @@ object Main {
         //          println("negative: " + negative.toText)
         //}
 
-        val mf = ficEval(c).maxBy(p => p._2)._1
-        println("MF: " + mf.toText)
-
-        val lp = leastProbEval(c).maxBy(p => p._2)._1
-        println("LP: " + lp.toText)
-
-        val mid = MIDEval(c).maxBy(p => p._2)._1
-        println("MID: " + mid.toText)
-        
-        val mid2 = MID2Eval(c).maxBy(p => p._2)._1
-        println("MID2: " + mid2.toText)
+//        val mf = ficEval(c).maxBy(p => p._2)._1
+//        println("MF: " + mf.toText)
+//
+//        val lp = leastProbEval(c).maxBy(p => p._2)._1
+//        println("LP: " + lp.toText)
+//
+//        val mid = MIDEval(c).maxBy(p => p._2)._1
+//        println("MID: " + mid.toText)
+//        
+//        val mid2 = MID2Eval(c).maxBy(p => p._2)._1
+//        println("MID2: " + mid2.toText)
 
 //        val lf = ficEval(c).minBy(p => p._2)._1
 //        println("LF: " + lf.toText)
@@ -177,11 +177,11 @@ object Main {
 //        val mp = leastProbEval(c).minBy(p => p._2)._1
 //        println("MP: " + mp.toText)
 //
-//        val positive = positiveEval(c).maxBy(p => p._2)._1
-//        println("Positive: " + positive.toText)
-//
-//        val negative = negativeEval(c).maxBy(p => p._2)._1
-//        println("Negative: " + negative.toText)
+        val positive = positiveEval(c).maxBy(p => p._2)._1
+        println("Positive: " + positive.toText)
+
+        val negative = negativeEval(c).maxBy(p => p._2)._1
+        println("Negative: " + negative.toText)
     }
 
     def combinedEval(cl: ClusterLike): List[(SingleDescription, Double)] = {
@@ -196,7 +196,7 @@ object Main {
 
     def adjEvalIdf(prev: SingleDescription, cluster: ClusterLike): List[(SingleDescription, Double)] = adjacentHeuristic(prev, cluster)
 
-    val sentSelector = new SentenceSelector(MID2Eval, adjEval)
+    val sentSelector = new SentenceSelector(MIDEval, adjEval)
     val result = sentSelector.bestSentenceSequence(story)
     println(result.mkString("\n"))
     //UniGramModel.printNon
