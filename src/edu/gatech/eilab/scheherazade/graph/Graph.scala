@@ -15,6 +15,101 @@ package graph {
     def this(nodes: List[Cluster], links: List[Link]) = this(nodes, links, List[MutualExcl]())
 
     /**
+     * obtain a adjacency list representation of the graph
+     *
+     */
+    def getAdjacencyList(): Array[Array[Int]] =
+      {
+        import scala.collection.mutable.HashMap
+
+        // create a map from clusters to their indices
+        val idMap = HashMap[Cluster, Int]()
+        var nodelist = nodes
+        for (i <- 0 until nodes.length) {
+          val head = nodelist.head
+          nodelist = nodelist.tail
+          idMap.put(head, i)
+        }
+
+        // where we put the result
+        val array = Array.fill(nodes.length)(List[Int]())
+
+        // translating each link
+        for (link <- links) {
+          val h = idMap(link.source)
+          val t = idMap(link.target)
+          array(h) = t :: array(h)
+        }
+
+        array.map(_.distinct.toArray)
+      }
+
+    /**
+     * topological sort
+     *
+     */
+    def topoSort(): List[Cluster] =
+      {
+        val adjList = getAdjacencyList()
+
+        for (i <- 0 until adjList.size) {
+          println(nodes(i).name + ": " + i + " -> ")
+          println("\t" + adjList(i).mkString(", "))
+        }
+
+        val n = adjList.length
+        val visited = Array.fill(n)(false)
+        val stack = Stack[Int]()
+
+        for (i <- 0 until n) {
+          if (!visited(i)) {
+            topoSortUtil(i, adjList, visited, stack)
+          }
+        }
+
+        stack.toList.map(nodes(_))
+
+      }
+
+    /** topological sort with integers
+     *  
+     */
+    def topoSortInt(): List[Int] =
+      {
+        val adjList = getAdjacencyList()
+
+        for (i <- 0 until adjList.size) {
+          println(nodes(i).name + ": " + i + " -> ")
+          println("\t" + adjList(i).mkString(", "))
+        }
+
+        val n = adjList.length
+        val visited = Array.fill(n)(false)
+        val stack = Stack[Int]()
+
+        for (i <- 0 until n) {
+          if (!visited(i)) {
+            topoSortUtil(i, adjList, visited, stack)
+          }
+        }
+
+        stack.toList
+      }
+
+    private def topoSortUtil(v: Int, adjacencyList: Array[Array[Int]], visited: Array[Boolean], stack: Stack[Int]) {
+      visited(v) = true
+
+      for (i <- 0 until adjacencyList(v).length) {
+        val u = adjacencyList(v)(i)
+        if (!visited(u)) {
+          topoSortUtil(u, adjacencyList, visited, stack)
+        }
+      }
+
+      stack.push(v)
+    }
+
+    /**
      * finds all the source nodes, i.e. nodes without temporal predecessors
      *
      */
