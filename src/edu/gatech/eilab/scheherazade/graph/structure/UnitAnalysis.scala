@@ -31,51 +31,75 @@ object UnitAnalysis {
     //    val allClosure = aggregateClosure(c1, c2)
     //    println(allClosure.map(_.map(_.name).mkString(", ")).mkString("\n"))
 
-    val graph = SampleGraph.sample2
+    val graph = SampleGraph.sample1
     graph.draw("unit-analysis")
-    val forward = graph.topoSortInt
-    val backward = forward.reverse
-    
-    val resultForward = propagate(graph, forward)
+    val forwardSort = graph.topoSortInt
+    val backwardSort = forwardSort.reverse
+
+    val (forwardAdjList, backwardAdjList) = graph.getBiAdjacencyList
+
+    val resultForward = propagate(graph, forwardSort, forwardAdjList)
     val c1 = findClosure(resultForward)
-    val resultBackward = propagate(graph, backward)
+    val resultBackward = propagate(graph, backwardSort, backwardAdjList)
     val c2 = findClosure(resultBackward)
-    
-//    println(resultForward.map(x => (x._1.name + " " + x._2.mkString(",   "))).mkString("\n"))
-//    println(resultBackward.map(x => (x._1.name + " " + x._2.mkString(",   "))).mkString("\n"))
-    
-    val allClosure = aggregateClosure(c1, c2)
-    println(allClosure.map(_.map(_.name).mkString(", ")).mkString("\n"))
+
+    println(c1.map(x => (x._1.name + " " + x._2.map(_.name))))
+    println(c2.map(x => (x._1.name + " " + x._2.map(_.name))))
+    //    println(resultForward.map(x => (x._1.name + " " + x._2.mkString(",   "))).mkString("\n"))
+    //    println(resultBackward.map(x => (x._1.name + " " + x._2.mkString(",   "))).mkString("\n"))
+
+    val allClosure = aggregateClosure(c1, c2).filter(testClosureMutex(_, graph))
+    println(allClosure.mkString("\n"))
+
   }
 
-  def aggregateClosure(forward: Map[Cluster, List[Cluster]], backward: Map[Cluster, List[Cluster]]): List[List[Cluster]] =
+  def testClosureMutex(closure: Closure, graph: Graph) = {
+    val all = closure.nodes
+    // middles and ends are not involved in external mutual exclusions
+    (closure.end :: closure.middle).forall(m =>
+      !graph.mutualExcls.exists(me =>
+        (me.c1 == m && (!all.contains(me.c2))) ||
+          (me.c2 == m && (!all.contains(me.c1))))) &&
+      // the end is either optional or not involved in any mutex
+      (graph.optionals.contains(closure.end) ||
+        !graph.mutualExcls.exists(me =>
+          (me.c1 == closure.end || me.c2 == closure.end)))
+    // the head can be in any mutex
+  }
+
+  def aggregateClosure(forward: Map[Cluster, List[Cluster]], backward: Map[Cluster, List[Cluster]]): List[Closure] =
     {
-      val answer = ListBuffer[List[Cluster]]()
+      val answer = ListBuffer[Closure]()
 
       for (fc <- forward) {
         val ending = fc._1
         val set = fc._2
+        var start: Cluster = null
 
-        println("ending = " + ending.name)
-        println("set = " + set.map(_.name).mkString)
+        //        println("ending = " + ending.name)
+        //        println("set = " + set.map(_.name).mkString)
 
-        val pass = set.exists { e =>
-          val remaining = ending :: set.filterNot(_ == e)
-          backward.contains(e) && remaining.filterNot(backward(e) contains) == Nil
+        for (backPair <- backward) {
+          val backKey = backPair._1
+          val backList = backPair._2
+
+          if (set.contains(backKey)) {
+            val remaining = set.filterNot(_ == backKey)
+            if (remaining.filterNot(backList contains) == Nil) {
+              // this is a unit structure
+              answer += Closure(backKey, ending, set filterNot (_ == backKey))
+            }
+          }
         }
 
-        if (pass) {
-          answer += ending :: set
-        }
       }
 
       answer.toList
     }
 
-  def propagate(graph: Graph, topoSort: List[Int]): Map[Cluster, List[UnitLabel]] =
+  def propagate(graph: Graph, topoSort: List[Int], adjacentList: Array[Array[Int]]): Map[Cluster, List[UnitLabel]] =
     {
       val labelsMap = HashMap[Int, List[UnitLabel]]()
-      val adjacentList = graph.getAdjacencyList
       val nodes = graph.nodes.toArray
 
       for (v <- topoSort) {
@@ -97,96 +121,6 @@ object UnitAnalysis {
       }
 
       labelsMap.map(pair => (nodes(pair._1), pair._2)).toMap
-    }
-
-  /*  def propagate(graph: Graph, topoSort:List[Cluster]): Map[Cluster, List[UnitLabel]] =
-    {
-      val labelsMap = HashMap[Cluster, List[UnitLabel]]()
-
-      var queue = ListBuffer[Cluster]()
-      val sources = graph.findSources
-      for (s <- sources) {
-        queue += s
-        labelsMap.put(s, Nil)
-      }
-
-      while (!queue.isEmpty) {
-        // take the first element
-        val curNode = queue.head
-        queue = queue.tail
-
-        println("visiting " + curNode.name)
-
-        val outgoing = graph.links.filter(l => l.source == curNode).distinct
-
-        //println(outgoing.mkString("", "\n", "\n\n"))
-        val count = outgoing.size
-        var i = 1
-        outgoing foreach {(
-          l =>
-          // enqueue           
-          val target = l.target
-          val label = UnitLabel(curNode, target, count, i)
-          //println("new label = " + label)
-          var existingLabels = labelsMap.getOrElse(target, Nil)
-
-          var oldLabels = labelsMap(curNode)
-          if (count > 1) {
-            oldLabels = split(oldLabels, count, i)
-          }
-
-          //val allLabels = 
-          labelsMap.put(target, label :: llabel ::label :: olabel ::oldLabels ::: oldLabels ::: existingLabels)
-
-          queue = queue.filterNot(_ == target) += target
-          i += 1)
-        }
-
-      }
-
-      labelsMap.toMap
-    }*/
-
-  def propagateBackward(graph: Graph): Map[Cluster, List[UnitLabel]] =
-    {
-      val labelsMap = HashMap[Cluster, List[UnitLabel]]()
-
-      var queue = ListBuffer[Cluster]()
-      val ends = graph.findEnds
-      for (s <- ends) {
-        queue += s
-        labelsMap.put(s, Nil)
-      }
-
-      while (!queue.isEmpty) {
-        // take the first element
-        val curNode = queue.head
-        queue = queue.tail
-
-        val outgoing = graph.links.filter(l => l.target == curNode)
-        val count = outgoing.size
-        var i = 1
-        outgoing foreach {
-          l =>
-            // enqueue           
-            val target = l.source
-            val label = UnitLabel(curNode, target, count, i)
-
-            var existingLabels = labelsMap.getOrElse(target, Nil)
-            var oldLabels = labelsMap(curNode)
-            if (count > 1) {
-              oldLabels = split(oldLabels, count, i)
-            }
-
-            labelsMap.put(target, label :: label :: oldLabels ::: existingLabels)
-
-            queue = queue.filterNot(_ == target) += target
-            i += 1
-        }
-
-      }
-
-      labelsMap.toMap
     }
 
   private def split(oldLabels: List[UnitLabel], total: Int, position: Int): List[UnitLabel] =
@@ -227,4 +161,10 @@ object UnitAnalysis {
 case class UnitLabel(val source: Cluster, val target: Cluster, val split: Int, val inSplit: Int) {
   override def toString() =
     source.name + " -> " + target.name + " " + inSplit + "/" + split
+}
+
+case class Closure(val start: Cluster, val end: Cluster, val middle: List[Cluster]) {
+  override def toString() =
+    "Closure (" + start.name + "-" + end.name + " : " + middle.map(_.name).mkString(",") + ")"
+  def nodes = start :: end :: middle
 }

@@ -45,6 +45,39 @@ package graph {
       }
 
     /**
+     * obtain two adjacency list representation of the graph
+     * one forward and one backward
+     *
+     */
+    def getBiAdjacencyList(): (Array[Array[Int]], Array[Array[Int]]) =
+      {
+        import scala.collection.mutable.HashMap
+
+        // create a map from clusters to their indices
+        val idMap = HashMap[Cluster, Int]()
+        var nodelist = nodes
+        for (i <- 0 until nodes.length) {
+          val head = nodelist.head
+          nodelist = nodelist.tail
+          idMap.put(head, i)
+        }
+
+        // where we put the result
+        val forward = Array.fill(nodes.length)(List[Int]())
+        val backward = Array.fill(nodes.length)(List[Int]())
+
+        // translating each link
+        for (link <- links) {
+          val h = idMap(link.source)
+          val t = idMap(link.target)
+          forward(h) = t :: forward(h)
+          backward(t) = h :: backward(t)
+        }
+
+        (forward.map(_.distinct.toArray), backward.map(_.distinct.toArray))
+      }
+
+    /**
      * topological sort
      *
      */
@@ -71,8 +104,9 @@ package graph {
 
       }
 
-    /** topological sort with integers
-     *  
+    /**
+     * topological sort with integers
+     *
      */
     def topoSortInt(): List[Int] =
       {

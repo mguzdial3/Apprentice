@@ -73,7 +73,8 @@ object SampleGraph {
     new Graph(List(c1, c2, c3, c4, c5, c6, c7, c8), links)
   }
 
-  /** DAG from left to right. This graph could create difficulties in computing levels
+  /**
+   * DAG from left to right. This graph could create difficulties in computing levels
    *     C3--C4--C5--C9
    *    /         \
    *  C1           \   C8
@@ -103,6 +104,47 @@ object SampleGraph {
       new Link(c5, c9))
 
     new Graph(List(c1, c2, c3, c4, c5, c6, c7, c8, c9), links)
+  }
+
+  /**
+   * DAG from left to right. This one has mutual exclusion relations
+   *     C3--C4--C5--C9
+   *    /  \    /
+   *  C1    C10     C8
+   *    \          /
+   *     C2--C6--C7
+   */
+  val sample4: Graph = {
+    val c1 = new Cluster("C1", Nil)
+    val c2 = new Cluster("C2", Nil)
+    val c3 = new Cluster("C3", Nil)
+    val c4 = new Cluster("C4", Nil)
+    val c5 = new Cluster("C5", Nil)
+    val c6 = new Cluster("C6", Nil)
+    val c7 = new Cluster("C7", Nil)
+    val c8 = new Cluster("C8", Nil)
+    val c9 = new Cluster("C9", Nil)
+    val c10 = new Cluster("C10", Nil)
+    
+    val nodes = List(c1, c2, c3, c4, c5, c6, c7, c8, c9, c10)
+
+    val links = List(
+      new Link(c1, c2),
+      new Link(c1, c3),
+      new Link(c3, c4),
+      new Link(c3, c10),
+      new Link(c4, c5),
+      new Link(c10, c5),
+      new Link(c5, c9),
+      new Link(c2, c6),
+      new Link(c6, c7),
+      new Link(c7, c8))
+
+    val me = List(
+      new MutualExcl(c2, c3),
+      new MutualExcl(c4, c10))
+      
+    new Graph(nodes, links, me)
   }
 
   /**
