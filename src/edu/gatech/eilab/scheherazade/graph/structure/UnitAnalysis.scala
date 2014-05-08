@@ -19,41 +19,46 @@ import scala.collection.mutable.ListBuffer
 object UnitAnalysis {
 
   def main(args: Array[String]) {
-    //    val graph = SampleGraph.sample2
-    //    val resultForward = propagateForward(graph)
-    //    val c1 = findClosure(resultForward)
-    //    val resultBackward = propagateBackward(graph)
-    //    val c2 = findClosure(resultBackward)
-    //
-    //    println(c1.map(x => (x._1.name + " " + x._2.map(_.name))))
-    //    println(c2.map(x => (x._1.name + " " + x._2.map(_.name))))
-    //
-    //    val allClosure = aggregateClosure(c1, c2)
-    //    println(allClosure.map(_.map(_.name).mkString(", ")).mkString("\n"))
-
     val graph = SampleGraph.sample1
     graph.draw("unit-analysis")
-    val forwardSort = graph.topoSortInt
-    val backwardSort = forwardSort.reverse
-
-    val (forwardAdjList, backwardAdjList) = graph.getBiAdjacencyList
-
-    val resultForward = propagate(graph, forwardSort, forwardAdjList)
-    val c1 = findClosure(resultForward)
-    val resultBackward = propagate(graph, backwardSort, backwardAdjList)
-    val c2 = findClosure(resultBackward)
-
-    println(c1.map(x => (x._1.name + " " + x._2.map(_.name))))
-    println(c2.map(x => (x._1.name + " " + x._2.map(_.name))))
-    //    println(resultForward.map(x => (x._1.name + " " + x._2.mkString(",   "))).mkString("\n"))
-    //    println(resultBackward.map(x => (x._1.name + " " + x._2.mkString(",   "))).mkString("\n"))
-
-    val allClosure = aggregateClosure(c1, c2).filter(testClosureMutex(_, graph))
-    println(allClosure.mkString("\n"))
-
   }
 
-  def testClosureMutex(closure: Closure, graph: Graph) = {
+  def analyzeUnit(graph: Graph): (List[EventGroup], List[EventGroup]) =
+    {
+      val forwardSort = graph.topoSortInt
+      val backwardSort = forwardSort.reverse
+
+      val (forwardAdjList, backwardAdjList) = graph.getBiAdjacencyList
+
+      val resultForward = propagate(graph, forwardSort, forwardAdjList)
+      val c1 = findClosure(resultForward)
+      val resultBackward = propagate(graph, backwardSort, backwardAdjList)
+      val c2 = findClosure(resultBackward)
+
+      println("c1 :" + c1.map(x => (x._1.name + " " + x._2.map(_.name))))
+      println("c2 :" + c2.map(x => (x._1.name + " " + x._2.map(_.name))))
+      //    println(resultForward.map(x => (x._1.name + " " + x._2.mkString(",   "))).mkString("\n"))
+      //    println(resultBackward.map(x => (x._1.name + " " + x._2.mkString(",   "))).mkString("\n"))
+
+      val allGroups = aggregateClosure(c1, c2)
+      println("all groups: " + allGroups.mkString(", "))
+      // those that always happen together
+      val covens = allGroups.filter(testAlwaysTogether(_, graph))
+      // those that are independent of others
+      val closures = allGroups.filter(testClosureMutex(_, graph))
+      (covens, closures)
+
+    }
+
+  def testAlwaysTogether(closure: EventGroup, graph: Graph) = {
+    val all = closure.nodes
+    // middles and ends are not involved in any mutual exclusions
+    (closure.end :: closure.middle).forall(m =>
+      !graph.mutualExcls.exists(me =>
+        (me.c1 == m || me.c2 == m)))
+  }
+
+  def testClosureMutex(closure: EventGroup, graph: Graph) = {
     val all = closure.nodes
     // middles and ends are not involved in external mutual exclusions
     (closure.end :: closure.middle).forall(m =>
@@ -67,9 +72,9 @@ object UnitAnalysis {
     // the head can be in any mutex
   }
 
-  def aggregateClosure(forward: Map[Cluster, List[Cluster]], backward: Map[Cluster, List[Cluster]]): List[Closure] =
+  def aggregateClosure(forward: Map[Cluster, List[Cluster]], backward: Map[Cluster, List[Cluster]]): List[EventGroup] =
     {
-      val answer = ListBuffer[Closure]()
+      val answer = ListBuffer[EventGroup]()
 
       for (fc <- forward) {
         val ending = fc._1
@@ -87,7 +92,7 @@ object UnitAnalysis {
             val remaining = set.filterNot(_ == backKey)
             if (remaining.filterNot(backList contains) == Nil) {
               // this is a unit structure
-              answer += Closure(backKey, ending, set filterNot (_ == backKey))
+              answer += EventGroup(backKey, ending, set filterNot (_ == backKey))
             }
           }
         }
@@ -163,8 +168,18 @@ case class UnitLabel(val source: Cluster, val target: Cluster, val split: Int, v
     source.name + " -> " + target.name + " " + inSplit + "/" + split
 }
 
-case class Closure(val start: Cluster, val end: Cluster, val middle: List[Cluster]) {
+//case class Closure(val start: Cluster, val end: Cluster, val middle: List[Cluster]) {
+//  override def toString() =
+//    "Closure (" + start.name + "-" + end.name + " : " + middle.map(_.name).mkString(",") + ")"
+//  def nodes = start :: end :: middle
+//}
+
+/**
+ * an event group is a set of events
+ *
+ */
+case class EventGroup(val start: Cluster, val end: Cluster, val middle: List[Cluster]) {
   override def toString() =
-    "Closure (" + start.name + "-" + end.name + " : " + middle.map(_.name).mkString(",") + ")"
+    "Group (" + start.name + "-" + end.name + " : " + middle.map(_.name).mkString(",") + ")"
   def nodes = start :: end :: middle
 }

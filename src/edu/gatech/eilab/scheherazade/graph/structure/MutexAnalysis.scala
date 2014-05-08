@@ -8,12 +8,17 @@ import scala.collection.mutable.ListBuffer
 object MutexAnalysis {
 
   def main(args: Array[String]) {
-    val graph = SampleGraph.sample4
-    graph.draw("unit-analysis")
-    val keepNode = graph.nodes.find(_.name == "C4").get
-    val (keep, delete) = impliedGroups(keepNode, graph)
-    println("delete = " + delete.map(_.name).mkString)
-    println("keep = " + keep.map(_.name).mkString)
+//    val graph = SampleGraph.sample4
+//    graph.draw("unit-analysis")
+//    val keepNode = graph.nodes.find(_.name == "C4").get
+//    val (keep, delete) = impliedGroups(keepNode, graph)
+//    println("delete = " + delete.map(_.name).mkString)
+//    println("keep = " + keep.map(_.name).mkString)
+    for (i <- 0 to 9)
+    {
+    	val graph = SampleGraph.randomDAG(15, 50, 5);
+    	graph.draw("random" + i)
+    }
   }
 
   def impliedGroups(c1: Cluster, graph: Graph): (List[Cluster], List[Cluster]) =
