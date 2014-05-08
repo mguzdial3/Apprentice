@@ -43,12 +43,39 @@ object UnitAnalysis {
       val allGroups = aggregateClosure(c1, c2)
       println("all groups: " + allGroups.mkString(", "))
       // those that always happen together
-      val covens = allGroups.filter(testAlwaysTogether(_, graph))
+      val clans = allGroups.filter(testAlwaysTogether(_, graph))
       // those that are independent of others
       val closures = allGroups.filter(testClosureMutex(_, graph))
-      (covens, closures)
+      (clans, closures)
 
     }
+  
+  def findClans(graph:Graph):List[EventGroup] =
+  {
+    val nodes = graph.nodes
+    val mutexList = graph.mutualExcls
+    
+    val (kidList, parentList) = graph.getBiAdjacencyList()
+    var toposort = graph.topoSortInt()
+    
+    while(toposort != Nil)
+    {
+      val cur = toposort.head
+      toposort = toposort.tail
+      
+      for (kid <- kidList(cur))
+      {
+        val kidNode = nodes(kid)
+        // the kid has only one parent and it is not involved in any mutual exclusion relations
+        if (parentList(kid).size == 1 && !mutexList.exists( me => me.c1 == kidNode || me.c2 == kidNode))
+        {
+          
+        }
+      }
+    }
+    
+    null
+  }
 
   def testAlwaysTogether(closure: EventGroup, graph: Graph) = {
     val all = closure.nodes
