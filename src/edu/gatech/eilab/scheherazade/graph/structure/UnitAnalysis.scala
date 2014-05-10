@@ -19,8 +19,10 @@ import scala.collection.mutable.ListBuffer
 object UnitAnalysis {
 
   def main(args: Array[String]) {
-    val graph = SampleGraph.sample1
+    val graph = SampleGraph.sample5
     graph.draw("unit-analysis")
+    val clans = findClans(graph)
+    //println(clans.mkString(", "))
   }
 
   def analyzeUnit(graph: Graph): (List[EventGroup], List[EventGroup]) =
@@ -49,33 +51,42 @@ object UnitAnalysis {
       (clans, closures)
 
     }
-  
-  def findClans(graph:Graph):List[EventGroup] =
-  {
-    val nodes = graph.nodes
-    val mutexList = graph.mutualExcls
-    
-    val (kidList, parentList) = graph.getBiAdjacencyList()
-    var toposort = graph.topoSortInt()
-    
-    while(toposort != Nil)
+
+  def findClans(graph: Graph): List[EventGroup] =
     {
-      val cur = toposort.head
-      toposort = toposort.tail
-      
-      for (kid <- kidList(cur))
-      {
-        val kidNode = nodes(kid)
-        // the kid has only one parent and it is not involved in any mutual exclusion relations
-        if (parentList(kid).size == 1 && !mutexList.exists( me => me.c1 == kidNode || me.c2 == kidNode))
-        {
-          
+      val nodes = graph.nodes
+      val mutexList = graph.mutualExcls
+
+      val mergeList = ListBuffer[EventGroup]()
+
+      val (kidList, parentList) = graph.getBiAdjacencyList()
+      var toposort = graph.topoSortInt()
+
+      while (toposort != Nil) {
+        val cur = toposort.head
+        val curNode = graph.nodes(cur)
+        toposort = toposort.tail
+        var curMergeList = mergeList.find(_ contains curNode).getOrElse(new EventGroup(curNode))
+        mergeList -= curMergeList
+
+        for (kid <- kidList(cur)) {
+          val kidNode = nodes(kid)
+          // merge conditions:
+          // 1. all of its parent are in the mergeList 
+          // 2. it is not involved in any mutual exclusion relations
+          if (parentList(kid).filterNot(i => curMergeList.contains(graph.nodes(i))).size == 0 && !mutexList.exists(me => me.c1 == kidNode || me.c2 == kidNode)) {
+            // merge it with its parent
+            curMergeList = curMergeList.append(graph.nodes(kid))
+          }
+        }
+
+        if (curMergeList.size > 1) {
+          mergeList += curMergeList
         }
       }
+
+      mergeList.toList
     }
-    
-    null
-  }
 
   def testAlwaysTogether(closure: EventGroup, graph: Graph) = {
     val all = closure.nodes
@@ -207,6 +218,51 @@ case class UnitLabel(val source: Cluster, val target: Cluster, val split: Int, v
  */
 case class EventGroup(val start: Cluster, val end: Cluster, val middle: List[Cluster]) {
   override def toString() =
-    "Group (" + start.name + "-" + end.name + " : " + middle.map(_.name).mkString(",") + ")"
+    "Group (" +
+      { if (start != null) start.name else "?" } +
+      "-" +
+      { if (end != null) end.name else "?" } +
+      " : " + middle.map(_.name).mkString(",") + ")"
   def nodes = start :: end :: middle
+
+  /**
+   * add another cluster from bottom
+   *
+   */
+  def append(c: Cluster): EventGroup =
+    {
+      if (c != start && c != end && !middle.contains(c)) {
+        if (end != null) {
+          EventGroup(start, c, end :: middle)
+        } else EventGroup(start, c, middle)
+      }
+      else
+      {
+        this
+      }
+    }
+
+  def contains(c: Cluster) = start == c || end == c || middle.contains(c)
+
+  def this(c: Cluster) = this(c, null, Nil)
+  def size(): Int =
+    {
+      var count = 0
+      if (start != null) count += 1
+      if (end != null) count += 1
+      count + middle.size
+    }
+
+  def toList(): List[Cluster] =
+    {
+      var m = middle
+      if (start != null) {
+        m = start :: m
+      }
+      if (end != null) {
+        m = end :: m
+      }
+      m
+    }
+
 }

@@ -112,10 +112,10 @@ package graph {
       {
         val adjList = getAdjacencyList()
 
-        for (i <- 0 until adjList.size) {
-          println(nodes(i).name + ": " + i + " -> ")
-          println("\t" + adjList(i).mkString(", "))
-        }
+//        for (i <- 0 until adjList.size) {
+//          println(nodes(i).name + ": " + i + " -> ")
+//          println("\t" + adjList(i).mkString(", "))
+//        }
 
         val n = adjList.length
         val visited = Array.fill(n)(false)
