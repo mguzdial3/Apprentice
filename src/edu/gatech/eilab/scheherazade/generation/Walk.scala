@@ -185,7 +185,7 @@ package generation {
       // remove from the graph nodes without predecessors that are not sources
       //graph = eGraph.removeIrregularSourceEnds()
 
-      val (optionals, conditionals) = findOptionals(graph)
+      val (optionals, conditionals) = graph.findOptionals()
 
       val canSkip = (optionals ::: conditionals).distinct
       //println("can Skip : " + canSkip.map(_.name).mkString("\n"))
@@ -199,64 +199,64 @@ package generation {
       new Walk(finalGraph, sources, ends, me, optionals, sources)
     }
 
-    /**
-     * Finds the optional events and conditional events.
-     *  Update: Only the first of the event pair becomes optional, the second is conditioned on the first event
-     *
-     */
-    def findOptionals(graph: Graph): (List[Cluster], List[Cluster]) =
-      {
-        var optional = ListBuffer[Cluster]()
-        var conditional = ListBuffer[Cluster]()
-
-        // condition 1: c1 and c2 share a mutual exclusion but there is also a path from c1 to c2 on the graph
-        val candidates = graph.mutualExcls.filter(m => graph.ordered(m.c1, m.c2)).map(m => (m.c1, m.c2))
-        //println("candidates:\n" + candidates.mkString("\n"))
-        // condition 2: c1 is not mutually exclusive to another (direct or indirect) predecessor of c2
-        candidates.foreach {
-          case (c1, c2) =>
-            var early: Cluster = null
-            var late: Cluster = null
-            if (graph.shortestDistance(c1, c2) != -1) {
-              early = c1
-              late = c2
-            } else {
-              early = c2
-              late = c1
-            }
-
-            val prevented = graph.mutualExcls.exists(m =>
-              (m.c1 == early && m.c2 != late && graph.shortestDistance(m.c2, late) != -1) ||
-                (m.c2 == early && m.c1 != late && graph.shortestDistance(m.c1, late) != -1))
-
-            // the following commented block finds the predecessor that prevents this pair to become a optional events pair
-            /*
-                println(early.name + ", " + late.name + " optional " + !prevented)
-            if (prevented) {
-              val prevent = graph.mutualExcls.filter(m =>
-                (m.c1 == early && graph.shortestDistance(m.c2, late) != -1) ||
-                  (m.c2 == early && graph.shortestDistance(m.c1, late) != -1))
-
-              println(prevent.mkString(", ") + " prevents " + early.name + " " + late.name);
-            }*/
-
-            if (!prevented) {
-              optional += early
-              conditional += late
-            }
-        }
-
-        /*
-        candidates foreach {
-          case (early, late) => 
-            graph.mutualExcls.foreach(m =>
-              if ((m.c1 == early && graph.shortestDistance(m.c2, late) != -1) ||
-              (m.c2 == early && graph.shortestDistance(m.c1, late) != -1))
-              
-            println(m + " prevents " + early.name + " " + late.name);
-        }*/
-
-        (optional.distinct.toList, conditional.distinct.toList)
-      }
+//    /**
+//     * Finds the optional events and conditional events.
+//     *  Update: Only the first of the event pair becomes optional, the second is conditioned on the first event
+//     *
+//     */
+//    def findOptionals(graph: Graph): (List[Cluster], List[Cluster]) =
+//      {
+//        var optional = ListBuffer[Cluster]()
+//        var conditional = ListBuffer[Cluster]()
+//
+//        // condition 1: c1 and c2 share a mutual exclusion but there is also a path from c1 to c2 on the graph
+//        val candidates = graph.mutualExcls.filter(m => graph.ordered(m.c1, m.c2)).map(m => (m.c1, m.c2))
+//        //println("candidates:\n" + candidates.mkString("\n"))
+//        // condition 2: c1 is not mutually exclusive to another (direct or indirect) predecessor of c2
+//        candidates.foreach {
+//          case (c1, c2) =>
+//            var early: Cluster = null
+//            var late: Cluster = null
+//            if (graph.shortestDistance(c1, c2) != -1) {
+//              early = c1
+//              late = c2
+//            } else {
+//              early = c2
+//              late = c1
+//            }
+//
+//            val prevented = graph.mutualExcls.exists(m =>
+//              (m.c1 == early && m.c2 != late && graph.shortestDistance(m.c2, late) != -1) ||
+//                (m.c2 == early && m.c1 != late && graph.shortestDistance(m.c1, late) != -1))
+//
+//            // the following commented block finds the predecessor that prevents this pair to become a optional events pair
+//            /*
+//                println(early.name + ", " + late.name + " optional " + !prevented)
+//            if (prevented) {
+//              val prevent = graph.mutualExcls.filter(m =>
+//                (m.c1 == early && graph.shortestDistance(m.c2, late) != -1) ||
+//                  (m.c2 == early && graph.shortestDistance(m.c1, late) != -1))
+//
+//              println(prevent.mkString(", ") + " prevents " + early.name + " " + late.name);
+//            }*/
+//
+//            if (!prevented) {
+//              optional += early
+//              conditional += late
+//            }
+//        }
+//
+//        /*
+//        candidates foreach {
+//          case (early, late) => 
+//            graph.mutualExcls.foreach(m =>
+//              if ((m.c1 == early && graph.shortestDistance(m.c2, late) != -1) ||
+//              (m.c2 == early && graph.shortestDistance(m.c1, late) != -1))
+//              
+//            println(m + " prevents " + early.name + " " + late.name);
+//        }*/
+//
+//        (optional.distinct.toList, conditional.distinct.toList)
+//      }
   }
 }

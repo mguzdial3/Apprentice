@@ -89,13 +89,13 @@ package graph {
 
       // compute mutual exclusions below
       val mes = findMtlExcl(storyList, clusterList, MUTUAL_INFO_THRESHOLD)
-      val meGraph = new Graph(compactGraph.nodes, compactGraph.links, mes);
+      var meGraph = new Graph(compactGraph.nodes, compactGraph.links, mes);
       
 //      val anotherGraph = EdgeIntegerProblem.selectEdgesME(clusterList, allRelations, mes)
 //      anotherGraph.draw("another")
       
-      val optionals = Walk.findOptionals(meGraph)
-      meGraph.optionals = optionals._1 // _._2 contains the condtional events
+      meGraph = meGraph.graphWithOptionals
+      
 
       hashmap += (("mutualExcl", (meGraph, avg)))
 

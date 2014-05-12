@@ -8,11 +8,12 @@ import scala.collection.mutable.Stack
 import edu.gatech.eilab.scheherazade.data.serialize.XStreamable
 
 package graph {
-  class Graph(val nodes: List[Cluster], val links: List[Link], val mutualExcls: List[MutualExcl]) extends XStreamable[Graph] {
+  class Graph(val nodes: List[Cluster], val links: List[Link], val mutualExcls: List[MutualExcl], val optionals: List[Cluster], val conditionals: List[Cluster]) extends XStreamable[Graph] {
 
-    var optionals: List[Cluster] = Nil
+    //var optionals: List[Cluster] = Nil
 
-    def this(nodes: List[Cluster], links: List[Link]) = this(nodes, links, List[MutualExcl]())
+    def this(nodes: List[Cluster], links: List[Link]) = this(nodes, links, List[MutualExcl](), Nil, Nil)
+    def this(nodes: List[Cluster], links: List[Link], mutualExcls: List[MutualExcl]) = this(nodes, links, mutualExcls, Nil, Nil)
 
     /**
      * obtain a adjacency list representation of the graph
@@ -112,10 +113,10 @@ package graph {
       {
         val adjList = getAdjacencyList()
 
-//        for (i <- 0 until adjList.size) {
-//          println(nodes(i).name + ": " + i + " -> ")
-//          println("\t" + adjList(i).mkString(", "))
-//        }
+        //        for (i <- 0 until adjList.size) {
+        //          println(nodes(i).name + ": " + i + " -> ")
+        //          println("\t" + adjList(i).mkString(", "))
+        //        }
 
         val n = adjList.length
         val visited = Array.fill(n)(false)
@@ -164,8 +165,8 @@ package graph {
     // this alias is used in XStreamable
     override def alias() = "plot-graph"
 
-//    def causalLinks() = links.filter(_.isCausal)
-//    def temporalLinks() = links.filter(_.isTemporal)
+    //    def causalLinks() = links.filter(_.isCausal)
+    //    def temporalLinks() = links.filter(_.isTemporal)
     def usedClusters() = links.flatMap { link => List(link.source, link.target) }.distinct
 
     def makeEfficient(): EfficientGraph =
@@ -300,12 +301,12 @@ package graph {
           (id1, id2)
       }
 
-//      val causals = links filter { _.isCausal } map {
-//        link =>
-//          val id1 = cluster2num(link.source)
-//          val id2 = cluster2num(link.target)
-//          (id1, id2)
-//      }
+      //      val causals = links filter { _.isCausal } map {
+      //        link =>
+      //          val id1 = cluster2num(link.source)
+      //          val id2 = cluster2num(link.target)
+      //          (id1, id2)
+      //      }
 
       // this is a helper function that delete redundant links
       def reduceLinks = (numbers: List[(Int, Int)]) => {
@@ -319,7 +320,7 @@ package graph {
       }
 
       val newLinks =
-        reduceLinks(temporals).map { l => new Link(num2cluster(l._1), num2cluster(l._2)) }.toList 
+        reduceLinks(temporals).map { l => new Link(num2cluster(l._1), num2cluster(l._2)) }.toList
 
       new Graph(nodes, newLinks, mutualExcls)
     }
@@ -328,14 +329,14 @@ package graph {
     def compact(): Graph = reduce.simplify
 
     // replace temporal with causal links so that there is at most one link between two clusters
-//    def singleLink(): Graph = {
-//      val causal = causalLinks()
-//      var temporal = temporalLinks()
-//
-//      temporal = temporal.filterNot { tl => causal.exists { c => c.target == tl.target && c.source == tl.source } }
-//
-//      new Graph(nodes, temporal ::: causal, mutualExcls)
-//    }
+    //    def singleLink(): Graph = {
+    //      val causal = causalLinks()
+    //      var temporal = temporalLinks()
+    //
+    //      temporal = temporal.filterNot { tl => causal.exists { c => c.target == tl.target && c.source == tl.source } }
+    //
+    //      new Graph(nodes, temporal ::: causal, mutualExcls)
+    //    }
 
     /**
      * returns the direct predecessors of a graph node
@@ -366,16 +367,80 @@ package graph {
      */
     def addSkipLinks(events: List[Cluster]): Graph =
       {
-        var newLinks = ListBuffer[Link]() ++ links
-        for (e <- events) {
-          val predecessors = newLinks.filter(l => l.target == e).map(_.source)
-          val successors = newLinks.filter(l => l.source == e).map(_.target)
-          for (p <- predecessorsOf(e); s <- successors) {
-            newLinks += new Link(p, s)
-          }
+        val newLinks = skipLinks(events)
+        new Graph(nodes, newLinks, this.mutualExcls)
+      }
+
+    def skipLinks(events: List[Cluster]): List[Link] = {
+      var newLinks = ListBuffer[Link]() ++ links
+      for (e <- events) {
+        val predecessors = newLinks.filter(l => l.target == e).map(_.source)
+        val successors = newLinks.filter(l => l.source == e).map(_.target)
+        for (p <- predecessorsOf(e); s <- successors) {
+          newLinks += new Link(p, s)
+        }
+      }
+      newLinks.toList
+    }
+
+    /** generates a new graph by (1) detecting the optional and conditional events in the graph, 
+     *  without the skip links
+     */
+    def graphWithOptionals(): Graph =
+      {
+        val (optionals, conditionals) = findOptionals()        
+        new Graph(nodes, links, mutualExcls, optionals, conditionals)
+      }
+    
+        /** generates a new graph by (1) detecting the optional and conditional events in the graph, 
+     *  and (2) adds skip links for these events
+     *
+     */
+    def graphWithOptionalsAndSkips(): Graph =
+      {
+        val (optionals, conditionals) = findOptionals()
+        val canSkip = (optionals ::: conditionals).distinct
+        val newLinks = skipLinks(canSkip)
+        new Graph(nodes, newLinks, mutualExcls, optionals, conditionals)
+      }
+
+    /**
+     * Finds the optional events and conditional events.
+     *  Update: Only the first of the event pair becomes optional, the second is conditioned on the first event
+     *
+     */
+    def findOptionals(): (List[Cluster], List[Cluster]) =
+      {
+        var optional = ListBuffer[Cluster]()
+        var conditional = ListBuffer[Cluster]()
+
+        // condition 1: c1 and c2 share a mutual exclusion but there is also a path from c1 to c2 on the graph
+        val candidates = mutualExcls.filter(m => ordered(m.c1, m.c2)).map(m => (m.c1, m.c2))
+        //println("candidates:\n" + candidates.mkString("\n"))
+        // condition 2: c1 is not mutually exclusive to another (direct or indirect) predecessor of c2
+        candidates.foreach {
+          case (c1, c2) =>
+            var early: Cluster = null
+            var late: Cluster = null
+            if (shortestDistance(c1, c2) != -1) {
+              early = c1
+              late = c2
+            } else {
+              early = c2
+              late = c1
+            }
+
+            val prevented = mutualExcls.exists(m =>
+              (m.c1 == early && m.c2 != late && shortestDistance(m.c2, late) != -1) ||
+                (m.c2 == early && m.c1 != late && shortestDistance(m.c1, late) != -1))
+
+            if (!prevented) {
+              optional += early
+              conditional += late
+            }
         }
 
-        new Graph(nodes, newLinks.toList, this.mutualExcls)
+        (optional.distinct.toList, conditional.distinct.toList)
       }
 
     /**

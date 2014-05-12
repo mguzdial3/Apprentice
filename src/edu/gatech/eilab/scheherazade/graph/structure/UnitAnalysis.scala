@@ -19,11 +19,16 @@ import scala.collection.mutable.ListBuffer
 object UnitAnalysis {
 
   def main(args: Array[String]) {
-    var graph = SampleGraph.sample5
+    var graph = SampleGraph.sample5      
+    graph = graph.graphWithOptionalsAndSkips
     graph.draw("unit-analysis")
+    
     val clans = findClans(graph)
     graph = collapseClans(graph, clans)
     graph.draw("after-collapsing")
+    
+    val closures = findClosures(graph)
+    println(closures.mkString(", "))
   }
 
   /** this method collapses each clan into one single node on the graph
@@ -57,7 +62,7 @@ object UnitAnalysis {
         mutualExcls = mutualExcls.filterNot(me => oldME1.contains(me) || oldME2.contains(me)) ::: newME1 ::: newME2 
       }
       
-      new Graph(graphNodes, graphLinks, mutualExcls)
+      new Graph(graphNodes, graphLinks, mutualExcls).compact.graphWithOptionalsAndSkips
     }
 
   //  def analyzeUnit(graph: Graph): (List[EventGroup], List[EventGroup]) =
