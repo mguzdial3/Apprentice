@@ -19,13 +19,55 @@ import scala.collection.mutable.ListBuffer
 object UnitAnalysis {
 
   def main(args: Array[String]) {
-    val graph = SampleGraph.sample5
+    var graph = SampleGraph.sample5
     graph.draw("unit-analysis")
     val clans = findClans(graph)
-    //println(clans.mkString(", "))
+    graph = collapseClans(graph, clans)
+    graph.draw("after-collapsing")
   }
 
-  def analyzeUnit(graph: Graph): (List[EventGroup], List[EventGroup]) =
+  /** this method collapses each clan into one single node on the graph
+   *  
+   */
+  def collapseClans(graph: Graph, clans: List[EventGroup]): Graph =
+    {
+      var graphNodes = graph.nodes
+      var graphLinks = graph.links
+      var mutualExcls = graph.mutualExcls
+      
+      for (clan <- clans) {
+      
+        val nodes = clan.nodes
+        val newNode = ClanCluster(clan, graph.links)
+        
+        // process the precedence relations
+        val incomingEdges = graphLinks.filter(l => nodes.contains(l.target) && !nodes.contains(l.source))
+        val newIncomingEdges = incomingEdges.map(l => new Link(l.source, newNode)).distinct
+        val outgoingEdges = graphLinks.filter(l => nodes.contains(l.source) && !nodes.contains(l.target))
+        val newOutgoingEdges = outgoingEdges.map(l => new Link(newNode, l.target)).distinct
+        
+        // process mutual exclusions
+        val oldME1 = mutualExcls.filter(me => nodes.contains(me.c1))
+        val newME1 = oldME1.map(me => new MutualExcl(newNode, me.c2))
+        val oldME2 = mutualExcls.filter(me => nodes.contains(me.c2))
+        val newME2 = oldME2.map(me => new MutualExcl(me.c1, newNode))
+        
+        graphNodes = newNode :: graphNodes.filterNot(nodes.contains)
+        graphLinks = newIncomingEdges ::: newOutgoingEdges ::: graphLinks.filterNot(l => incomingEdges.contains(l) || outgoingEdges.contains(l) || newNode.links.contains(l))
+        mutualExcls = mutualExcls.filterNot(me => oldME1.contains(me) || oldME2.contains(me)) ::: newME1 ::: newME2 
+      }
+      
+      new Graph(graphNodes, graphLinks, mutualExcls)
+    }
+
+  //  def analyzeUnit(graph: Graph): (List[EventGroup], List[EventGroup]) =
+  //    {
+  //      
+  //
+  //
+  //    }
+
+  def findClosures(graph: Graph): List[EventGroup] =
     {
       val forwardSort = graph.topoSortInt
       val backwardSort = forwardSort.reverse
@@ -37,19 +79,10 @@ object UnitAnalysis {
       val resultBackward = propagate(graph, backwardSort, backwardAdjList)
       val c2 = findClosure(resultBackward)
 
-      println("c1 :" + c1.map(x => (x._1.name + " " + x._2.map(_.name))))
-      println("c2 :" + c2.map(x => (x._1.name + " " + x._2.map(_.name))))
-      //    println(resultForward.map(x => (x._1.name + " " + x._2.mkString(",   "))).mkString("\n"))
-      //    println(resultBackward.map(x => (x._1.name + " " + x._2.mkString(",   "))).mkString("\n"))
+      //      println("c1 :" + c1.map(x => (x._1.name + " " + x._2.map(_.name))))
+      //      println("c2 :" + c2.map(x => (x._1.name + " " + x._2.map(_.name))))
 
-      val allGroups = aggregateClosure(c1, c2)
-      println("all groups: " + allGroups.mkString(", "))
-      // those that always happen together
-      val clans = allGroups.filter(testAlwaysTogether(_, graph))
-      // those that are independent of others
-      val closures = allGroups.filter(testClosureMutex(_, graph))
-      (clans, closures)
-
+      aggregateClosure(c1, c2).filter(testClosureMutex(_, graph))
     }
 
   def findClans(graph: Graph): List[EventGroup] =
@@ -57,6 +90,7 @@ object UnitAnalysis {
       val nodes = graph.nodes
       val mutexList = graph.mutualExcls
 
+      // a structure that records who always happen with whom. Events happening together are put into the same event group
       val mergeList = ListBuffer[EventGroup]()
 
       val (kidList, parentList) = graph.getBiAdjacencyList()
@@ -66,22 +100,25 @@ object UnitAnalysis {
         val cur = toposort.head
         val curNode = graph.nodes(cur)
         toposort = toposort.tail
-        var curMergeList = mergeList.find(_ contains curNode).getOrElse(new EventGroup(curNode))
-        mergeList -= curMergeList
+
+        // the group of events that happen together with the current vertex / node
+        var curGroup = mergeList.find(_ contains curNode).getOrElse(new EventGroup(curNode))
+
+        mergeList -= curGroup
 
         for (kid <- kidList(cur)) {
           val kidNode = nodes(kid)
           // merge conditions:
           // 1. all of its parent are in the mergeList 
           // 2. it is not involved in any mutual exclusion relations
-          if (parentList(kid).filterNot(i => curMergeList.contains(graph.nodes(i))).size == 0 && !mutexList.exists(me => me.c1 == kidNode || me.c2 == kidNode)) {
+          if (parentList(kid).filterNot(i => curGroup.contains(graph.nodes(i))).size == 0 && !mutexList.exists(me => me.c1 == kidNode || me.c2 == kidNode)) {
             // merge it with its parent
-            curMergeList = curMergeList.append(graph.nodes(kid))
+            curGroup = curGroup.append(graph.nodes(kid))
           }
         }
 
-        if (curMergeList.size > 1) {
-          mergeList += curMergeList
+        if (curGroup.isValid) {
+          mergeList += curGroup
         }
       }
 
@@ -223,7 +260,10 @@ case class EventGroup(val start: Cluster, val end: Cluster, val middle: List[Clu
       "-" +
       { if (end != null) end.name else "?" } +
       " : " + middle.map(_.name).mkString(",") + ")"
+
   def nodes = start :: end :: middle
+
+  def isValid() = start != null && end != null
 
   /**
    * add another cluster from bottom
@@ -235,9 +275,7 @@ case class EventGroup(val start: Cluster, val end: Cluster, val middle: List[Clu
         if (end != null) {
           EventGroup(start, c, end :: middle)
         } else EventGroup(start, c, middle)
-      }
-      else
-      {
+      } else {
         this
       }
     }

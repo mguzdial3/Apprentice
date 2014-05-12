@@ -164,8 +164,8 @@ package graph {
     // this alias is used in XStreamable
     override def alias() = "plot-graph"
 
-    def causalLinks() = links.filter(_.isCausal)
-    def temporalLinks() = links.filter(_.isTemporal)
+//    def causalLinks() = links.filter(_.isCausal)
+//    def temporalLinks() = links.filter(_.isTemporal)
     def usedClusters() = links.flatMap { link => List(link.source, link.target) }.distinct
 
     def makeEfficient(): EfficientGraph =
@@ -293,19 +293,19 @@ package graph {
       val num2cluster = HashMap(pairs: _*) // mapping from number to cluster object
       val cluster2num = num2cluster.map(_.swap) // mapping from a cluster object to its number
 
-      val temporals = links filter { _.isTemporal } map {
+      val temporals = links map {
         link =>
           val id1 = cluster2num(link.source)
           val id2 = cluster2num(link.target)
           (id1, id2)
       }
 
-      val causals = links filter { _.isCausal } map {
-        link =>
-          val id1 = cluster2num(link.source)
-          val id2 = cluster2num(link.target)
-          (id1, id2)
-      }
+//      val causals = links filter { _.isCausal } map {
+//        link =>
+//          val id1 = cluster2num(link.source)
+//          val id2 = cluster2num(link.target)
+//          (id1, id2)
+//      }
 
       // this is a helper function that delete redundant links
       def reduceLinks = (numbers: List[(Int, Int)]) => {
@@ -319,8 +319,7 @@ package graph {
       }
 
       val newLinks =
-        reduceLinks(temporals).map { l => new Link(num2cluster(l._1), num2cluster(l._2), "T") }.toList ++
-          reduceLinks(causals).map { l => new Link(num2cluster(l._1), num2cluster(l._2), "C") }
+        reduceLinks(temporals).map { l => new Link(num2cluster(l._1), num2cluster(l._2)) }.toList 
 
       new Graph(nodes, newLinks, mutualExcls)
     }
@@ -329,14 +328,14 @@ package graph {
     def compact(): Graph = reduce.simplify
 
     // replace temporal with causal links so that there is at most one link between two clusters
-    def singleLink(): Graph = {
-      val causal = causalLinks()
-      var temporal = temporalLinks()
-
-      temporal = temporal.filterNot { tl => causal.exists { c => c.target == tl.target && c.source == tl.source } }
-
-      new Graph(nodes, temporal ::: causal, mutualExcls)
-    }
+//    def singleLink(): Graph = {
+//      val causal = causalLinks()
+//      var temporal = temporalLinks()
+//
+//      temporal = temporal.filterNot { tl => causal.exists { c => c.target == tl.target && c.source == tl.source } }
+//
+//      new Graph(nodes, temporal ::: causal, mutualExcls)
+//    }
 
     /**
      * returns the direct predecessors of a graph node
@@ -396,7 +395,7 @@ package graph {
         writer.println("\"" + node.name + "\" [shape=box]")
       }
       //writer.println(causalLinks.map { l => "\"" + l.source.name + "\" -- \"" + l.target.name + "\" [style = \"dashed\"]" }.mkString("\n"))
-      writer.println(temporalLinks.map { l => "\"" + l.source.name + "\" -> \"" + l.target.name + "\"" }.mkString("\n"))
+      writer.println(links.map { l => "\"" + l.source.name + "\" -> \"" + l.target.name + "\"" }.mkString("\n"))
 
       writer.println(mutualExcls.map { m => "\"" + m.c1.name + "\" -> \"" + m.c2.name + "\" [style=dashed, dir=none]" }.mkString(";\n"))
 
@@ -430,7 +429,7 @@ package graph {
       writer.println("digraph G {")
       //writer.println(causalLinks.map { l => "\"" + l.source.name + "\" -- \"" + l.target.name + "\" [style = \"dashed\"]" }.mkString("\n"))
       writer.println(mutualExcls.map { m => "\"" + dict(m.c1) + "\" -> \"" + dict(m.c2) + "\" [style=dashed, dir=none]" }.mkString(";\n"))
-      writer.println(temporalLinks.map { l => "\"" + dict(l.source) + "\" -> \"" + dict(l.target) + "\"" }.mkString("\n"))
+      writer.println(links.map { l => "\"" + dict(l.source) + "\" -> \"" + dict(l.target) + "\"" }.mkString("\n"))
       //writer.println(mutualExcls.map { m => "\"" + m.c1.name + """" -- [style = "dashed"]" """ + m.c2.name + "\""}.mkString(";\n"))      
       writer.println("}")
       writer.close()

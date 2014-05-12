@@ -43,20 +43,36 @@ object ObservedLink {
  * the Link class includes both temporal and causal links
  * the default is temporal if the kind field is not specified
  */
-class Link(val source: Cluster, val target: Cluster, var kind: String = "T") {
-  require(kind == "T" || kind == "C")
+//class Link(val source: Cluster, val target: Cluster, var kind: String = "T") {
+//  require(kind == "T" || kind == "C")
+//
+//  override def toString() = source.name + " -> " + target.name
+//  
+//  //def graphvisString = source.name.replace(" ", "_") + " -> " + target.name.replace(" ", "_")
+//  
+//  override def equals(o: Any) = o match {
+//    case other: Link => this.source == other.source && this.target == other.target && this.kind == other.kind
+//    case _ => false
+//  }
+//  override def hashCode(): Int = (source.hashCode() + target.hashCode() + kind.hashCode()) * 19 / 97
+//  def isTemporal = (kind == "T")
+//  def isCausal = (kind == "C")
+//}
 
-  override def toString = source.name + " -> " + target.name
+/**
+ * the Link class now does not differentiate between causal and temporal links 
+ */
+class Link(val source: Cluster, val target: Cluster) {  
+
+  override def toString() = source.name + " -> " + target.name
   
   //def graphvisString = source.name.replace(" ", "_") + " -> " + target.name.replace(" ", "_")
   
   override def equals(o: Any) = o match {
-    case other: Link => this.source == other.source && this.target == other.target && this.kind == other.kind
+    case other: Link => this.source == other.source && this.target == other.target
     case _ => false
   }
-  override def hashCode(): Int = (source.hashCode() + target.hashCode() + kind.hashCode()) * 19 / 97
-  def isTemporal = (kind == "T")
-  def isCausal = (kind == "C")
+  override def hashCode(): Int = (source.hashCode() + target.hashCode()) * 19 / 97  
 }
 
 class MutualExcl(val c1: Cluster, val c2: Cluster) {

@@ -7,6 +7,16 @@ import scala.collection.mutable.ListBuffer
 object AnalysisMain {
 
   def main(args: Array[String]) {
+  }
+  
+  /** test out all simplification techniques
+   *  
+   */
+  def testAll(){
+    
+  }
+
+  def testClans() {
     import java.io._
     val pw = new PrintWriter(new BufferedOutputStream(new FileOutputStream("random record.csv")))
 
@@ -25,16 +35,16 @@ object AnalysisMain {
           total += clans.size
           numNodes += clans.map(_.size).sum
         }
-        
+
         //pw.println(nodes + ", " + links + ", " + total/100.0 + ", " + numNodes / 100.0)
-        pw.println(nodes + ", " + links.toDouble / all + ", " +numNodes / 100.0 / nodes)
-        println(nodes + ", " + links + ", " + total/100.0 + ", " + numNodes / 100.0)
-        println(nodes + ", " + links.toDouble / all + ", " +numNodes / 100.0 / nodes)
+        pw.println(nodes + ", " + links.toDouble / all + ", " + numNodes / 100.0 / nodes)
+        println(nodes + ", " + links + ", " + total / 100.0 + ", " + numNodes / 100.0)
+        println(nodes + ", " + links.toDouble / all + ", " + numNodes / 100.0 / nodes)
       }
     }
-    
+
     pw.close
-    
+
   }
 
 }
