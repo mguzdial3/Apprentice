@@ -383,16 +383,18 @@ package graph {
       newLinks.toList
     }
 
-    /** generates a new graph by (1) detecting the optional and conditional events in the graph, 
+    /**
+     * generates a new graph by (1) detecting the optional and conditional events in the graph,
      *  without the skip links
      */
     def graphWithOptionals(): Graph =
       {
-        val (optionals, conditionals) = findOptionals()        
+        val (optionals, conditionals) = findOptionals()
         new Graph(nodes, links, mutualExcls, optionals, conditionals)
       }
-    
-        /** generates a new graph by (1) detecting the optional and conditional events in the graph, 
+
+    /**
+     * generates a new graph by (1) detecting the optional and conditional events in the graph,
      *  and (2) adds skip links for these events
      *
      */
@@ -459,6 +461,11 @@ package graph {
       for (node <- optionals) {
         writer.println("\"" + node.name + "\" [shape=box]")
       }
+
+      for (node <- conditionals) {
+        writer.println("\"" + node.name + "\" [shape=box, fillcolor=\"#E6E6E6\", style=filled]")
+      }
+      
       //writer.println(causalLinks.map { l => "\"" + l.source.name + "\" -- \"" + l.target.name + "\" [style = \"dashed\"]" }.mkString("\n"))
       writer.println(links.map { l => "\"" + l.source.name + "\" -> \"" + l.target.name + "\"" }.mkString("\n"))
 
@@ -476,7 +483,7 @@ package graph {
           print("Graph drawing failed: " + ioex.getMessage())
           println(". Possible Cause: Graphviz not installed properly.")
       }
-      //file.deleteOnExit()
+      file.deleteOnExit()
     }
 
     /**
