@@ -357,8 +357,10 @@ package graph {
     def removeNodes(excluded: List[Cluster]): Graph =
       {
         val newLinks = links.filterNot(l => excluded.contains(l.source) || excluded.contains(l.target))
-        val newExcls = mutualExcls.filterNot(m => m.c1 == excluded || m.c2 == excluded)
-        new Graph(nodes filterNot (excluded contains), newLinks, newExcls)
+        val newExcls = mutualExcls.filterNot(m => excluded.contains(m.c1) || excluded.contains(m.c2))
+        val newOpt = optionals.filterNot(excluded contains)
+        val newCond = conditionals.filterNot(excluded contains)
+        new Graph(nodes filterNot (excluded contains), newLinks, newExcls, newOpt, newCond)
       }
 
     /**
@@ -371,13 +373,18 @@ package graph {
         new Graph(nodes, newLinks, this.mutualExcls)
       }
 
-    def skipLinks(events: List[Cluster]): List[Link] = {
+    def skipLinks(skipped: List[Cluster]): List[Link] = {
+
+      val removedGraph = removeNodes(skipped) // a graph where the skipped nodes are directly removed
       var newLinks = ListBuffer[Link]() ++ links
-      for (e <- events) {
+
+      for (e <- skipped) {
         val predecessors = newLinks.filter(l => l.target == e).map(_.source)
         val successors = newLinks.filter(l => l.source == e).map(_.target)
         for (p <- predecessorsOf(e); s <- successors) {
-          newLinks += new Link(p, s)
+          if (shortestDistance(p, s) != -1) {
+            newLinks += new Link(p, s) // only add this link when p cannot reach s without going thru some skipped nodes 
+          }
         }
       }
       newLinks.toList
@@ -465,7 +472,7 @@ package graph {
       for (node <- conditionals) {
         writer.println("\"" + node.name + "\" [shape=box, fillcolor=\"#E6E6E6\", style=filled]")
       }
-      
+
       //writer.println(causalLinks.map { l => "\"" + l.source.name + "\" -- \"" + l.target.name + "\" [style = \"dashed\"]" }.mkString("\n"))
       writer.println(links.map { l => "\"" + l.source.name + "\" -> \"" + l.target.name + "\"" }.mkString("\n"))
 
@@ -483,7 +490,7 @@ package graph {
           print("Graph drawing failed: " + ioex.getMessage())
           println(". Possible Cause: Graphviz not installed properly.")
       }
-      file.deleteOnExit()
+      //file.deleteOnExit()
     }
 
     /**

@@ -7,13 +7,35 @@ import scala.collection.mutable.ListBuffer
 object AnalysisMain {
 
   def main(args: Array[String]) {
+    testAll
   }
-  
-  /** test out all simplification techniques
-   *  
+
+  /**
+   * test out all simplification techniques
+   *
    */
-  def testAll(){
+  def testAll() {
+    var graph = SampleGraph.randomDAG(20, 70, 4).graphWithOptionalsAndSkips
+    graph.draw("unit-analysis")
     
+    //TODO: add a pseudo start event
+    
+    var clans = UnitAnalysis.findClans(graph)
+    println("clans = " + clans.mkString(", "))
+    val meNodes = graph.mutualExcls.flatMap(me => List(me.c1, me.c2)).distinct
+    val rndInd = math.floor(math.random * meNodes.size).toInt
+    val background = meNodes(rndInd)
+    println("background = " + background.name)
+    
+    graph = MutexAnalysis.cleanedGraph(graph, List(background), clans)
+    graph.draw("mutex-analysis")
+    
+    clans = UnitAnalysis.findClans(graph)
+    graph = UnitAnalysis.collapseClans(graph, clans)
+    graph.draw("after-collapsing")
+
+    val closures = UnitAnalysis.findClosures(graph)
+    println(closures.mkString(", "))
   }
 
   def testClans() {

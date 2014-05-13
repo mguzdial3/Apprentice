@@ -20,7 +20,49 @@ object MutexAnalysis {
     	graph.draw("random" + i)
     }
   }
+  
+  /** removes clusters that are mutually exclusive with a given list of clusters
+   *  
+   */
+  def cleanedGraph(graph:Graph, keep:List[Cluster], clans:List[EventGroup]):Graph =
+  {
+    var removedNodes = ListBuffer[Cluster]()
+    
+//    for (keepNode <- keep)
+//    {
+//      removedNodes ++= impliedGroups(keepNode, graph)._2      
+//    }
+//    removedNodes = removedNodes.distinct
+    
+    for (me <- graph.mutualExcls)
+    {
+      if (keep.contains(me.c1) && !keep.contains(me.c2))
+      {
+        removedNodes += me.c2
+      }
+      else if (keep.contains(me.c2) && !keep.contains(me.c1))
+      {
+        removedNodes += me.c1
+      }
+    }
+    println("removed: " + removedNodes.map(_.name).mkString)
+    
+    for (c <- clans)
+    {
+    	val clan = c.nodes
+    	if (clan.exists(removedNodes contains))
+    	{
+    	  removedNodes ++= clan
+    	}
+    }
+    removedNodes = removedNodes.distinct
+    println("removed: " + removedNodes.map(_.name).mkString)
+    graph.removeNodes(removedNodes.toList)
+  }
 
+  /** this marker passing is incorrect. Need to label parents of kept clusters and pass markers from there, too
+   *  TODO!!!!
+   */
   def impliedGroups(c1: Cluster, graph: Graph): (List[Cluster], List[Cluster]) =
     {
       val topoSort = graph.topoSortInt
