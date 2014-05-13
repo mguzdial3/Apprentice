@@ -356,11 +356,14 @@ package graph {
      */
     def removeNodes(excluded: List[Cluster]): Graph =
       {
+        val newNodes = nodes filterNot (excluded contains)
         val newLinks = links.filterNot(l => excluded.contains(l.source) || excluded.contains(l.target))
         val newExcls = mutualExcls.filterNot(m => excluded.contains(m.c1) || excluded.contains(m.c2))
-        val newOpt = optionals.filterNot(excluded contains)
-        val newCond = conditionals.filterNot(excluded contains)
-        new Graph(nodes filterNot (excluded contains), newLinks, newExcls, newOpt, newCond)
+        val (optionals, conditionals) = new Graph(newNodes, newLinks, newExcls).findOptionals()
+        //        val newOpt = optionals.filterNot(excluded contains)
+        //        val newCond = conditionals.filterNot(excluded contains)
+        new Graph(newNodes, newLinks, newExcls, optionals, conditionals)
+        //        new Graph(newNodes, newLinks, newExcls).compact.graphWithOptionalsAndSkips
       }
 
     /**

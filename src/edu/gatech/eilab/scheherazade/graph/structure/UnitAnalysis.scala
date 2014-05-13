@@ -62,7 +62,7 @@ object UnitAnalysis {
         mutualExcls = mutualExcls.filterNot(me => oldME1.contains(me) || oldME2.contains(me)) ::: newME1 ::: newME2 
       }
       
-      new Graph(graphNodes, graphLinks, mutualExcls).compact.graphWithOptionalsAndSkips
+      new Graph(graphNodes, graphLinks, mutualExcls).graphWithOptionals
     }
 
   //  def analyzeUnit(graph: Graph): (List[EventGroup], List[EventGroup]) =
