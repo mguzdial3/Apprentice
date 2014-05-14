@@ -8,6 +8,7 @@ object Global {
   var locationFile: File = null
   var allFile: File = null
 
+  var graphDrawing = true
   /**
    * set the corresponding files according to the data set we are running
    *

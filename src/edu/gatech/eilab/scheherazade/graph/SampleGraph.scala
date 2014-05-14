@@ -18,7 +18,7 @@ object SampleGraph {
    *          /
    *         7
    */
-  val sample1: Graph = {
+  def sample1: Graph = {
     val c1 = new Cluster("C1", Nil)
     val c2 = new Cluster("C2", Nil)
     val c3 = new Cluster("C3", Nil)
@@ -46,7 +46,7 @@ object SampleGraph {
    *
    * Each node in {2, 3, 4} is connected to 2 nodes in {5, 6, 7}
    */
-  val sample2: Graph = {
+  def sample2: Graph = {
     val c1 = new Cluster("C1", Nil)
     val c2 = new Cluster("C2", Nil)
     val c3 = new Cluster("C3", Nil)
@@ -81,7 +81,7 @@ object SampleGraph {
    *    \           \ /
    *     C2---------C6--C7
    */
-  val sample3: Graph = {
+  def sample3: Graph = {
     val c1 = new Cluster("C1", Nil)
     val c2 = new Cluster("C2", Nil)
     val c3 = new Cluster("C3", Nil)
@@ -114,7 +114,7 @@ object SampleGraph {
    *    \          /
    *     C2--C6--C7
    */
-  val sample4: Graph = {
+  def sample4: Graph = {
     val c1 = new Cluster("C1", Nil)
     val c2 = new Cluster("C2", Nil)
     val c3 = new Cluster("C3", Nil)
@@ -147,7 +147,7 @@ object SampleGraph {
     new Graph(nodes, links, me)
   }
 
-  def sample5(): Graph =
+  def sample5: Graph =
     {
       val c1 = new Cluster("C1", Nil)
       val c2 = new Cluster("C2", Nil)
@@ -177,6 +177,45 @@ object SampleGraph {
 
       val me = List(
         new MutualExcl(c1, c3))
+
+      new Graph(nodes, links, me)
+    }
+
+  def sample6: Graph =
+    {
+      val c1 = new Cluster("C1", Nil)
+      val c2 = new Cluster("C2", Nil)
+      val c3 = new Cluster("C3", Nil)
+      val c4 = new Cluster("C4", Nil)
+      val c5 = new Cluster("C5", Nil)
+      val c6 = new Cluster("C6", Nil)
+      val c7 = new Cluster("C7", Nil)
+      val c8 = new Cluster("C8", Nil)
+      val c9 = new Cluster("C9", Nil)
+      val c10 = new Cluster("C10", Nil)
+      val c11 = new Cluster("C11", Nil)
+      val c12 = new Cluster("C12", Nil)
+
+      val nodes = List(c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12)
+
+      val links = List(
+        new Link(c1, c2),
+        new Link(c2, c3),
+        new Link(c3, c4),
+        new Link(c4, c5),
+        new Link(c5, c6),
+        new Link(c6, c7),
+        new Link(c7, c8),
+        new Link(c8, c9),
+        new Link(c9, c10),
+        new Link(c10, c11),
+        new Link(c11, c12))
+
+      val me = List(
+        new MutualExcl(c1, c3),
+        new MutualExcl(c1, c4),
+        new MutualExcl(c6, c3),
+        new MutualExcl(c10, c2))
 
       new Graph(nodes, links, me)
     }

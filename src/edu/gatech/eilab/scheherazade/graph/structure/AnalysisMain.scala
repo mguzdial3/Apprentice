@@ -4,18 +4,52 @@ import edu.gatech.eilab.scheherazade.data._
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.ListBuffer
 import edu.gatech.eilab.scheherazade.generation._
+import edu.gatech.eilab.scheherazade.main.Global
 
 object AnalysisMain {
 
   def main(args: Array[String]) {
 
-    val graph = regularize(SampleGraph.randomDAG(20, 70, 4))
-    val sGraph = simplifyGraph(graph)
-    val originalCount = countStories(graph)
-    println("original # = " + originalCount)
-    val simplifiedCount = countStories(sGraph)
-    println("simplified # = " + simplifiedCount)
-    println("ratio = " + simplifiedCount.toDouble / originalCount)
+    import java.io._
+    Global.graphDrawing = true
+    val before = SampleGraph.sample6
+    before.draw("before")
+    val graph = regularize(before)
+    graph.draw("after")
+
+    //    val pw = new PrintWriter("mutexAnalysis.csv")
+
+    //    for (i <- 1 to 100) {
+//    val graph = regularize(SampleGraph.randomDAG(20, 65, 4))
+    //val (background, queryCluster) = generateQuery(graph)
+    val background = graph.nodes(7)
+    val queryCluster = graph.nodes(3)
+    println("background cluster = " + background.name)
+    println("query cluster = " + queryCluster.name)
+    
+    println("optionals = " + graph.optionals)
+    println("conditionals = " + graph.conditionals)
+
+    val (cGraph, sGraph) = simplifyGraph(graph, List(background))
+
+    val (originalTotal, originalGood, originalQuery) = countStories(graph, List(background), List(queryCluster))
+    println("original total = " + originalTotal + ", good = " + originalGood + " query = " + originalQuery + " ratio = " + originalQuery.toDouble / originalGood)
+
+    //TODO: if the cleaned graph does not contain query, then the probability is directly zero
+
+    val (cleanTotal, cleanGood, cleanQuery) = countStories(cGraph, List(background), List(queryCluster))
+    println("cleaned total = " + cleanTotal + ", good = " + cleanGood + " query = " + cleanQuery + " ratio = " + cleanQuery.toDouble / cleanGood)
+    //      pw.println(cleanTotal.toDouble / originalTotal)
+
+    if (originalQuery.toDouble / originalGood != cleanQuery.toDouble / cleanGood) {
+      println("!!!!!!!!mistake!!!!!!!")
+    }
+    //    }
+
+    //    pw.close
+    //    val (simplifiedGood, simplifiedCount) = countStories(sGraph, tlist)
+    //    println("simplified # = " + simplifiedCount + ", good = " + simplifiedGood + " ratio = " + simplifiedGood.toDouble / simplifiedCount)
+    //    println("ratio = " + simplifiedCount.toDouble / originalCount)
   }
 
   /**
@@ -38,22 +72,24 @@ object AnalysisMain {
 
       var newGraph = new Graph(graph.nodes, graph.links, newME ::: graph.mutualExcls)
 
-      addStartEnd(newGraph).graphWithOptionalsAndSkips
+      val g = addStartEnd(newGraph)
+      g.graphWithOptionalsAndSkips
     }
 
-  def countStories(graph: Graph, mustHave:List[Cluster]): Long = {
-    import java.io._
+  def countStories(graph: Graph, background: List[Cluster], query: List[Cluster]): (Long, Long, Long) = {
+    //import java.io._
     val ends = graph.findEnds
     val firstWalk = WalkOnDisk.fromInits(graph.findSources, graph, graph.mutualExcls, graph.optionals)
 
-    val dir = new File("./stats")
-    if (!dir.exists()) dir.mkdir()
+    //    val dir = new File("./stats")
+    //    if (!dir.exists()) dir.mkdir()
 
-    val pw = new PrintWriter(new BufferedOutputStream(new FileOutputStream("./stats/valid stories.txt")))
+    //val pw = new PrintWriter(new BufferedOutputStream(new FileOutputStream("./stats/valid stories.txt")))
 
     var q = scala.collection.mutable.Stack[WalkOnDisk]()
-    var total: Long = 0
-    var good: Long = 0
+    var totalCnt: Long = 0
+    var goodCnt: Long = 0
+    var queryCnt: Long = 0
     val known = new KnownElements(10000)
 
     q.push(firstWalk)
@@ -70,55 +106,80 @@ object AnalysisMain {
         //        val check = known.check(string)
         //        if (check) {
         //          pw.println(string)
-        good += 1
-        //        }
+        totalCnt += 1
 
-        //          val story = decode(string)
-        //          println("found **\n" + story)
-        if (n)
+        val nameSeq = n.history.flatMap {
+          _ match {
+            case clan: ClanCluster =>
+              clan.clusters.map(_.name)
+            case c: Cluster =>
+              List(c.name)
+          }
+
+        }
+        if (background.forall(c => nameSeq.contains(c.name))) {
+          goodCnt += 1
+
+          if (query.forall(c => nameSeq.contains(c.name))) {
+            queryCnt += 1
+          }
+        }
       } else {
         q pushAll (n.oneStep(graph.mutualExcls, graph.optionals))
       }
 
-//      n = null
+      //      n = null
     }
-    good
+    (totalCnt, goodCnt, queryCnt)
   }
+
+  /**
+   * randomly generates a query for the story understanding problem
+   *  A query contains one event that must occur, and another event whose probability we want
+   */
+  def generateQuery(graph: Graph) =
+    {
+      var meNodes = graph.mutualExcls.flatMap(me => List(me.c1, me.c2)).distinct
+      val ind1 = math.floor(math.random * meNodes.size).toInt
+      val background = meNodes(ind1)
+      meNodes = meNodes.filterNot(_ == background)
+
+      var ind2 = math.floor(math.random * meNodes.size).toInt
+      val target = meNodes(ind2)
+
+      (background, target)
+    }
 
   /**
    * test out all simplification techniques
    *
    */
-  def simplifyGraph(graph: Graph): Graph = {
+  def simplifyGraph(graph: Graph, keptNodes: List[Cluster]): (Graph, Graph) = {
     var newGraph = graph
     newGraph.draw("unit-analysis")
 
-    var clans = UnitAnalysis.findClans(newGraph)
-    println("clans = " + clans.mkString(", "))
-    val meNodes = newGraph.mutualExcls.flatMap(me => List(me.c1, me.c2)).distinct
-    val rndInd = math.floor(math.random * meNodes.size).toInt
-    val background = meNodes(rndInd)
     //println("background = " + background.name)
 
-    newGraph = MutexAnalysis.cleanedGraph(graph, List(background), clans)
-    newGraph.draw("mutex-analysis")
+    val cleanedGraph = MutexAnalysis.cleanedGraph(newGraph, keptNodes)
+    cleanedGraph.draw("mutex-analysis")
 
+    var tGraph = cleanedGraph
     var numCol = 0
-    clans = UnitAnalysis.findClans(newGraph)
+    var clans = UnitAnalysis.findClans(tGraph)
     while (clans != Nil) {
       println("clans = " + clans.mkString(", "))
-      newGraph = UnitAnalysis.collapseClans(newGraph, clans)
+      tGraph = UnitAnalysis.collapseClans(tGraph, clans)
       //println("collapsing...")
       numCol += 1
       //newGraph.draw("after-collapsing-" + numCol)
-      clans = UnitAnalysis.findClans(newGraph)
+      clans = UnitAnalysis.findClans(tGraph)
     }
 
-    newGraph.draw("after-collapsing")
+    tGraph.draw("after-collapsing")
 
     //    val closures = UnitAnalysis.findClosures(graph)
     //    println(closures.mkString(", "))
-    newGraph
+    (cleanedGraph, tGraph)
   }
 
   /**
@@ -130,19 +191,31 @@ object AnalysisMain {
       val start = new Cluster("START", Nil)
       val end = new Cluster("END", Nil)
 
-      val links = ListBuffer[Link]()
+      var newLinks = graph.links
 
-      for (e <- graph.findSources) yield {
+      for (e <- graph.findSources) {
         val l = new Link(start, e)
-        links += l
+        newLinks = l :: newLinks
+        // need to handle the case where the sources are optional. Note sources cannot be conditional
+        if (graph.optionals.contains(e))
+        {
+          val successors = newLinks.filter(l => l.source == e).map(_.target)
+          newLinks = successors.map(new Link(start, _)) ::: newLinks
+        }
       }
 
-      for (e <- graph.findEnds) yield {
+      for (e <- graph.findEnds) {
         val l = new Link(e, end)
-        links += l
+        newLinks = l :: newLinks
+        // need to handle the case where the ends are conditional. Note ends cannot be optional
+        if (graph.conditionals.contains(e))
+        {
+          val predecessors = newLinks.filter(l => l.target == e).map(_.source)
+          newLinks = predecessors.map(new Link(_, end)) ::: newLinks
+        }
       }
 
-      new Graph(start :: end :: graph.nodes, graph.links ::: links.toList, graph.mutualExcls, graph.optionals, graph.conditionals)
+      new Graph(start :: end :: graph.nodes, newLinks.distinct, graph.mutualExcls, graph.optionals, graph.conditionals)
     }
 
   def testClans() {

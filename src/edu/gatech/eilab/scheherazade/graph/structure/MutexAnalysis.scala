@@ -8,59 +8,103 @@ import scala.collection.mutable.ListBuffer
 object MutexAnalysis {
 
   def main(args: Array[String]) {
-//    val graph = SampleGraph.sample4
-//    graph.draw("unit-analysis")
-//    val keepNode = graph.nodes.find(_.name == "C4").get
-//    val (keep, delete) = impliedGroups(keepNode, graph)
-//    println("delete = " + delete.map(_.name).mkString)
-//    println("keep = " + keep.map(_.name).mkString)
-    for (i <- 0 to 9)
-    {
-    	val graph = SampleGraph.randomDAG(15, 50, 5);
-    	graph.draw("random" + i)
+    //    val graph = SampleGraph.sample4
+    //    graph.draw("unit-analysis")
+    //    val keepNode = graph.nodes.find(_.name == "C4").get
+    //    val (keep, delete) = impliedGroups(keepNode, graph)
+    //    println("delete = " + delete.map(_.name).mkString)
+    //    println("keep = " + keep.map(_.name).mkString)
+    for (i <- 0 to 9) {
+      val graph = SampleGraph.randomDAG(15, 50, 5);
+      graph.draw("random" + i)
     }
-  }
-  
-  /** removes clusters that are mutually exclusive with a given list of clusters
-   *  
-   */
-  def cleanedGraph(graph:Graph, keep:List[Cluster], clans:List[EventGroup]):Graph =
-  {
-    var removedNodes = ListBuffer[Cluster]()
-    
-//    for (keepNode <- keep)
-//    {
-//      removedNodes ++= impliedGroups(keepNode, graph)._2      
-//    }
-//    removedNodes = removedNodes.distinct
-    
-    for (me <- graph.mutualExcls)
-    {
-      if (keep.contains(me.c1) && !keep.contains(me.c2))
-      {
-        removedNodes += me.c2
-      }
-      else if (keep.contains(me.c2) && !keep.contains(me.c1))
-      {
-        removedNodes += me.c1
-      }
-    }
-    println("removed: " + removedNodes.map(_.name).mkString)
-    
-    for (c <- clans)
-    {
-    	val clan = c.nodes
-    	if (clan.exists(removedNodes contains))
-    	{
-    	  removedNodes ++= clan
-    	}
-    }
-    removedNodes = removedNodes.distinct
-    println("removed: " + removedNodes.map(_.name).mkString)
-    graph.removeNodes(removedNodes.toList)
   }
 
-  /** this marker passing is incorrect. Need to label parents of kept clusters and pass markers from there, too
+  def cleanNodes(graph: Graph, kept: List[Cluster], clan: List[EventGroup] = Nil): Graph =
+    {
+      var removedNodes = List[Cluster]()
+      val realClans =
+        if (clan == Nil) {
+          UnitAnalysis.findClans(graph)
+        } else {
+          clan
+        }
+
+      for (me <- graph.mutualExcls) {
+        if (kept.contains(me.c1) && !kept.contains(me.c2)) {
+          removedNodes = me.c2 :: removedNodes
+        } else if (kept.contains(me.c2) && !kept.contains(me.c1)) {
+          removedNodes = me.c1 :: removedNodes
+        }
+      }
+      //println("removed: " + removedNodes.map(_.name).mkString)
+
+      for (c <- realClans) {
+        val clan = c.nodes
+        if (clan.exists(removedNodes.contains)) {
+          removedNodes = clan ::: removedNodes
+        }
+      }
+      removedNodes = removedNodes.distinct
+      println("removed: " + removedNodes.map(_.name).mkString)
+
+      if (removedNodes != Nil) {
+        val cleanedGraph = graph.detectAndAddSkipLinks(removedNodes).removeNodes(removedNodes) //.graphWithOptionals 
+        // we should NOT re-check optionality because of deleted events! we must keep the original optional events!
+
+        cleanedGraph
+      } else {
+        graph
+      }
+    }
+
+  /**
+   * removes clusters that are mutually exclusive with a given list of clusters
+   *
+   */
+  def cleanedGraph(graph: Graph, keep: List[Cluster]): Graph =
+    {
+      // init
+      var keptNodes = keep
+      var oneMoreLoop = true
+
+      // remove as many nodes as we can
+      var cleanGraph = cleanNodes(graph, keptNodes)
+
+      var i = 0
+      cleanGraph.draw("clean" + i)
+      while (oneMoreLoop) {
+        var newKept = keptNodes
+        oneMoreLoop = false
+
+        val clans = UnitAnalysis.findClans(cleanGraph)
+        // are there more nodes that we can be sure to keep?
+        for (n <- keptNodes) {
+          for (clan <- clans) {
+            if (clan.contains(n) && clan.nodes.filterNot(newKept.contains) != Nil) {
+              newKept = clan.nodes ::: newKept // Yes. more nodes!
+              oneMoreLoop = true
+            }
+          }
+        }
+
+        if (oneMoreLoop) {
+          keptNodes = newKept.distinct
+          cleanGraph = cleanNodes(graph, keptNodes, clans)
+          i += 1
+          cleanGraph.draw("clean" + i)
+        }
+      }
+
+      // remove the START and the END, and put them back so they are behave properly 
+      val start = cleanGraph.nodes.find(_.name == "START").get
+      val end = cleanGraph.nodes.find(_.name == "END").get
+      
+      AnalysisMain.addStartEnd(cleanGraph.removeNodes(List(start, end)))
+    }
+
+  /**
+   * this marker passing is incorrect. Need to label parents of kept clusters and pass markers from there, too
    *  TODO!!!!
    */
   def impliedGroups(c1: Cluster, graph: Graph): (List[Cluster], List[Cluster]) =
@@ -114,7 +158,6 @@ object MutexAnalysis {
     (allKeep, allDelete)
   }
 
-  
   //TODO: If node A is kept, and node A has only one (non-optional) parent, the parent must be kept.
   // If A has two parents, who always happen together, they must both happen as well. Thus, we need detection of always-happen-togethers
 }

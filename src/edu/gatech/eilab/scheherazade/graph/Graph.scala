@@ -353,45 +353,65 @@ package graph {
 
     /**
      * remove nodes from the graph and any links involving these nodes
+     * ATTENTION: if you want to remove mutual excluded nodes from the graph, you must add skipped links!
      */
     def removeNodes(excluded: List[Cluster]): Graph =
       {
-        val newNodes = nodes filterNot (excluded contains)
+        val newNodes = nodes filterNot (excluded.contains)
         val newLinks = links.filterNot(l => excluded.contains(l.source) || excluded.contains(l.target))
         val newExcls = mutualExcls.filterNot(m => excluded.contains(m.c1) || excluded.contains(m.c2))
-        val (optionals, conditionals) = new Graph(newNodes, newLinks, newExcls).findOptionals()
+        // val (optionals, conditionals) = new Graph(newNodes, newLinks, newExcls).findOptionals()
         //        val newOpt = optionals.filterNot(excluded contains)
         //        val newCond = conditionals.filterNot(excluded contains)
-        new Graph(newNodes, newLinks, newExcls, optionals, conditionals)
+        new Graph(newNodes, newLinks, newExcls, optionals.filterNot(excluded.contains), conditionals.filterNot(excluded.contains))
         //        new Graph(newNodes, newLinks, newExcls).compact.graphWithOptionalsAndSkips
       }
 
     /**
-     * add links from the predecessors of the events to the successors of the events
+     * directly adds links from the predecessors of the events to the successors of the events
      *
      */
-    def addSkipLinks(events: List[Cluster]): Graph =
+    def addSkipLinks(skipped: List[Cluster]): Graph =
       {
-        val newLinks = skipLinks(events)
-        new Graph(nodes, newLinks, this.mutualExcls)
-      }
+        var newLinks = links
 
-    def skipLinks(skipped: List[Cluster]): List[Link] = {
-
-      val removedGraph = removeNodes(skipped) // a graph where the skipped nodes are directly removed
-      var newLinks = ListBuffer[Link]() ++ links
-
-      for (e <- skipped) {
-        val predecessors = newLinks.filter(l => l.target == e).map(_.source)
-        val successors = newLinks.filter(l => l.source == e).map(_.target)
-        for (p <- predecessorsOf(e); s <- successors) {
-          if (shortestDistance(p, s) != -1) {
-            newLinks += new Link(p, s) // only add this link when p cannot reach s without going thru some skipped nodes 
+        for (e <- skipped) {
+          val predecessors = newLinks.filter(l => l.target == e).map(_.source)
+          val successors = newLinks.filter(l => l.source == e).map(_.target)
+          for (p <- predecessors; s <- successors) {
+            println("add between " + p.name + " " + s.name)
+            newLinks = new Link(p, s) :: newLinks
           }
         }
+        new Graph(nodes, newLinks.distinct, this.mutualExcls, optionals, conditionals)
       }
-      newLinks.toList
-    }
+
+    /**
+     * First detects if a skip link is needed. Adds it if it is needed.
+     * In fact, a skip link is not needed iff the nodes being skipped is optional or conditional. We could simply check that.
+     * However, for the sake of safety, we do the extra detection.
+     *
+     */
+    def detectAndAddSkipLinks(skipped: List[Cluster]): Graph =
+      {
+        val removedGraph = removeNodes(skipped) // a graph where the skipped nodes are directly removed without adding skipping links
+        var newLinks = links
+
+        for (e <- skipped) {
+          val predecessors = newLinks.filter(l => l.target == e).map(_.source)
+          val successors = newLinks.filter(l => l.source == e).map(_.target)
+          for (p <- predecessors; s <- successors) {
+            if (removedGraph.shortestDistance(p, s) == -1) {
+              newLinks = new Link(p, s) :: newLinks // only add this link when p cannot reach s without going thru some skipped nodes 
+            }
+          }
+        }
+        new Graph(nodes, newLinks, this.mutualExcls, optionals, conditionals)
+      }
+
+    //    def skipLinks(skipped: List[Cluster]): List[Link] = {
+    //
+    //    }
 
     /**
      * generates a new graph by (1) detecting the optional and conditional events in the graph,
@@ -412,8 +432,9 @@ package graph {
       {
         val (optionals, conditionals) = findOptionals()
         val canSkip = (optionals ::: conditionals).distinct
-        val newLinks = skipLinks(canSkip)
-        new Graph(nodes, newLinks, mutualExcls, optionals, conditionals)
+        //        println("optional events = " + optionals.map(_.name))
+        //        println("conditional events = " + conditionals.map(_.name))
+        new Graph(nodes, links, mutualExcls, optionals, conditionals).addSkipLinks(canSkip)
       }
 
     /**
@@ -423,6 +444,8 @@ package graph {
      */
     def findOptionals(): (List[Cluster], List[Cluster]) =
       {
+        // TODO: handle the case where an event is both an optional and a conditional. It must become an optional in those cases.
+
         var optional = ListBuffer[Cluster]()
         var conditional = ListBuffer[Cluster]()
 
@@ -461,6 +484,8 @@ package graph {
      * @param fn The filename of the png file to be saved
      */
     def draw(fn: String) {
+      // skip drawing when indicated by the Global object
+      if (edu.gatech.eilab.scheherazade.main.Global.graphDrawing == false) return
 
       val filename = fn + ".txt"
       val file = new File(filename)
