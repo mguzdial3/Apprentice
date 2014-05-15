@@ -438,6 +438,55 @@ package graph {
       }
 
     /**
+     * returns if there is a clear path from source to target
+     *  A clear path is defined as a path on the temporal graph, which satisfies this condition:
+     *  if A and B are on the path, and they are mutually exclusive, they must be both recognized
+     *  as optional and conditional. That is, their deletion from the graph does not propagate to
+     *  their children.
+     */
+    def hasClearPath(source: Cluster, target: Cluster): Boolean =
+      {
+
+        def isClear(path: List[Cluster]): Boolean =
+          mutualExcls.forall { me =>
+            (!path.contains(me.c1)) || (!path.contains(me.c2)) ||
+              {
+                /* if the path contains both ends of the mutex relation, then the mutex must be clear.
+          	   * That is, the earlier node is recognized as optional,
+          	   * and the later nodes is recognized as conditional          	   
+          	   */
+                val sorted = List(me.c1, me.c2).sortWith((a, b) => path.indexOf(a) < path.indexOf(b))
+                optionals.contains(sorted.head) && conditionals.contains(sorted.last)
+              }
+          }
+
+        // a breadth-first search
+        var longest = -1
+        val queue = scala.collection.mutable.Queue[(Cluster, List[Cluster])]()
+        queue += ((source, Nil))
+
+        while (queue != Nil) {
+          val elem = queue.dequeue()
+
+          val head = elem._1
+          val history = elem._2
+          if (head == target) {
+            if (isClear(history.reverse)) {
+              return true
+            }
+          } else {
+            links.filter(link => link.source == head).foreach {
+              link =>
+                queue.enqueue((link.target, link.target::history))
+                //if (debug) println("enqueue: " + link.target.name + " " + (dist + 1))
+            }
+          }
+        }
+        //println("distance from " + source.name + " to " + target.name + " = " + longest)
+        false
+      }
+
+    /**
      * Finds the optional events and conditional events.
      *  Update: Only the first of the event pair becomes optional, the second is conditioned on the first event
      *
@@ -465,9 +514,11 @@ package graph {
               late = c1
             }
 
+            // tests if the early node is mutual exclusive to another node, which has a clear path to the late node            
+            // passing the test will prevent the recognition of the optionality.
             val prevented = mutualExcls.exists(m =>
-              (m.c1 == early && m.c2 != late && shortestDistance(m.c2, late) != -1) ||
-                (m.c2 == early && m.c1 != late && shortestDistance(m.c1, late) != -1))
+              (m.c1 == early && m.c2 != late && hasClearPath(m.c2, late)) ||
+                (m.c2 == early && m.c1 != late && hasClearPath(m.c1, late)))
 
             if (!prevented) {
               optional += early
