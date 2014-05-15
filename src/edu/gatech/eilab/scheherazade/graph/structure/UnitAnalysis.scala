@@ -20,7 +20,7 @@ object UnitAnalysis {
 
   def main(args: Array[String]) {
     var graph = SampleGraph.sample5      
-    graph = graph.graphWithOptionalsAndSkips
+    graph = graph.graphWithOptionalsAndSkips //TODO avoid this method do not add skips (not sure now)
     graph.draw("unit-analysis")
     
     val clans = findClans(graph)

@@ -27,7 +27,7 @@ object MutexAnalysis {
   def findTransitiveClosure(graph: Graph, events: List[Cluster]): List[Cluster] =
     {
 
-      var all = ListBuffer[Cluster]() ++ events
+      var all = ListBuffer[Cluster]() ++ events//.filterNot(e => graph.optionals.contains(e) || graph.conditionals.contains(e)) // optional or conditionals do not apply
       var newFound: ListBuffer[Cluster] = null
       var remainder = graph.nodes filterNot (all contains)
       do {
@@ -45,6 +45,30 @@ object MutexAnalysis {
       all.toList
     }
 
+  def findTransitiveClosureBAD(graph: Graph, events: List[Cluster]): List[Cluster] =
+    {
+
+      val canSkip = events.filterNot(e => graph.optionals.contains(e) || graph.conditionals.contains(e)) // optional or conditionals do not apply
+      val cannotSkip = events.filterNot(canSkip contains)
+
+      var all = ListBuffer[Cluster]() ++ cannotSkip
+      var newFound: ListBuffer[Cluster] = null
+      var remainder = graph.nodes filterNot (all contains)
+      do {
+        newFound = ListBuffer[Cluster]()
+        for (e <- remainder) {
+          val pred = graph.predecessorsOf(e)
+          if ((!pred.isEmpty) &&
+            pred.forall(all contains))
+            newFound += e
+        }
+        all ++= newFound
+        remainder = remainder filterNot (newFound contains)
+      } while (!newFound.isEmpty)
+
+      all.toList ::: canSkip
+    }
+
   def cleanNodes(graph: Graph, kept: List[Cluster], clan: List[EventGroup] = Nil): Graph =
     {
       var removedNodes = List[Cluster]()
@@ -55,7 +79,7 @@ object MutexAnalysis {
           clan
         }
 
-      println("rc " + realClans)
+      //      println("rc " + realClans)
 
       for (me <- graph.mutualExcls) {
         if (kept.contains(me.c1) && !kept.contains(me.c2)) {
@@ -72,14 +96,14 @@ object MutexAnalysis {
           removedNodes = clan ::: removedNodes
         }
       }
-      
+
       removedNodes = findTransitiveClosure(graph, removedNodes)
-      
+
       removedNodes = removedNodes.distinct
       //println("removed: " + removedNodes.map(_.name).mkString)
 
       if (removedNodes != Nil) {
-        val cleanedGraph = graph.detectAndAddSkipLinks(removedNodes).removeNodes(removedNodes) //.graphWithOptionals 
+        val cleanedGraph = graph.detectAndAddSkipLinks(removedNodes).removeNodes(removedNodes) 
         // we should NOT re-check optionality because of deleted events! we must keep the original optional events!
 
         cleanedGraph
@@ -128,7 +152,7 @@ object MutexAnalysis {
 
       // remove the START and the END, and put them back so they are behave properly 
       val start = cleanGraph.nodes.find(_.name == "START").get
-      val end = cleanGraph.nodes.find(_.name == "END").get
+      val end = cleanGraph.nodes.find(_.name == "END").getOrElse(null)
 
       val g1 = new Graph(cleanGraph.nodes.filterNot(v => v == start || v == end), // remove start and ends
         cleanGraph.links.filterNot(l => l.source == start || l.target == end),

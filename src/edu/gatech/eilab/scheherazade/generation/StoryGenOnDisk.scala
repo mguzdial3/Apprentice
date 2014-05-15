@@ -7,9 +7,9 @@ import io._
 import scala.collection.mutable.ListBuffer
 import java.io._
 
-
-/** TODO: Refactor this to use Walk or a subclass of Walk
- * 
+/**
+ * TODO: Refactor this to use Walk or a subclass of Walk
+ *
  */
 package generation {
   object StoryGenOnDisk {
@@ -58,18 +58,17 @@ package generation {
       // remove from the graph nodes without predecessors that are not sources
       //graph = eGraph.removeIrregularSourceEnds()
 
-      val optionals = findOptionals(graph)
-      graph = graph.addSkipLinks(optionals)
+      graph = graph.graphWithOptionalsAndSkips
       sources = graph.nodes.filter(n => (!sources.contains(n)) &&
-        graph.links.filter(l => l.target == n).map(_.source).forall(optionals contains)) ::: sources
+        graph.links.filter(l => l.target == n).map(_.source).forall(graph.optionals contains)) ::: sources
 
       println(sources.map(_.name).mkString("sources :", "\n", ""))
-      println(optionals.map(_.name).mkString("optionals :", "\n", ""))
+      println(graph.optionals.map(_.name).mkString("optionals :", "\n", ""))
       println("******************************************")
       randomSelectStories()
       System.exit(1)
 
-      val firstWalk = WalkOnDisk.fromInits(sources, graph, me, optionals)
+      val firstWalk = WalkOnDisk.fromInits(sources, graph)
 
       val dir = new File("./stats")
       if (!dir.exists()) dir.mkdir()
@@ -108,7 +107,7 @@ package generation {
           if (n.hasMoreSteps) {
             //print(".")
             //readLine()
-            q pushAll (n.oneStep(me, optionals))
+            q pushAll (n.oneStep())
           } else {
             println("WARNING: CANNOT REACH AN ENDING. \n" + n)
             //println("WARNING: CANNOT REACH AN ENDING. \n" + n)
@@ -146,7 +145,7 @@ package generation {
       val length = 14000000
       println("length = " + length)
       val pw = new PrintWriter(new BufferedOutputStream(new FileOutputStream("random_stories.txt")))
-      
+
       for (i <- 1 to 400) {
         println(i)
         val idx = math.rint(math.random * length).toInt
@@ -163,22 +162,18 @@ package generation {
           else pw.println
         }
       }
-      
+
       pw.close()
     }
-    
-    
-    
-    def readLineFromLargeFile(filename:String, lineNo:Int):String = 
-    {
-      val reader = new BufferedReader(new FileReader(filename))
-      for (i <- 0 until lineNo)
+
+    def readLineFromLargeFile(filename: String, lineNo: Int): String =
       {
+        val reader = new BufferedReader(new FileReader(filename))
+        for (i <- 0 until lineNo) {
+          reader.readLine()
+        }
         reader.readLine()
       }
-      reader.readLine()
-    }
-    
 
     def printMappings() {
       for (pairs <- node2Num) {
@@ -206,50 +201,50 @@ package generation {
      * optional nodes are nodes that are ordered but mutually exclusive
      *
      */
-    def findOptionals(graph: Graph): List[Cluster] =
-      {
-        // condition 1: c1 and c2 share a mutual exclusion but there is also a path from c1 to c2 on the graph
-        val candidates = graph.mutualExcls.filter(m => graph.ordered(m.c1, m.c2)).map(m => (m.c1, m.c2))
-        println("candidates:\n" + candidates.mkString("\n"))
-        // condition 2: c1 is not mutually exclusive to another (direct or indirect) predecessor of c2
-        val real = candidates.filterNot {
-          case (c1, c2) =>
-            var early: Cluster = null
-            var late: Cluster = null
-            if (graph.shortestDistance(c1, c2) != -1) {
-              early = c1
-              late = c2
-            } else {
-              early = c2
-              late = c1
-            }
-
-            val bool = graph.mutualExcls.exists(m =>
-              (m.c1 == early && m.c2 != late && graph.shortestDistance(m.c2, late) != -1) ||
-                (m.c2 == early && m.c1 != late && graph.shortestDistance(m.c1, late) != -1))
-
-            if (bool) {
-              val prevent = graph.mutualExcls.filter(m =>
-                (m.c1 == early && graph.shortestDistance(m.c2, late) != -1) ||
-                  (m.c2 == early && graph.shortestDistance(m.c1, late) != -1))
-
-              println(prevent.mkString(" ") + " prevents " + early.name + " " + late.name);
-            }
-            bool
-        }
-
-        /*
-        candidates foreach {
-          case (early, late) => 
-            graph.mutualExcls.foreach(m =>
-              if ((m.c1 == early && graph.shortestDistance(m.c2, late) != -1) ||
-              (m.c2 == early && graph.shortestDistance(m.c1, late) != -1))
-              
-            println(m + " prevents " + early.name + " " + late.name);
-        }*/
-
-        real.flatMap(x => List(x._1, x._2))
-      }
+    //    def findOptionals(graph: Graph): List[Cluster] =
+    //      {
+    //        // condition 1: c1 and c2 share a mutual exclusion but there is also a path from c1 to c2 on the graph
+    //        val candidates = graph.mutualExcls.filter(m => graph.ordered(m.c1, m.c2)).map(m => (m.c1, m.c2))
+    //        println("candidates:\n" + candidates.mkString("\n"))
+    //        // condition 2: c1 is not mutually exclusive to another (direct or indirect) predecessor of c2
+    //        val real = candidates.filterNot {
+    //          case (c1, c2) =>
+    //            var early: Cluster = null
+    //            var late: Cluster = null
+    //            if (graph.shortestDistance(c1, c2) != -1) {
+    //              early = c1
+    //              late = c2
+    //            } else {
+    //              early = c2
+    //              late = c1
+    //            }
+    //
+    //            val bool = graph.mutualExcls.exists(m =>
+    //              (m.c1 == early && m.c2 != late && graph.shortestDistance(m.c2, late) != -1) ||
+    //                (m.c2 == early && m.c1 != late && graph.shortestDistance(m.c1, late) != -1))
+    //
+    //            if (bool) {
+    //              val prevent = graph.mutualExcls.filter(m =>
+    //                (m.c1 == early && graph.shortestDistance(m.c2, late) != -1) ||
+    //                  (m.c2 == early && graph.shortestDistance(m.c1, late) != -1))
+    //
+    //              println(prevent.mkString(" ") + " prevents " + early.name + " " + late.name);
+    //            }
+    //            bool
+    //        }
+    //
+    //        /*
+    //        candidates foreach {
+    //          case (early, late) => 
+    //            graph.mutualExcls.foreach(m =>
+    //              if ((m.c1 == early && graph.shortestDistance(m.c2, late) != -1) ||
+    //              (m.c2 == early && graph.shortestDistance(m.c1, late) != -1))
+    //              
+    //            println(m + " prevents " + early.name + " " + late.name);
+    //        }*/
+    //
+    //        real.flatMap(x => List(x._1, x._2))
+    //      }
 
   }
 
@@ -262,22 +257,22 @@ package generation {
      *
      */
 
-    def oneStep(melinks: List[MutualExcl], optionals: List[Cluster]): List[WalkOnDisk] =
+    def oneStep(): List[WalkOnDisk] =
       {
         fringe map { step =>
 
           val newHistory = step :: history
-          var excluded = WalkOnDisk.excluded(List(step), melinks).filter(selfGraph.nodes contains)
+          var excluded = WalkOnDisk.excluded(List(step), selfGraph.mutualExcls).filter(selfGraph.nodes.contains)
           //println(excluded.map(_.name).mkString("directly mutex: ", ", ", ""))
           //println(exclList.map(_.name).mkString("old mutex: ", ", ", ""))
           var excl = excluded ::: exclList
           excl = findTransitiveClosure(selfGraph, excl)
           //println(excl.map(_.name).mkString("closure mutex: ", ", ", ""))
-          excluded = excl filterNot (exclList contains)
+          excluded = excl filterNot (exclList.contains)
           val expired = selfGraph.links.filter(l => l.target == step).map(_.source)
           val newGraph = selfGraph.addSkipLinks(excluded).removeNodes(excluded ::: expired)
 
-          var newFringe = WalkOnDisk.maxFringe(newHistory, newGraph, optionals)
+          var newFringe = WalkOnDisk.maxFringe(newHistory, newGraph, newGraph.optionals)
           // delete those already executed
           newFringe = newFringe filterNot (newHistory contains)
           // all steps preceding the step is prohibited
@@ -326,6 +321,9 @@ package generation {
     def findTransitiveClosure(graph: Graph, events: List[Cluster]): List[Cluster] =
       {
 
+//        val canSkip = events.filterNot(e => graph.optionals.contains(e) || graph.conditionals.contains(e)) // optional or conditionals do not apply
+//        val cannotSkip = events.filterNot(canSkip contains)
+
         var all = ListBuffer[Cluster]() ++ events
         var newFound: ListBuffer[Cluster] = null
         var remainder = graph.nodes filterNot (all contains)
@@ -341,7 +339,7 @@ package generation {
           remainder = remainder filterNot (newFound contains)
         } while (!newFound.isEmpty)
 
-        all.toList
+        all.toList //::: canSkip
       }
 
     def hasMoreSteps() = !fringe.isEmpty
@@ -397,7 +395,7 @@ package generation {
           melinks.filter(m => m.c2 == s).map(m => m.c1))
       }
 
-    def fromInits(inits: List[Cluster], graph: Graph, melinks: List[MutualExcl], optionals: List[Cluster]): WalkOnDisk = {
+    def fromInits(inits: List[Cluster], graph: Graph): WalkOnDisk = {
       val fringe = inits
       new WalkOnDisk(nextId(), Nil, fringe, Nil, graph)
     }

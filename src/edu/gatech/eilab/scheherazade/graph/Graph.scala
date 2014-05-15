@@ -148,7 +148,11 @@ package graph {
      * finds all the source nodes, i.e. nodes without temporal predecessors
      *
      */
-    def findSources() = nodes.filterNot(n => links.exists(l => l.target == n))
+    def findSources() = {
+      var sources = nodes.filterNot(n => links.exists(l => l.target == n)) // nodes without any predecessors 
+      nodes.filter(n => (!sources.contains(n)) &&
+        links.filter(l => l.target == n).map(_.source).forall(optionals.contains)) ::: sources // nodes with all predecessors being optional events
+    }
 
     /**
      * finds all the sink nodes, i.e. nodes without temporal successors
@@ -394,18 +398,24 @@ package graph {
      */
     def detectAndAddSkipLinks(skipped: List[Cluster]): Graph =
       {
-
+        val removedGraph = removeNodes(skipped) // a graph where the skipped nodes are directly removed without adding skipping links
         //removedGraph.draw("removedgraph")
         var newLinks = links
 
         for (e <- skipped) {
+
           val predecessors = newLinks.filter(l => l.target == e).map(_.source)
           val successors = newLinks.filter(l => l.source == e).map(_.target)
-          val removedGraph = removeNodes(List(e)) // a graph where the skipped nodes are directly removed without adding skipping links
+
+          //          if (e.name == "C7") {
+          //            println("*****lalalala wc5")
+          //            removedGraph.draw("removed-graph")
+          //          }
+
           for (p <- predecessors; s <- successors) {
             if (removedGraph.shortestDistance(p, s) == -1) {
               newLinks = new Link(p, s) :: newLinks // only add this link when p cannot reach s without going thru some skipped nodes
-              println("detected and added " + p.name + " " + s.name)
+              //println("detected and added " + p.name + " " + s.name)
             }
           }
         }
@@ -496,7 +506,7 @@ package graph {
      */
     def findOptionals(): (List[Cluster], List[Cluster]) =
       {
-        println("expensive operation of finding optionals")
+        //println("expensive operation of finding optionals")
         var optional = ListBuffer[Cluster]()
         var conditional = ListBuffer[Cluster]()
 
@@ -519,8 +529,8 @@ package graph {
             // tests if the early node is mutual exclusive to another node, which has a clear path to the late node            
             // passing the test will prevent the recognition of the optionality.
             val prevented = mutualExcls.exists(m =>
-              (m.c1 == early && m.c2 != late && hasClearPath(m.c2, late)) ||
-                (m.c2 == early && m.c1 != late && hasClearPath(m.c1, late)))
+              (m.c1 == early && m.c2 != late && shortestDistance(m.c2, early) == -1 && hasClearPath(m.c2, late)) ||
+                (m.c2 == early && m.c1 != late && shortestDistance(m.c1, early) == -1 && hasClearPath(m.c1, late)))
 
             if (!prevented) {
               optional += early

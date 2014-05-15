@@ -11,60 +11,50 @@ object AnalysisMain {
   def main(args: Array[String]) {
 
     import java.io._
-    Global.graphDrawing = true
-
-    /*
-     * * BLOCK FOR TESTING SAMPLE GRAPH 6
-     *
-     * val before = SampleGraph.sample6
-     * before.draw("before")
-     * val graph = regularize(before)
-     * graph.draw("after")
-     * val background = graph.nodes(7)
-     * val queryCluster = graph.nodes(3)
-     */
-
-        val before = SampleGraph.sample7
-        before.draw("before")
-        val graph = regularize(before)
-        graph.draw("after")
-        val background = graph.nodes(9)
-        val queryCluster = graph.nodes(4) // still needs to figure out. error in normal mode
-
-//    val before = SampleGraph.sample8
-//    before.draw("before")
-//    val graph = regularize(before)
-//    graph.draw("after")
-//    val background = graph.nodes(3)
-//    val queryCluster = graph.nodes(10)
+    Global.graphDrawing = false
 
     //    val pw = new PrintWriter("mutexAnalysis.csv")
 
-    //    for (i <- 1 to 1) {
-//    val graph = regularize(SampleGraph.randomDAG(10, 30, 4))
-//    val (background, queryCluster) = generateQuery(graph)
+    var i = 1
+    var noMistake = true
+    while (i < 100 && noMistake) {
+      val graph = regularize(SampleGraph.randomDAG(10, 30, 4))
+      val (background, queryCluster) = generateQuery(graph)
 
-    println("background cluster = " + background.name)
-    println("query cluster = " + queryCluster.name)
-    //
-    println("optionals = " + graph.optionals)
-    println("conditionals = " + graph.conditionals)
+//      println("background cluster = " + background.name)
+//      println("query cluster = " + queryCluster.name)
+//      println("optionals = " + graph.optionals)
+//      println("conditionals = " + graph.conditionals)
 
-    val (cGraph, sGraph) = simplifyGraph(graph, List(background))
+      val (cGraph, sGraph) = simplifyGraph(graph, List(background))
 
-    val (originalTotal, originalGood, originalQuery) = countStories(graph, List(background), List(queryCluster))
-    println("original total = " + originalTotal + ", good = " + originalGood + " query = " + originalQuery + " ratio = " + originalQuery.toDouble / originalGood)
+      val (originalTotal, originalGood, originalQuery) = countStories(graph, List(background), List(queryCluster))
+      println("original total = " + originalTotal + ", good = " + originalGood + " query = " + originalQuery + " ratio = " + originalQuery.toDouble / originalGood)
 
-    //TODO: if the cleaned graph does not contain query, then the probability is directly zero
+      //TODO: if the cleaned graph does not contain query, then the probability is directly zero
 
-    val (cleanTotal, cleanGood, cleanQuery) = countStories(cGraph, List(background), List(queryCluster))
-    println("cleaned total = " + cleanTotal + ", good = " + cleanGood + " query = " + cleanQuery + " ratio = " + cleanQuery.toDouble / cleanGood)
-    //      pw.println(cleanTotal.toDouble / originalTotal)
+      val (cleanTotal, cleanGood, cleanQuery) = countStories(cGraph, List(background), List(queryCluster))
+      println("cleaned total = " + cleanTotal + ", good = " + cleanGood + " query = " + cleanQuery + " ratio = " + cleanQuery.toDouble / cleanGood)
+      //      pw.println(cleanTotal.toDouble / originalTotal)
 
-    if (originalQuery.toDouble / originalGood != cleanQuery.toDouble / cleanGood) {
-      println("!!!!!!!!mistake!!!!!!!")
+      if (originalQuery.toDouble / originalGood != cleanQuery.toDouble / cleanGood) {
+        println("!!!!!!!!mistake!!!!!!!")
+        println("failed after " + i)
+        noMistake = false
+        Global.graphDrawing = true
+        graph.draw("unit-analysis")
+        cGraph.draw("mutex-analysis")
+        graph.compact.draw("unit-analysis-compact")
+        cGraph.compact.draw("mutex-analysis-compact")
+        println("background cluster = " + background.name)
+        println("query cluster = " + queryCluster.name)
+        println("optionals = " + graph.optionals)
+        println("conditionals = " + graph.conditionals)
+        countStories(graph, List(background), List(queryCluster), true)
+        println("-----------------------------")
+        countStories(cGraph, List(background), List(queryCluster), true)
+      }
     }
-    //    }
 
     //    pw.close
     //    val (simplifiedGood, simplifiedCount) = countStories(sGraph, tlist)
@@ -96,10 +86,10 @@ object AnalysisMain {
       g
     }
 
-  def countStories(graph: Graph, background: List[Cluster], query: List[Cluster]): (Long, Long, Long) = {
+  def countStories(graph: Graph, background: List[Cluster], query: List[Cluster], debug: Boolean = false): (Long, Long, Long) = {
     //import java.io._
     val ends = graph.findEnds
-    val firstWalk = WalkOnDisk.fromInits(graph.findSources, graph, graph.mutualExcls, graph.optionals)
+    val firstWalk = WalkOnDisk.fromInits(graph.findSources, graph)
 
     //    val dir = new File("./stats")
     //    if (!dir.exists()) dir.mkdir()
@@ -110,7 +100,6 @@ object AnalysisMain {
     var totalCnt: Long = 0
     var goodCnt: Long = 0
     var queryCnt: Long = 0
-    val known = new KnownElements(10000)
 
     q.push(firstWalk)
 
@@ -121,11 +110,7 @@ object AnalysisMain {
         // we have reached the end. 
         // end nodes are considered to be mutually exclusive.
         // you can only reach one any time
-        //        val string = compactString(n)
-        //        //println("produced story " + string)
-        //        val check = known.check(string)
-        //        if (check) {
-        //          pw.println(string)
+
         totalCnt += 1
 
         val nameSeq = n.history.flatMap {
@@ -135,8 +120,12 @@ object AnalysisMain {
             case c: Cluster =>
               List(c.name)
           }
-
         }
+
+        if (debug) {
+          println("made story:" + nameSeq.reverse.mkString(" "))
+        }
+
         if (background.forall(c => nameSeq.contains(c.name))) {
           goodCnt += 1
 
@@ -145,7 +134,7 @@ object AnalysisMain {
           }
         }
       } else {
-        q pushAll (n.oneStep(graph.mutualExcls, graph.optionals))
+        q pushAll (n.oneStep())
       }
 
       //      n = null
