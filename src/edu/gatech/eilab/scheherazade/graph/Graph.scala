@@ -379,7 +379,7 @@ package graph {
           val predecessors = newLinks.filter(l => l.target == e).map(_.source)
           val successors = newLinks.filter(l => l.source == e).map(_.target)
           for (p <- predecessors; s <- successors) {
-            println("add between " + p.name + " " + s.name)
+            //println("add between " + p.name + " " + s.name)
             newLinks = new Link(p, s) :: newLinks
           }
         }
@@ -394,15 +394,18 @@ package graph {
      */
     def detectAndAddSkipLinks(skipped: List[Cluster]): Graph =
       {
-        val removedGraph = removeNodes(skipped) // a graph where the skipped nodes are directly removed without adding skipping links
+
+        //removedGraph.draw("removedgraph")
         var newLinks = links
 
         for (e <- skipped) {
           val predecessors = newLinks.filter(l => l.target == e).map(_.source)
           val successors = newLinks.filter(l => l.source == e).map(_.target)
+          val removedGraph = removeNodes(List(e)) // a graph where the skipped nodes are directly removed without adding skipping links
           for (p <- predecessors; s <- successors) {
             if (removedGraph.shortestDistance(p, s) == -1) {
-              newLinks = new Link(p, s) :: newLinks // only add this link when p cannot reach s without going thru some skipped nodes 
+              newLinks = new Link(p, s) :: newLinks // only add this link when p cannot reach s without going thru some skipped nodes
+              println("detected and added " + p.name + " " + s.name)
             }
           }
         }
@@ -434,7 +437,7 @@ package graph {
         val canSkip = (optionals ::: conditionals).distinct
         //        println("optional events = " + optionals.map(_.name))
         //        println("conditional events = " + conditionals.map(_.name))
-        new Graph(nodes, links, mutualExcls, optionals, conditionals).addSkipLinks(canSkip)
+        new Graph(nodes, links, mutualExcls, optionals, conditionals).detectAndAddSkipLinks(canSkip)
       }
 
     /**
@@ -477,8 +480,8 @@ package graph {
           } else {
             links.filter(link => link.source == head).foreach {
               link =>
-                queue.enqueue((link.target, link.target::history))
-                //if (debug) println("enqueue: " + link.target.name + " " + (dist + 1))
+                queue.enqueue((link.target, link.target :: history))
+              //if (debug) println("enqueue: " + link.target.name + " " + (dist + 1))
             }
           }
         }
@@ -493,8 +496,7 @@ package graph {
      */
     def findOptionals(): (List[Cluster], List[Cluster]) =
       {
-        // TODO: handle the case where an event is both an optional and a conditional. It must become an optional in those cases.
-
+        println("expensive operation of finding optionals")
         var optional = ListBuffer[Cluster]()
         var conditional = ListBuffer[Cluster]()
 
@@ -548,7 +550,8 @@ package graph {
         writer.println("\"" + node.name + "\" [shape=box]")
       }
 
-      for (node <- conditionals) {
+      // only show conditionals events that are not already optional
+      for (node <- conditionals.filterNot(optionals.contains)) {
         writer.println("\"" + node.name + "\" [shape=box, fillcolor=\"#E6E6E6\", style=filled]")
       }
 

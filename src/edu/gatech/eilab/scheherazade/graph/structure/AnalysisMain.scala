@@ -12,21 +12,41 @@ object AnalysisMain {
 
     import java.io._
     Global.graphDrawing = true
-    val before = SampleGraph.sample6
-    before.draw("before")
-    val graph = regularize(before)
-    graph.draw("after")
+
+    /*
+     * * BLOCK FOR TESTING SAMPLE GRAPH 6
+     *
+     * val before = SampleGraph.sample6
+     * before.draw("before")
+     * val graph = regularize(before)
+     * graph.draw("after")
+     * val background = graph.nodes(7)
+     * val queryCluster = graph.nodes(3)
+     */
+
+        val before = SampleGraph.sample7
+        before.draw("before")
+        val graph = regularize(before)
+        graph.draw("after")
+        val background = graph.nodes(9)
+        val queryCluster = graph.nodes(4) // still needs to figure out. error in normal mode
+
+//    val before = SampleGraph.sample8
+//    before.draw("before")
+//    val graph = regularize(before)
+//    graph.draw("after")
+//    val background = graph.nodes(3)
+//    val queryCluster = graph.nodes(10)
 
     //    val pw = new PrintWriter("mutexAnalysis.csv")
 
-    //    for (i <- 1 to 100) {
-//    val graph = regularize(SampleGraph.randomDAG(20, 65, 4))
-    //val (background, queryCluster) = generateQuery(graph)
-    val background = graph.nodes(7)
-    val queryCluster = graph.nodes(3)
+    //    for (i <- 1 to 1) {
+//    val graph = regularize(SampleGraph.randomDAG(10, 30, 4))
+//    val (background, queryCluster) = generateQuery(graph)
+
     println("background cluster = " + background.name)
     println("query cluster = " + queryCluster.name)
-    
+    //
     println("optionals = " + graph.optionals)
     println("conditionals = " + graph.conditionals)
 
@@ -72,8 +92,8 @@ object AnalysisMain {
 
       var newGraph = new Graph(graph.nodes, graph.links, newME ::: graph.mutualExcls)
 
-      val g = addStartEnd(newGraph)
-      g.graphWithOptionalsAndSkips
+      val g = addStartEnd(newGraph.graphWithOptionalsAndSkips)
+      g
     }
 
   def countStories(graph: Graph, background: List[Cluster], query: List[Cluster]): (Long, Long, Long) = {
@@ -197,8 +217,7 @@ object AnalysisMain {
         val l = new Link(start, e)
         newLinks = l :: newLinks
         // need to handle the case where the sources are optional. Note sources cannot be conditional
-        if (graph.optionals.contains(e))
-        {
+        if (graph.optionals.contains(e)) {
           val successors = newLinks.filter(l => l.source == e).map(_.target)
           newLinks = successors.map(new Link(start, _)) ::: newLinks
         }
@@ -208,8 +227,7 @@ object AnalysisMain {
         val l = new Link(e, end)
         newLinks = l :: newLinks
         // need to handle the case where the ends are conditional. Note ends cannot be optional
-        if (graph.conditionals.contains(e))
-        {
+        if (graph.conditionals.contains(e)) {
           val predecessors = newLinks.filter(l => l.target == e).map(_.source)
           newLinks = predecessors.map(new Link(_, end)) ::: newLinks
         }
