@@ -45,29 +45,29 @@ object MutexAnalysis {
       all.toList
     }
 
-  def findTransitiveClosureBAD(graph: Graph, events: List[Cluster]): List[Cluster] =
-    {
-
-      val canSkip = events.filterNot(e => graph.optionals.contains(e) || graph.conditionals.contains(e)) // optional or conditionals do not apply
-      val cannotSkip = events.filterNot(canSkip contains)
-
-      var all = ListBuffer[Cluster]() ++ cannotSkip
-      var newFound: ListBuffer[Cluster] = null
-      var remainder = graph.nodes filterNot (all contains)
-      do {
-        newFound = ListBuffer[Cluster]()
-        for (e <- remainder) {
-          val pred = graph.predecessorsOf(e)
-          if ((!pred.isEmpty) &&
-            pred.forall(all contains))
-            newFound += e
-        }
-        all ++= newFound
-        remainder = remainder filterNot (newFound contains)
-      } while (!newFound.isEmpty)
-
-      all.toList ::: canSkip
-    }
+//  def findTransitiveClosureBAD(graph: Graph, events: List[Cluster]): List[Cluster] =
+//    {
+//
+//      val canSkip = events.filterNot(e => graph.optionals.contains(e) || graph.conditionals.contains(e)) // optional or conditionals do not apply
+//      val cannotSkip = events.filterNot(canSkip contains)
+//
+//      var all = ListBuffer[Cluster]() ++ cannotSkip
+//      var newFound: ListBuffer[Cluster] = null
+//      var remainder = graph.nodes filterNot (all contains)
+//      do {
+//        newFound = ListBuffer[Cluster]()
+//        for (e <- remainder) {
+//          val pred = graph.predecessorsOf(e)
+//          if ((!pred.isEmpty) &&
+//            pred.forall(all contains))
+//            newFound += e
+//        }
+//        all ++= newFound
+//        remainder = remainder filterNot (newFound contains)
+//      } while (!newFound.isEmpty)
+//
+//      all.toList ::: canSkip
+//    }
 
   def cleanNodes(graph: Graph, kept: List[Cluster], clan: List[EventGroup] = Nil): Graph =
     {

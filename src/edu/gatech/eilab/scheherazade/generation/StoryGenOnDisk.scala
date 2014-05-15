@@ -107,7 +107,7 @@ package generation {
           if (n.hasMoreSteps) {
             //print(".")
             //readLine()
-            q pushAll (n.oneStep())
+            q pushAll (n.possibleSteps())
           } else {
             println("WARNING: CANNOT REACH AN ENDING. \n" + n)
             //println("WARNING: CANNOT REACH AN ENDING. \n" + n)
@@ -248,69 +248,68 @@ package generation {
 
   }
 
-  class WalkOnDisk(val id: Int, val history: List[Cluster], val fringe: List[Cluster], val exclList: List[Cluster], val selfGraph: Graph) {
-
-    val debug = false
+  class WalkOnDisk(val id: Int, val history: List[Cluster], val fringe: List[Cluster], val exclList: List[Cluster], val selfGraph: Graph, val debug:Boolean = false) {
+    
 
     /**
      * Takes one step in the graph
      *
      */
+    def takeStep(step: Cluster): WalkOnDisk = {
+      val newHistory = step :: history
+      var excluded = WalkOnDisk.excluded(List(step), selfGraph.mutualExcls).filter(selfGraph.nodes.contains)
+      //println(excluded.map(_.name).mkString("directly mutex: ", ", ", ""))
+      //println(exclList.map(_.name).mkString("old mutex: ", ", ", ""))
+      var excl = excluded ::: exclList
+      excl = findTransitiveClosure(selfGraph, excl)
+      //println(excl.map(_.name).mkString("closure mutex: ", ", ", ""))
+      excluded = excl filterNot (exclList.contains)
+      val expired = selfGraph.links.filter(l => l.target == step).map(_.source)
+      val newGraph = selfGraph.addSkipLinks(excluded).removeNodes(excluded ::: expired)
 
-    def oneStep(): List[WalkOnDisk] =
-      {
-        fringe map { step =>
+      var newFringe = WalkOnDisk.maxFringe(newHistory, newGraph, newGraph.optionals)
+      // delete those already executed
+      newFringe = newFringe filterNot (newHistory contains)
+      // all steps preceding the step is prohibited
 
-          val newHistory = step :: history
-          var excluded = WalkOnDisk.excluded(List(step), selfGraph.mutualExcls).filter(selfGraph.nodes.contains)
-          //println(excluded.map(_.name).mkString("directly mutex: ", ", ", ""))
-          //println(exclList.map(_.name).mkString("old mutex: ", ", ", ""))
-          var excl = excluded ::: exclList
-          excl = findTransitiveClosure(selfGraph, excl)
-          //println(excl.map(_.name).mkString("closure mutex: ", ", ", ""))
-          excluded = excl filterNot (exclList.contains)
-          val expired = selfGraph.links.filter(l => l.target == step).map(_.source)
-          val newGraph = selfGraph.addSkipLinks(excluded).removeNodes(excluded ::: expired)
 
-          var newFringe = WalkOnDisk.maxFringe(newHistory, newGraph, newGraph.optionals)
-          // delete those already executed
-          newFringe = newFringe filterNot (newHistory contains)
-          // all steps preceding the step is prohibited
+      if (debug) {
+        println("*******************************")
+        println(this)
+        println("taking step: " + step.name)
+        println("excluded because of ME: " + excluded.map(_.name).mkString("(", ", ", ")"))
+        println("excluded because of temporal ordering: " + expired.map(_.name).mkString("(", ", ", ")"))
+        println("excluded by parent: " + exclList.map(_.name).mkString("(", ", ", ")"))
+        println("is temporal ordering removal necessary: " + (newFringe filter (expired contains)).map(_.name).mkString)
 
-          // enforce an ordering for parallel events
-          val parallel = selfGraph.nodes.filterNot(c => selfGraph.ordered(step, c)).filter(c => c.name > step.name)
-          // newly exclueded by mutual exclusions
+        newGraph.draw("valid")
 
-          if (debug) {
-            println("*******************************")
-            println(this)
-            println("taking step: " + step.name)
-            println("excluded because of ME: " + excluded.map(_.name).mkString("(", ", ", ")"))
-            println("excluded because of symmetry: " + parallel.map(_.name).mkString("(", ", ", ")"))
-            println("excluded because of temporal ordering: " + expired.map(_.name).mkString("(", ", ", ")"))
-            println("excluded by parent: " + exclList.map(_.name).mkString("(", ", ", ")"))
-            println("is temporal ordering removal necessary: " + (newFringe filter (expired contains)).map(_.name).mkString)
+      }
 
-            newGraph.draw("valid")
-
-          }
-
-          /*
+      /*
         // exclude symmetry
         newFringe =
           if ((newFringe -- parallel).isEmpty) newFringe
           else (newFringe -- parallel)
 		*/
 
-          val id = WalkOnDisk.nextId()
-          if (debug) {
-            println("final fringe: " + newFringe.map(_.name).mkString("(", ", ", ")"))
+      val id = WalkOnDisk.nextId()
+      if (debug) {
+        println("final fringe: " + newFringe.map(_.name).mkString("(", ", ", ")"))
 
-            println("next story : " + id + "\n*******************************")
-            readLine()
-          }
-          new WalkOnDisk(id, newHistory, newFringe, excl, newGraph)
+        println("next story : " + id + "\n*******************************")
+        readLine()
+      }
+      new WalkOnDisk(id, newHistory, newFringe, excl, newGraph, debug)
+    }
 
+    /** return all possible steps
+     *  
+     */
+    def possibleSteps(): List[WalkOnDisk] =
+      {
+        fringe map { step =>
+          takeStep(step)
         }
       }
 
@@ -321,8 +320,8 @@ package generation {
     def findTransitiveClosure(graph: Graph, events: List[Cluster]): List[Cluster] =
       {
 
-//        val canSkip = events.filterNot(e => graph.optionals.contains(e) || graph.conditionals.contains(e)) // optional or conditionals do not apply
-//        val cannotSkip = events.filterNot(canSkip contains)
+        //        val canSkip = events.filterNot(e => graph.optionals.contains(e) || graph.conditionals.contains(e)) // optional or conditionals do not apply
+        //        val cannotSkip = events.filterNot(canSkip contains)
 
         var all = ListBuffer[Cluster]() ++ events
         var newFound: ListBuffer[Cluster] = null
@@ -395,9 +394,9 @@ package generation {
           melinks.filter(m => m.c2 == s).map(m => m.c1))
       }
 
-    def fromInits(inits: List[Cluster], graph: Graph): WalkOnDisk = {
+    def fromInits(inits: List[Cluster], graph: Graph, debug:Boolean = false): WalkOnDisk = {
       val fringe = inits
-      new WalkOnDisk(nextId(), Nil, fringe, Nil, graph)
+      new WalkOnDisk(nextId(), Nil, fringe, Nil, graph, debug)
     }
   }
 
