@@ -4,20 +4,17 @@ import edu.gatech.eilab.scheherazade.graph._
 import edu.gatech.eilab.scheherazade.data._
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.ListBuffer
-
+import scala.collection.mutable.HashMap
 object MutexAnalysis {
 
   def main(args: Array[String]) {
-    //    val graph = SampleGraph.sample4
-    //    graph.draw("unit-analysis")
-    //    val keepNode = graph.nodes.find(_.name == "C4").get
-    //    val (keep, delete) = impliedGroups(keepNode, graph)
-    //    println("delete = " + delete.map(_.name).mkString)
-    //    println("keep = " + keep.map(_.name).mkString)
-    for (i <- 0 to 9) {
-      val graph = SampleGraph.randomDAG(15, 50, 5);
-      graph.draw("random" + i)
-    }
+    val graph = SampleGraph.sample12.graphWithOptionalsAndSkips
+    graph.draw("special-test")
+    val kept = List(graph.nodes(1), graph.nodes(2), graph.nodes(4))
+    println(kept)
+    val r = causeForDeletion(graph, kept)
+    println(r)
+    cleanNodesNew(graph, kept)
   }
 
   /**
@@ -27,7 +24,7 @@ object MutexAnalysis {
   def findTransitiveClosure(graph: Graph, events: List[Cluster]): List[Cluster] =
     {
 
-      var all = ListBuffer[Cluster]() ++ events//.filterNot(e => graph.optionals.contains(e) || graph.conditionals.contains(e)) // optional or conditionals do not apply
+      var all = ListBuffer[Cluster]() ++ events //.filterNot(e => graph.optionals.contains(e) || graph.conditionals.contains(e)) // optional or conditionals do not apply
       var newFound: ListBuffer[Cluster] = null
       var remainder = graph.nodes filterNot (all contains)
       do {
@@ -45,29 +42,274 @@ object MutexAnalysis {
       all.toList
     }
 
-//  def findTransitiveClosureBAD(graph: Graph, events: List[Cluster]): List[Cluster] =
-//    {
-//
-//      val canSkip = events.filterNot(e => graph.optionals.contains(e) || graph.conditionals.contains(e)) // optional or conditionals do not apply
-//      val cannotSkip = events.filterNot(canSkip contains)
-//
-//      var all = ListBuffer[Cluster]() ++ cannotSkip
-//      var newFound: ListBuffer[Cluster] = null
-//      var remainder = graph.nodes filterNot (all contains)
-//      do {
-//        newFound = ListBuffer[Cluster]()
-//        for (e <- remainder) {
-//          val pred = graph.predecessorsOf(e)
-//          if ((!pred.isEmpty) &&
-//            pred.forall(all contains))
-//            newFound += e
-//        }
-//        all ++= newFound
-//        remainder = remainder filterNot (newFound contains)
-//      } while (!newFound.isEmpty)
-//
-//      all.toList ::: canSkip
-//    }
+  /**
+   * find who is responsible for deleting what
+   *
+   */
+  def causeForDeletion(graph: Graph, kept: List[Cluster]) = {
+
+    val causes = HashMap[Cluster, List[Set[Cluster]]]() // the cause for deleting a node
+    var deleted = List[Cluster]()
+
+    // immediately excluded
+    for (me <- graph.mutualExcls) {
+      var excluded: Cluster = null
+      var cause: Cluster = null
+      if (kept.contains(me.c1)) {
+        excluded = me.c2
+        cause = me.c1
+      } else if (kept.contains(me.c2)) {
+        excluded = me.c1
+        cause = me.c2
+      }
+
+      if (excluded != null) {
+        // either c1 or c2 is an node in kept.
+        
+        //println(cause.name + " deletes " + excluded.name)
+
+        deleted = excluded :: deleted
+
+        if (causes.contains(excluded)) {
+          // this is an OR relationship
+          val oldList = causes(excluded)
+          causes += (excluded -> (Set(cause) :: oldList))
+        } else {
+          causes += ((excluded, List(Set(cause))))
+        }
+      }
+    }
+
+    val toposort = graph.topoSort
+
+    var remainder = graph.nodes filterNot (deleted contains)
+    var newFound: List[Cluster] = Nil
+
+    for (e <- toposort) {
+      val pred = graph.predecessorsOf(e)
+      if ((!pred.isEmpty) && pred.forall(deleted contains)) {
+
+        if (!deleted.contains(e)) {
+          deleted = e :: deleted
+        }
+
+        // needs to get causes from parents.
+
+        // AND relation between all predecessors
+        var allCauses = pred.map(causes(_))
+        var comb = allCauses.head
+        allCauses = allCauses.tail
+
+        while (allCauses != Nil) {
+          val next = allCauses.head
+          allCauses = allCauses.tail
+
+          comb = comb.flatMap(x => next.map(y => x ++ y))
+        }
+
+        if (causes.contains(e)) {
+          val old = causes(e)
+          causes += (e -> (comb ::: old).distinct) // OR relation            
+        } else {
+          causes += (e -> comb)
+        }
+
+      }
+    }
+
+    causes
+  }
+  
+  /**
+   * find who is responsible for deleting what
+   *
+   */
+  def causeForDeletionNew(graph: Graph, kept: List[Cluster]) = {
+    
+    // first, exclude any nodes that must be deleted from causers
+       var deleted = List[Cluster]()
+    // immediately excluded by events in the kept list
+    for (me <- graph.mutualExcls) {
+      var excluded: Cluster = null
+      var cause: Cluster = null
+      if (kept.contains(me.c1)) {
+        deleted = me.c2 :: deleted        
+      } else if (kept.contains(me.c2)) {
+        deleted = me.c1 :: deleted        
+      }
+
+      val toposort = graph.topoSort
+      for (e <- toposort) {
+        val pred = graph.predecessorsOf(e)
+        if ((!pred.isEmpty) && pred.forall(deleted contains)) {
+
+          if (!deleted.contains(e)) {
+            deleted = e :: deleted
+          }
+        }
+        val possibleCausers = ()
+        
+    // second, figure out what causes what to be deleted
+
+    val causes = HashMap[Cluster, List[Set[Cluster]]]() // the cause for deleting a node
+
+
+    // immediately excluded
+    for (me <- graph.mutualExcls) {
+      var excluded: Cluster = null
+      var cause: Cluster = null
+      if (kept.contains(me.c1)) {
+        excluded = me.c2
+        cause = me.c1
+      } else if (kept.contains(me.c2)) {
+        excluded = me.c1
+        cause = me.c2
+      }
+
+      if (excluded != null) {
+        // either c1 or c2 is an node in kept.
+        
+        //println(cause.name + " deletes " + excluded.name)
+
+        deleted = excluded :: deleted
+
+        if (causes.contains(excluded)) {
+          // this is an OR relationship
+          val oldList = causes(excluded)
+          causes += (excluded -> (Set(cause) :: oldList))
+        } else {
+          causes += ((excluded, List(Set(cause))))
+        }
+      }
+    }
+
+    
+
+    var remainder = graph.nodes filterNot (deleted contains)
+    var newFound: List[Cluster] = Nil
+
+
+        // needs to get causes from parents.
+
+        // AND relation between all predecessors
+        var allCauses = pred.map(causes(_))
+        var comb = allCauses.head
+        allCauses = allCauses.tail
+
+        while (allCauses != Nil) {
+          val next = allCauses.head
+          allCauses = allCauses.tail
+
+          comb = comb.flatMap(x => next.map(y => x ++ y))
+        }
+
+        if (causes.contains(e)) {
+          val old = causes(e)
+          causes += (e -> (comb ::: old).distinct) // OR relation            
+        } else {
+          causes += (e -> comb)
+        }
+
+      }
+    }
+
+    causes
+  }
+
+
+  //  def transitiveClosure(graph:Graph, deleted:List[Cluster], forbidden:List[Cluster])
+  //  {
+  //    
+  //  }
+
+  //  def findTransitiveClosureBAD(graph: Graph, events: List[Cluster]): List[Cluster] =
+  //    {
+  //
+  //      val canSkip = events.filterNot(e => graph.optionals.contains(e) || graph.conditionals.contains(e)) // optional or conditionals do not apply
+  //      val cannotSkip = events.filterNot(canSkip contains)
+  //
+  //      var all = ListBuffer[Cluster]() ++ cannotSkip
+  //      var newFound: ListBuffer[Cluster] = null
+  //      var remainder = graph.nodes filterNot (all contains)
+  //      do {
+  //        newFound = ListBuffer[Cluster]()
+  //        for (e <- remainder) {
+  //          val pred = graph.predecessorsOf(e)
+  //          if ((!pred.isEmpty) &&
+  //            pred.forall(all contains))
+  //            newFound += e
+  //        }
+  //        all ++= newFound
+  //        remainder = remainder filterNot (newFound contains)
+  //      } while (!newFound.isEmpty)
+  //
+  //      all.toList ::: canSkip
+  //    }
+
+  /* a new version of clean nodes that fix the special case
+   * 
+   */
+  def cleanNodesNew(graph: Graph, kept: List[Cluster]) =
+    {
+      val causes = causeForDeletion(graph, kept)
+      var removedNodes = causes.keySet.toList
+
+      /* Special care is needed when node C excludes node A AND
+	   * node A is a predecessor to node B AND 
+	   * B is parallel to C and not marked for deletion 
+	  */
+      val insertLink = HashMap[Cluster, List[Cluster]]()
+      var dontDelete = List[Cluster]()
+      for (n <- removedNodes if !graph.optionals.contains(n)) { 
+        // don't perform this test if n is optional
+        // because an optional event is not a precondition for anything, 
+        // so removing it is not removing any preconditions
+
+        val potential = HashMap[Cluster, List[Cluster]]()
+
+        val kids = graph.successorsOf(n)
+        val causeN = causes(n)
+
+        val parallelCauses = causeN.map { AndedCause =>
+          AndedCause.filter { c =>
+            var exists = false
+            for (k <- kids) {
+              if (!graph.ordered(c, k)) {
+                exists = true
+                potential += (k -> (c :: potential.getOrElse(k, Nil)))
+              }
+            }
+            exists
+          }
+        }
+
+        if (parallelCauses.size == 1) {
+          insertLink ++= potential
+        } else if (parallelCauses.size > 1) {
+          dontDelete = n :: dontDelete
+        }
+      }
+
+      
+      removedNodes = removedNodes.filterNot(dontDelete.contains)
+      insertLink --= removedNodes
+      println("need to insert link " + insertLink)
+      println("dont delete " + dontDelete)
+      println("delete = " + removedNodes)
+
+      if (removedNodes != Nil) {
+        val newGraph = graph.detectAndAddSkipLinks(removedNodes).removeNodes(removedNodes)
+        // we should NOT re-check optionality because of deleted events! we must keep the original optional events!
+        val newLinks = insertLink.flatMap {
+          case (n, list) =>
+            list.map(x => new Link(x, n))
+        }.toList
+        
+        new Graph(newGraph.nodes, newLinks:::newGraph.links, newGraph.mutualExcls, newGraph.optionals, newGraph.conditionals)        
+      } else {
+        graph
+      }
+    }
 
   def cleanNodes(graph: Graph, kept: List[Cluster], clan: List[EventGroup] = Nil): Graph =
     {
@@ -103,7 +345,7 @@ object MutexAnalysis {
       //println("removed: " + removedNodes.map(_.name).mkString)
 
       if (removedNodes != Nil) {
-        val cleanedGraph = graph.detectAndAddSkipLinks(removedNodes).removeNodes(removedNodes) 
+        val cleanedGraph = graph.detectAndAddSkipLinks(removedNodes).removeNodes(removedNodes)
         // we should NOT re-check optionality because of deleted events! we must keep the original optional events!
 
         cleanedGraph
@@ -123,7 +365,7 @@ object MutexAnalysis {
       var oneMoreLoop = true
 
       // remove as many nodes as we can
-      var cleanGraph = cleanNodes(graph, keptNodes)
+      var cleanGraph = cleanNodesNew(graph, keptNodes)
 
       var i = 0
       cleanGraph.draw("clean" + i)
@@ -137,6 +379,7 @@ object MutexAnalysis {
           for (clan <- clans) {
             if (clan.contains(n) && clan.nodes.filterNot(newKept.contains) != Nil) {
               newKept = clan.nodes ::: newKept // Yes. more nodes!
+              println("kept more " + clan.nodes)
               oneMoreLoop = true
             }
           }
@@ -144,7 +387,7 @@ object MutexAnalysis {
 
         if (oneMoreLoop) {
           keptNodes = newKept.distinct
-          cleanGraph = cleanNodes(graph, keptNodes, clans)
+          cleanGraph = cleanNodesNew(cleanGraph, keptNodes)
           i += 1
           cleanGraph.draw("clean" + i)
         }

@@ -11,58 +11,68 @@ object AnalysisMain {
   def main(args: Array[String]) {
 
     import java.io._
-    Global.graphDrawing = true
+    Global.graphDrawing = false
 
     //    val pw = new PrintWriter("mutexAnalysis.csv")
 
-    val before = SampleGraph.sample10
+    val before = SampleGraph.sample16
     before.draw("before")
     val graph = AnalysisMain.regularize(before)
     graph.draw("after")
-    val background = graph.nodes(6)
-    val queryCluster = graph.nodes(7)
+    val background = graph.nodes(7)
+    val queryCluster = graph.nodes(3)
 
-    var i = 1
-    var noMistake = true
-    //    while (i < 100 && noMistake) {
-    //      val graph = regularize(SampleGraph.randomDAG(10, 30, 4))
-    //      val (background, queryCluster) = generateQuery(graph)
+//    var i = 1
+//    var noMistake = true
+//    while (i < 100 && noMistake) {
+//      i += 1
+//      val graph = regularize(SampleGraph.randomDAG(10, 30, 4))
+//      val (background, queryCluster) = generateQuery(graph)
 
-          println("background cluster = " + background.name)
-          println("query cluster = " + queryCluster.name)
-          println("optionals = " + graph.optionals)
-          println("conditionals = " + graph.conditionals)
+      println("background cluster = " + background.name)
+      println("query cluster = " + queryCluster.name)
+      println("optionals = " + graph.optionals)
+      println("conditionals = " + graph.conditionals)
 
-    val (cGraph, sGraph) = simplifyGraph(graph, List(background))
+      val (cGraph, sGraph) = simplifyGraph(graph, List(background))
 
-    val (originalTotal, originalGood, originalQuery) = countStories(graph, List(background), List(queryCluster))
-    println("original total = " + originalTotal + ", good = " + originalGood + " query = " + originalQuery + " ratio = " + originalQuery.toDouble / originalGood)
+      val (originalTotal, originalGood, originalQuery) = countStories(graph, List(background), List(queryCluster))
+      println("original total = " + originalTotal + ", good = " + originalGood + " query = " + originalQuery + " ratio = " + originalQuery.toDouble / originalGood)
 
-    //testStory(graph)
-    //TODO: if the cleaned graph does not contain query, then the probability is directly zero
+      //testStory(graph)
+      //TODO: if the cleaned graph does not contain query, then the probability is directly zero
 
-    val (cleanTotal, cleanGood, cleanQuery) = countStories(cGraph, List(background), List(queryCluster))
-    println("cleaned total = " + cleanTotal + ", good = " + cleanGood + " query = " + cleanQuery + " ratio = " + cleanQuery.toDouble / cleanGood)
-    //      pw.println(cleanTotal.toDouble / originalTotal)
+      val (cleanTotal, cleanGood, cleanQuery) = countStories(cGraph, List(background), List(queryCluster))
+      println("cleaned total = " + cleanTotal + ", good = " + cleanGood + " query = " + cleanQuery + " ratio = " + cleanQuery.toDouble / cleanGood)
+      //      pw.println(cleanTotal.toDouble / originalTotal)
 
-    if (originalQuery.toDouble / originalGood != cleanQuery.toDouble / cleanGood) {
-      println("!!!!!!!!mistake!!!!!!!")
-      //        println("failed after " + i)
-      //        noMistake = false
-      //        Global.graphDrawing = true
-      //        graph.draw("unit-analysis")
-      //        cGraph.draw("mutex-analysis")
-      //        graph.compact.draw("unit-analysis-compact")
-      //        cGraph.compact.draw("mutex-analysis-compact")
-      //        println("background cluster = " + background.name)
-      //        println("query cluster = " + queryCluster.name)
-      //        println("optionals = " + graph.optionals)
-      //        println("conditionals = " + graph.conditionals)
-      //        countStories(graph, List(background), List(queryCluster), true)
-      //        println("-----------------------------")
-      //        countStories(cGraph, List(background), List(queryCluster), true)
+      if (originalQuery.toDouble / originalGood != cleanQuery.toDouble / cleanGood) {
+        println("!!!!!!!!mistake!!!!!!!")
+        val original = recordStories(graph, List(background), List(queryCluster))
+        val mutex = recordStories(cGraph, List(background), List(queryCluster))
+        println("in original graph = \n" + original.filterNot(mutex.contains).mkString("\n"))
+        println("in mutex graph = \n" + mutex.filterNot(original.contains).mkString("\n"))
+
+//        println("failed after " + i)
+//        noMistake = false
+//        Global.graphDrawing = true
+//        graph.draw("unit-analysis")
+//        cGraph.draw("mutex-analysis")
+//        graph.compact.draw("unit-analysis-compact")
+//        cGraph.compact.draw("mutex-analysis-compact")
+//        println("background cluster = " + background.name)
+//        println("query cluster = " + queryCluster.name)
+//        println("optionals = " + graph.optionals)
+//        println("conditionals = " + graph.conditionals)
+//
+//        println("-----------------------------")
+//        countStories(cGraph, List(background), List(queryCluster), true)
+//      }
     }
-    //    }
+
+//    if (noMistake) {
+//      println("finished a hundred")
+//    }
 
     //    pw.close
     //    val (simplifiedGood, simplifiedCount) = countStories(sGraph, tlist)
@@ -115,12 +125,13 @@ object AnalysisMain {
           case e: Exception => println(e.getMessage)
         }
       }
-      
-      val step = fringe(choice-1)
+
+      val step = fringe(choice - 1)
       println("you selected " + step.name)
-      
+
       walk = walk.takeStep(step)
       fringe = walk.fringe
+      walk.selfGraph.draw("walk-graph")
     }
   }
 
@@ -154,10 +165,10 @@ object AnalysisMain {
           }
         }
 
-        if (debug) {
-          println("made story:" + nameSeq.reverse.mkString(" "))
-        }
-        println("made story:" + nameSeq.reverse.mkString(" "))
+        //        if (debug) {
+        //          println("made story:" + nameSeq.reverse.mkString(" "))
+        //        }
+        //println("made story:" + nameSeq.reverse.mkString(" "))
 
         if (background.forall(c => nameSeq.contains(c.name))) {
           goodCnt += 1
@@ -173,6 +184,55 @@ object AnalysisMain {
       //      n = null
     }
     (totalCnt, goodCnt, queryCnt)
+  }
+
+  def recordStories(graph: Graph, background: List[Cluster], query: List[Cluster]): List[List[String]] = {
+    val ends = graph.findEnds
+    val firstWalk = WalkOnDisk.fromInits(graph.findSources, graph)
+
+    var goodStories = List[List[String]]()
+
+    var q = scala.collection.mutable.Stack[WalkOnDisk]()
+    var totalCnt: Long = 0
+    var goodCnt: Long = 0
+    var queryCnt: Long = 0
+
+    q.push(firstWalk)
+
+    while (!q.isEmpty) {
+      var n = q.pop()
+
+      if (ends.exists(c => n.history.contains(c)) || n.fringe == Nil) {
+        // we have reached the end. 
+        // end nodes are considered to be mutually exclusive.
+        // you can only reach one any time
+
+        totalCnt += 1
+
+        val nameSeq = n.history.flatMap {
+          _ match {
+            case clan: ClanCluster =>
+              clan.clusters.map(_.name)
+            case c: Cluster =>
+              List(c.name)
+          }
+        }
+
+        if (background.forall(c => nameSeq.contains(c.name))) {
+          goodCnt += 1
+          goodStories = nameSeq.reverse :: goodStories
+
+          if (query.forall(c => nameSeq.contains(c.name))) {
+            queryCnt += 1
+          }
+        }
+      } else {
+        q pushAll (n.possibleSteps())
+      }
+
+      //      n = null
+    }
+    goodStories
   }
 
   /**

@@ -264,7 +264,7 @@ package generation {
       excl = findTransitiveClosure(selfGraph, excl)
       //println(excl.map(_.name).mkString("closure mutex: ", ", ", ""))
       excluded = excl filterNot (exclList.contains)
-      val expired = selfGraph.links.filter(l => l.target == step).map(_.source)
+      val expired = selfGraph.links.filter(l => l.target == step).map(_.source).filterNot(newHistory.contains) // preventing deleting history
       val newGraph = selfGraph.addSkipLinks(excluded).removeNodes(excluded ::: expired)
 
       var newFringe = WalkOnDisk.maxFringe(newHistory, newGraph, newGraph.optionals)

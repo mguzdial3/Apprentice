@@ -86,10 +86,10 @@ package graph {
       {
         val adjList = getAdjacencyList()
 
-        for (i <- 0 until adjList.size) {
-          println(nodes(i).name + ": " + i + " -> ")
-          println("\t" + adjList(i).mkString(", "))
-        }
+        //        for (i <- 0 until adjList.size) {
+        //          println(nodes(i).name + ": " + i + " -> ")
+        //          println("\t" + adjList(i).mkString(", "))
+        //        }
 
         val n = adjList.length
         val visited = Array.fill(n)(false)
@@ -356,6 +356,19 @@ package graph {
       }
 
     /**
+     * returns the direct successors of a graph node
+     *
+     */
+    def successorsOf(c: Cluster): List[Cluster] =
+      {
+        if (!nodes.contains(c))
+          throw new GraphException("The graph does not contain the node specified: " + c.name)
+        else {
+          links.filter(_.source == c).map(_.target)
+        }
+      }
+
+    /**
      * remove nodes from the graph and any links involving these nodes
      * ATTENTION: if you want to remove mutual excluded nodes from the graph, you must add skipped links!
      */
@@ -457,7 +470,7 @@ package graph {
      *  as optional and conditional. That is, their deletion from the graph does not propagate to
      *  their children.
      */
-    def hasClearPath(source: Cluster, target: Cluster): Boolean =
+    def hasClearPath(sourceC: Cluster, targetC: Cluster): Boolean =
       {
 
         def isClear(path: List[Cluster]): Boolean =
@@ -465,25 +478,28 @@ package graph {
             (!path.contains(me.c1)) || (!path.contains(me.c2)) ||
               {
                 /* if the path contains both ends of the mutex relation, then the mutex must be clear.
-          	   * That is, the earlier node is recognized as optional,
-          	   * and the later nodes is recognized as conditional          	   
+          	   * That is, the earlier node must be recognized as optional,
+          	   * and the later nodes is recognized as conditional 
+          	   *    	   
           	   */
                 val sorted = List(me.c1, me.c2).sortWith((a, b) => path.indexOf(a) < path.indexOf(b))
+
                 optionals.contains(sorted.head) && conditionals.contains(sorted.last)
               }
-          }
+          } && // May 16 2014: In addition, the path cannot depend on our source      
+            path.forall(p => !links.exists(l => l.source == sourceC && l.target == p))
 
         // a breadth-first search
         var longest = -1
         val queue = scala.collection.mutable.Queue[(Cluster, List[Cluster])]()
-        queue += ((source, Nil))
+        queue += ((sourceC, Nil))
 
         while (queue != Nil) {
           val elem = queue.dequeue()
 
           val head = elem._1
           val history = elem._2
-          if (head == target) {
+          if (head == targetC) {
             if (isClear(history.reverse)) {
               return true
             }
