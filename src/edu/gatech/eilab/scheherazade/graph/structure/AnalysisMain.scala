@@ -15,26 +15,26 @@ object AnalysisMain {
 
     //    val pw = new PrintWriter("mutexAnalysis.csv")
 
-//    val before = SampleGraph.sample16
-//    before.draw("before")
-//    val graph = AnalysisMain.regularize(before)
-//    graph.draw("after")
-//    val background = graph.nodes(7)
-//    val queryCluster = graph.nodes(3)
+    val before = SampleGraph.sample16
+    before.draw("before")
+    val graph = AnalysisMain.regularize(before)
+    graph.draw("after")
+    val background = graph.nodes(8)
+    val queryCluster = graph.nodes(11)
 //    Thread.sleep(10000)
 //System.exit(1)
-    var i = 1
-    var noMistake = true
-    var ratio = 0.0
-    while (i < 1000 && noMistake) {
-      i += 1
-      val graph = regularize(SampleGraph.randomDAG(10, 30, 4))
-      val (background, queryCluster) = generateQuery(graph)
+//    var i = 1
+//    var noMistake = true
+//    var ratio = 0.0
+//    while (i < 1000 && noMistake) {
+//      i += 1
+//      val graph = regularize(SampleGraph.randomDAG(10, 30, 4))
+//      val (background, queryCluster) = generateQuery(graph)
 
-//      println("background cluster = " + background.name)
-//      println("query cluster = " + queryCluster.name)
-//      println("optionals = " + graph.optionals)
-//      println("conditionals = " + graph.conditionals)
+      println("background cluster = " + background.name)
+      println("query cluster = " + queryCluster.name)
+      println("optionals = " + graph.optionals)
+      println("conditionals = " + graph.conditionals)
 
       val (cGraph, sGraph) = simplifyGraph(graph, List(background))
 
@@ -48,7 +48,7 @@ object AnalysisMain {
       println("cleaned total = " + cleanTotal + ", good = " + cleanGood + " query = " + cleanQuery + " ratio = " + cleanQuery.toDouble / cleanGood)
       //      pw.println(cleanTotal.toDouble / originalTotal)
 
-      ratio += cleanTotal / originalTotal.toDouble
+//      ratio += cleanTotal / originalTotal.toDouble
       if (originalQuery.toDouble / originalGood != cleanQuery.toDouble / cleanGood) {
         println("!!!!!!!!mistake!!!!!!!")
         val original = recordStories(graph, List(background), List(queryCluster))
@@ -56,27 +56,27 @@ object AnalysisMain {
         println("in original graph = \n" + original.filterNot(mutex.contains).mkString("\n"))
         println("in mutex graph = \n" + mutex.filterNot(original.contains).mkString("\n"))
 
-        println("failed after " + i)
-        noMistake = false
-        Global.graphDrawing = true
-        graph.draw("unit-analysis")
-        cGraph.draw("mutex-analysis")
-        graph.compact.draw("unit-analysis-compact")
-        cGraph.compact.draw("mutex-analysis-compact")
-        println("background cluster = " + background.name)
-        println("query cluster = " + queryCluster.name)
-        println("optionals = " + graph.optionals)
-        println("conditionals = " + graph.conditionals)
-
-        println("-----------------------------")
-        countStories(cGraph, List(background), List(queryCluster), true)
-      }
+//        println("failed after " + i)
+//        noMistake = false
+//        Global.graphDrawing = true
+//        graph.draw("unit-analysis")
+//        cGraph.draw("mutex-analysis")
+//        graph.compact.draw("unit-analysis-compact")
+//        cGraph.compact.draw("mutex-analysis-compact")
+//        println("background cluster = " + background.name)
+//        println("query cluster = " + queryCluster.name)
+//        println("optionals = " + graph.optionals)
+//        println("conditionals = " + graph.conditionals)
+//
+//        println("-----------------------------")
+//        countStories(cGraph, List(background), List(queryCluster), true)
+//      }
     }
-
-    if (noMistake) {
-      println("finished a hundred")
-    }
-    println("ratio = " + ratio / 1000)
+//
+//    if (noMistake) {
+//      println("finished a hundred")
+//    }
+//    println("ratio = " + ratio / 1000)
 
     //    pw.close
     //    val (simplifiedGood, simplifiedCount) = countStories(sGraph, tlist)
@@ -102,7 +102,7 @@ object AnalysisMain {
         }
       }
 
-      var newGraph = new Graph(graph.nodes, graph.links, newME ::: graph.mutualExcls)
+      var newGraph = new Graph(graph.nodes, graph.links, (newME ::: graph.mutualExcls).distinct)
 
       val g = addStartEnd(newGraph.graphWithOptionalsAndSkips)
       g

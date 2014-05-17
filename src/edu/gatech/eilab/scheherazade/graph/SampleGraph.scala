@@ -477,8 +477,8 @@ object SampleGraph {
 
       new Graph(nodes, links, me)
     }
-  
-    def sample14: Graph =
+
+  def sample14: Graph =
     {
       val c1 = new Cluster("C1", Nil)
       val c2 = new Cluster("C2", Nil)
@@ -514,8 +514,8 @@ object SampleGraph {
 
       new Graph(nodes, links, me)
     }
-    
-    def sample15: Graph =
+
+  def sample15: Graph =
     {
       val c1 = new Cluster("C1", Nil)
       val c2 = new Cluster("C2", Nil)
@@ -554,7 +554,7 @@ object SampleGraph {
       new Graph(nodes, links, me)
     }
 
-    def sample16: Graph =
+  def sample16: Graph =
     {
       val c1 = new Cluster("C1", Nil)
       val c2 = new Cluster("C2", Nil)
@@ -590,8 +590,8 @@ object SampleGraph {
 
       new Graph(nodes, links, me)
     }
-    
-        def sample17: Graph =
+
+  def sample17: Graph =
     {
       val c1 = new Cluster("C1", Nil)
       val c2 = new Cluster("C2", Nil)
@@ -609,21 +609,23 @@ object SampleGraph {
       val links = List(
         new Link(c1, c2),
         new Link(c2, c3),
-        new Link(c1, c4),
-        new Link(c4, c5),
-        new Link(c3, c6),
-        new Link(c3, c5),
-        new Link(c5, c7),
-        new Link(c6, c7),
+        new Link(c2, c5),
+        new Link(c3, c4),
+        new Link(c5, c6),
+        new Link(c4, c6),
+        new Link(c4, c7),
+        new Link(c6, c10),
+        new Link(c6, c9),
+        new Link(c7, c9),
         new Link(c7, c8),
-        new Link(c8, c9),
-        new Link(c9, c10))
+        new Link(c6, c10),
+        new Link(c6, c8))
 
       val me = List(
-        new MutualExcl(c2, c3),
-        new MutualExcl(c3, c4),
-        new MutualExcl(c4, c6),
-        new MutualExcl(c5, c10))
+        new MutualExcl(c1, c2),
+        new MutualExcl(c3, c2),
+        new MutualExcl(c2, c5),
+        new MutualExcl(c6, c7))
 
       new Graph(nodes, links, me)
     }
@@ -795,24 +797,24 @@ object SampleGraph {
 
   def main(args: Array[String]) {
     SampleGraph.sample12.draw("sample12")
-//    println(sample1.containsLoop())
-//    println(sample2.containsLoop())
-//    println(loopGraph1.containsLoop())
-//    println(noloopGraph1.containsLoop())
-//    println(loopGraph2.containsLoop())
-//    /*
-//      for (i <- 0 to 10) {
-//        val all = loopGraph2.allLoops().map(_.map(_.name))
-//        //println(all)
-//        var good = all.exists(l => l.filterNot(List("C1", "C2", "C3", "C0") contains).size == 0)
-//        good = good && all.exists(l => l.filterNot(List("C1", "C4", "C5", "C0", "C3") contains).size == 0)
-//        good = good && all.exists(l => l.filterNot(List("C1", "C4", "C7", "C0", "C3") contains).size == 0)
-//        good = good && all.size == 3
-//        println("good ? " + good)
-//      }
-//      */
-//
-//    println(loopGraph3.allLoops())
+    //    println(sample1.containsLoop())
+    //    println(sample2.containsLoop())
+    //    println(loopGraph1.containsLoop())
+    //    println(noloopGraph1.containsLoop())
+    //    println(loopGraph2.containsLoop())
+    //    /*
+    //      for (i <- 0 to 10) {
+    //        val all = loopGraph2.allLoops().map(_.map(_.name))
+    //        //println(all)
+    //        var good = all.exists(l => l.filterNot(List("C1", "C2", "C3", "C0") contains).size == 0)
+    //        good = good && all.exists(l => l.filterNot(List("C1", "C4", "C5", "C0", "C3") contains).size == 0)
+    //        good = good && all.exists(l => l.filterNot(List("C1", "C4", "C7", "C0", "C3") contains).size == 0)
+    //        good = good && all.size == 3
+    //        println("good ? " + good)
+    //      }
+    //      */
+    //
+    //    println(loopGraph3.allLoops())
   }
 }
 

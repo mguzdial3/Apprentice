@@ -77,4 +77,9 @@ class Link(val source: Cluster, val target: Cluster) {
 
 class MutualExcl(val c1: Cluster, val c2: Cluster) {
   override def toString() = "ME: " + c1.name + " -/- " + c2.name
+  
+    override def equals(o: Any) = o match {
+    case other: MutualExcl => (this.c1 == other.c1 && this.c2 == other.c2) || (this.c2 == other.c1 && this.c1 == other.c2) 
+    case _ => false
+  }
 }
