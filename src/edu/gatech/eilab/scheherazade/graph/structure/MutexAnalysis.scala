@@ -10,10 +10,10 @@ object MutexAnalysis {
   def main(args: Array[String]) {
     val graph = SampleGraph.sample12.graphWithOptionalsAndSkips
     graph.draw("special-test")
-    val kept = List(graph.nodes(1), graph.nodes(2), graph.nodes(4))
+    val kept = List(graph.nodes(2))
     println(kept)
-    val r = causeForDeletion(graph, kept)
-    println(r)
+    val r = causeForDeletionNew(graph, kept)
+    println("causes =" + r)
     cleanNodesNew(graph, kept)
   }
 
@@ -65,7 +65,7 @@ object MutexAnalysis {
 
       if (excluded != null) {
         // either c1 or c2 is an node in kept.
-        
+
         //println(cause.name + " deletes " + excluded.name)
 
         deleted = excluded :: deleted
@@ -119,88 +119,108 @@ object MutexAnalysis {
 
     causes
   }
-  
+
   /**
-   * find who is responsible for deleting what
+   * helper method
+   *
+   */
+  private def addCause(map: HashMap[Cluster, List[Set[Cluster]]], cause: Cluster, excluded: Cluster) =
+    {
+      if (map.contains(excluded)) {
+        // this is an OR relationship
+        val oldList = map(excluded)
+        map += (excluded -> (Set(cause) :: oldList))
+      } else {
+        map += ((excluded, List(Set(cause))))
+      }
+    }
+
+  /**
+   * finds who is responsible for deleting what
    *
    */
   def causeForDeletionNew(graph: Graph, kept: List[Cluster]) = {
-    
+
     // first, exclude any nodes that must be deleted from causers
-       var deleted = List[Cluster]()
+    var deleted = List[Cluster]()
     // immediately excluded by events in the kept list
     for (me <- graph.mutualExcls) {
       var excluded: Cluster = null
       var cause: Cluster = null
       if (kept.contains(me.c1)) {
-        deleted = me.c2 :: deleted        
+        deleted = me.c2 :: deleted
       } else if (kept.contains(me.c2)) {
-        deleted = me.c1 :: deleted        
-      }
-
-      val toposort = graph.topoSort
-      for (e <- toposort) {
-        val pred = graph.predecessorsOf(e)
-        if ((!pred.isEmpty) && pred.forall(deleted contains)) {
-
-          if (!deleted.contains(e)) {
-            deleted = e :: deleted
-          }
-        }
-        val possibleCausers = ()
-        
-    // second, figure out what causes what to be deleted
-
-    val causes = HashMap[Cluster, List[Set[Cluster]]]() // the cause for deleting a node
-
-
-    // immediately excluded
-    for (me <- graph.mutualExcls) {
-      var excluded: Cluster = null
-      var cause: Cluster = null
-      if (kept.contains(me.c1)) {
-        excluded = me.c2
-        cause = me.c1
-      } else if (kept.contains(me.c2)) {
-        excluded = me.c1
-        cause = me.c2
-      }
-
-      if (excluded != null) {
-        // either c1 or c2 is an node in kept.
-        
-        //println(cause.name + " deletes " + excluded.name)
-
-        deleted = excluded :: deleted
-
-        if (causes.contains(excluded)) {
-          // this is an OR relationship
-          val oldList = causes(excluded)
-          causes += (excluded -> (Set(cause) :: oldList))
-        } else {
-          causes += ((excluded, List(Set(cause))))
-        }
+        deleted = me.c1 :: deleted
       }
     }
 
-    
+    // delete nodes by transitive closure
+    val toposort = graph.topoSort
+    for (e <- toposort) {
+      val pred = graph.predecessorsOf(e)
 
-    var remainder = graph.nodes filterNot (deleted contains)
-    var newFound: List[Cluster] = Nil
+      if ((!pred.isEmpty) && pred.forall(deleted contains) && !deleted.contains(e)) {
+        deleted = e :: deleted
+      }
+    }
 
+    deleted = deleted.distinct
+    val possibleCauses = graph.nodes.filterNot(deleted.contains)
 
-        // needs to get causes from parents.
+    // second, figure out what causes immediately what to be deleted
 
-        // AND relation between all predecessors
-        var allCauses = pred.map(causes(_))
+    val causes = HashMap[Cluster, List[Set[Cluster]]]() // the cause for deleting a node
+
+    for (me <- graph.mutualExcls) {
+      if (deleted.contains(me.c1)) {
+        addCause(causes, me.c2, me.c1) // me.c2 is the cause
+      } else if (deleted.contains(me.c2)) {
+        addCause(causes, me.c1, me.c2) // me.c1 is the cause
+      } else {
+        addCause(causes, me.c1, me.c2)
+        addCause(causes, me.c2, me.c1) // either can cause the other to be excluded
+      }
+    }
+
+    // Third, propogate the causes through the graph
+
+    for (e <- toposort) {
+      // needs to get causes from parents.
+      val pred = graph.predecessorsOf(e)
+
+      // AND relation between all predecessors
+      var allCauses = causes.filter(p => pred.contains(p._1)).map(_._2)
+
+      //      if (allCauses == Nil)  {
+      //        // do nothing
+      //      } else if (allCauses.exists(c => c.size >= 2)) {
+      //        // if any predecessors have two causes, this will have two or more causes
+      //        causes += (e -> List[Set[Cluster]](Set[Cluster](), Set[Cluster]())) // two empty space holders
+      //      } else {
+      //        val old = causes.getOrElse(e, List(Set[Cluster]()))
+      //        if (old.size >= 2) {
+      //          causes += (e -> List[Set[Cluster]](Set[Cluster](), Set[Cluster]())) // two empty space holders
+      //        } else {
+      //          val cat = (old :: allCauses.toList).reduce((x, y) => List(x.head ++ y.head))
+      //          causes += (e -> cat)
+      //        }
+      //      }
+
+      allCauses = allCauses.map(item => item.filterNot(set => set.exists(n => graph.shortestDistance(n, e) != -1)))
+
+//      println("processing : " + e)
+//      println(allCauses.map(_.mkString(" OR ")).mkString(", "))
+
+      if (allCauses != Nil) { // combine the causes from predecessors
         var comb = allCauses.head
         allCauses = allCauses.tail
 
         while (allCauses != Nil) {
-          val next = allCauses.head
+          val next = allCauses.head.filterNot(set => set.exists(n => graph.shortestDistance(n, e) != -1))
           allCauses = allCauses.tail
 
-          comb = comb.flatMap(x => next.map(y => x ++ y))
+          comb = comb.flatMap(x => next.map(y => x ++ y)).filterNot(s => s.size == 0)
+//          println("comb " + comb)
         }
 
         if (causes.contains(e)) {
@@ -209,13 +229,12 @@ object MutexAnalysis {
         } else {
           causes += (e -> comb)
         }
-
       }
+
     }
 
-    causes
+    (causes, deleted)
   }
-
 
   //  def transitiveClosure(graph:Graph, deleted:List[Cluster], forbidden:List[Cluster])
   //  {
@@ -251,16 +270,17 @@ object MutexAnalysis {
    */
   def cleanNodesNew(graph: Graph, kept: List[Cluster]) =
     {
-      val causes = causeForDeletion(graph, kept)
-      var removedNodes = causes.keySet.toList
-
+      val (causes, d) = causeForDeletionNew(graph, kept)
+      var removedNodes = d
+//      println("causes = " + causes)
+//      println("d = " + removedNodes)
       /* Special care is needed when node C excludes node A AND
 	   * node A is a predecessor to node B AND 
 	   * B is parallel to C and not marked for deletion 
 	  */
       val insertLink = HashMap[Cluster, List[Cluster]]()
       var dontDelete = List[Cluster]()
-      for (n <- removedNodes if !graph.optionals.contains(n)) { 
+      for (n <- removedNodes if !graph.optionals.contains(n)) {
         // don't perform this test if n is optional
         // because an optional event is not a precondition for anything, 
         // so removing it is not removing any preconditions
@@ -290,12 +310,11 @@ object MutexAnalysis {
         }
       }
 
-      
       removedNodes = removedNodes.filterNot(dontDelete.contains)
       insertLink --= removedNodes
-      println("need to insert link " + insertLink)
-      println("dont delete " + dontDelete)
-      println("delete = " + removedNodes)
+      //      println("need to insert link " + insertLink)
+      //      println("dont delete " + dontDelete)
+      //      println("delete = " + removedNodes)
 
       if (removedNodes != Nil) {
         val newGraph = graph.detectAndAddSkipLinks(removedNodes).removeNodes(removedNodes)
@@ -304,12 +323,66 @@ object MutexAnalysis {
           case (n, list) =>
             list.map(x => new Link(x, n))
         }.toList
-        
-        new Graph(newGraph.nodes, newLinks:::newGraph.links, newGraph.mutualExcls, newGraph.optionals, newGraph.conditionals)        
+
+        new Graph(newGraph.nodes, newLinks ::: newGraph.links, newGraph.mutualExcls, newGraph.optionals, newGraph.conditionals)
       } else {
         graph
       }
     }
+
+  /**
+   * dont delete any node A who are mutually exclusive with two or more nodes
+   *  and some of A's decendents are parallel to these two nodes
+   *  and those two nodes are also parallel (?)
+   */
+  def findDontDeletes(graph: Graph): List[Cluster] =
+    {
+      graph.nodes.filter { n =>
+        var ex = List[Cluster]()
+        for (me <- graph.mutualExcls) {
+          if (me.c1 == n) {
+            ex = me.c2 :: ex
+          } else if (me.c2 == n) {
+            ex = me.c1 :: ex
+          }
+        }
+
+        val kids = graph.successorsOf(n)
+
+        ex = ex.filter(e => kids.exists(k => graph.ordered(e, k)))
+
+        ex.size >= 2
+      }
+
+      null
+    }
+
+  //  def transClosure(graph: Graph, kept: List[Cluster], dontDelete: List[Cluster]) {
+  //    // first, exclude any nodes that must be deleted from causers
+  //    var deleted = List[Cluster]()
+  //    // immediately excluded by events in the kept list
+  //    for (me <- graph.mutualExcls) {
+  //      var excluded: Cluster = null
+  //      var cause: Cluster = null
+  //      if (kept.contains(me.c1)) {
+  //        deleted = me.c2 :: deleted
+  //      } else if (kept.contains(me.c2)) {
+  //        deleted = me.c1 :: deleted
+  //      }
+  //    }
+  //
+  //    deleted = deleted.filterNot(dontDelete contains).distinct
+  //    
+  //    // delete nodes by transitive closure
+  //    val toposort = graph.topoSort
+  //    for (e <- toposort) {
+  //      val pred = graph.predecessorsOf(e)
+  //
+  //      if ((!pred.isEmpty) && pred.forall(deleted contains) && !deleted.contains(e) && !dontDelete.contains(e)) {
+  //        deleted = e :: deleted
+  //      }
+  //    }
+  //  }
 
   def cleanNodes(graph: Graph, kept: List[Cluster], clan: List[EventGroup] = Nil): Graph =
     {
@@ -362,7 +435,7 @@ object MutexAnalysis {
     {
       // init
       var keptNodes = keep
-      var oneMoreLoop = true
+      var oneMoreLoop = false
 
       // remove as many nodes as we can
       var cleanGraph = cleanNodesNew(graph, keptNodes)
@@ -379,7 +452,7 @@ object MutexAnalysis {
           for (clan <- clans) {
             if (clan.contains(n) && clan.nodes.filterNot(newKept.contains) != Nil) {
               newKept = clan.nodes ::: newKept // Yes. more nodes!
-              println("kept more " + clan.nodes)
+              //              println("kept more " + clan.nodes)
               oneMoreLoop = true
             }
           }
@@ -429,7 +502,7 @@ object MutexAnalysis {
 
       val deleted = deletedNodes.map(graph.nodes.indexOf(_))
 
-      println("delete starting with " + deletedNodes.mkString)
+      //      println("delete starting with " + deletedNodes.mkString)
       var (keepList, deleteList) = propagateForward(idx1, deleted, adjList, topoSort)
       (keepList.map(graph.nodes(_)), deleteList.map(graph.nodes(_)))
     }
