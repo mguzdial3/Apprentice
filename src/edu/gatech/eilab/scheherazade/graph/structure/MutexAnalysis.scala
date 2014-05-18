@@ -8,12 +8,12 @@ import scala.collection.mutable.HashMap
 object MutexAnalysis {
 
   def main(args: Array[String]) {
-    val graph = SampleGraph.sample12.graphWithOptionalsAndSkips
+    val graph = SampleGraph.sample18.graphWithOptionalsAndSkips
     graph.draw("special-test")
-    val kept = List(graph.nodes(2))
+    val kept = List(graph.nodes(5))
     println(kept)
     val r = causeForDeletionNew(graph, kept)
-    println("causes =" + r)
+    println("causes =" + r._1.mkString("\n"))
     cleanNodesNew(graph, kept)
   }
 
@@ -154,6 +154,8 @@ object MutexAnalysis {
       }
     }
 
+//    println("immediately deleted = " + deleted)
+
     // delete nodes by transitive closure
     val toposort = graph.topoSort
     for (e <- toposort) {
@@ -165,7 +167,10 @@ object MutexAnalysis {
     }
 
     deleted = deleted.distinct
-    val possibleCauses = graph.nodes.filterNot(deleted.contains)
+    
+//    println("transtively deleted = " + deleted)
+    
+    //val possibleCauses = graph.nodes.filterNot(deleted.contains)
 
     // second, figure out what causes immediately what to be deleted
 
@@ -182,52 +187,51 @@ object MutexAnalysis {
       }
     }
 
+//    println("all removed and their causes " + causes)
     // Third, propogate the causes through the graph
 
     for (e <- toposort) {
+//      println("processing : " + e)
       // needs to get causes from parents.
       val pred = graph.predecessorsOf(e)
 
-      // AND relation between all predecessors
-      var allCauses = causes.filter(p => pred.contains(p._1)).map(_._2)
+      // if all predecessors can be deleted
 
-      //      if (allCauses == Nil)  {
-      //        // do nothing
-      //      } else if (allCauses.exists(c => c.size >= 2)) {
-      //        // if any predecessors have two causes, this will have two or more causes
-      //        causes += (e -> List[Set[Cluster]](Set[Cluster](), Set[Cluster]())) // two empty space holders
-      //      } else {
-      //        val old = causes.getOrElse(e, List(Set[Cluster]()))
-      //        if (old.size >= 2) {
-      //          causes += (e -> List[Set[Cluster]](Set[Cluster](), Set[Cluster]())) // two empty space holders
-      //        } else {
-      //          val cat = (old :: allCauses.toList).reduce((x, y) => List(x.head ++ y.head))
-      //          causes += (e -> cat)
-      //        }
-      //      }
+      if (pred.forall(prd => causes.contains(prd))) { // this is added to handle sample graph 18
 
-      allCauses = allCauses.map(item => item.filterNot(set => set.exists(n => graph.shortestDistance(n, e) != -1)))
+        // AND relation between all predecessors
+        var allCauses = causes.filter(p => pred.contains(p._1)).map(_._2) // retrieve all cause lists
+//        println("all causes 1 " + allCauses.map(_.mkString(" OR ")).mkString(", "))
+        // each item is a list. For each set in any list, remove it if it contains events that are not predecessors of e 
+        // now I don't understand why
+        //allCauses = allCauses.map(listOfSets => listOfSets.filterNot(set => set.exists(n => graph.shortestDistance(n, e) != -1)))
 
-//      println("processing : " + e)
-//      println(allCauses.map(_.mkString(" OR ")).mkString(", "))
+        
+//        println("all causes 2 " + allCauses.map(_.mkString(" OR ")).mkString(", "))
 
-      if (allCauses != Nil) { // combine the causes from predecessors
-        var comb = allCauses.head
-        allCauses = allCauses.tail
-
-        while (allCauses != Nil) {
-          val next = allCauses.head.filterNot(set => set.exists(n => graph.shortestDistance(n, e) != -1))
+        if (allCauses != Nil) { // combine the causes from predecessors
+          var comb = allCauses.head
           allCauses = allCauses.tail
 
-          comb = comb.flatMap(x => next.map(y => x ++ y)).filterNot(s => s.size == 0)
-//          println("comb " + comb)
-        }
+          while (allCauses != Nil) {
+            val next = allCauses.head//.filterNot(set => set.exists(n => graph.shortestDistance(n, e) != -1))
+            allCauses = allCauses.tail
 
-        if (causes.contains(e)) {
-          val old = causes(e)
-          causes += (e -> (comb ::: old).distinct) // OR relation            
-        } else {
-          causes += (e -> comb)
+            comb = comb.flatMap(x => next.map(y => x ++ y)).filterNot(s => s.size == 0)
+//            println("comb " + comb)
+          }
+
+          if (causes.contains(e)) {
+            val old = causes(e)
+            val newl = (comb ::: old).distinct
+            if (newl != Nil) {
+              causes += (e -> newl) // OR relation
+            } else {
+              causes.remove(e)
+            }
+          } else if (comb != Nil) {
+            causes += (e -> comb)
+          }
         }
       }
 
@@ -272,8 +276,8 @@ object MutexAnalysis {
     {
       val (causes, d) = causeForDeletionNew(graph, kept)
       var removedNodes = d
-//      println("causes = " + causes)
-//      println("d = " + removedNodes)
+      //      println("causes = " + causes)
+      //      println("d = " + removedNodes)
       /* Special care is needed when node C excludes node A AND
 	   * node A is a predecessor to node B AND 
 	   * B is parallel to C and not marked for deletion 
@@ -290,31 +294,49 @@ object MutexAnalysis {
         val kids = graph.successorsOf(n)
         val causeN = causes(n)
 
+        println("considering " + n.name)
+        println("causeN " + causeN)
+
         val parallelCauses = causeN.map { AndedCause =>
           AndedCause.filter { c =>
             var exists = false
             for (k <- kids) {
               if (!graph.ordered(c, k)) {
+                println("unordered: " + k.name + " with cause " + c.name)
                 exists = true
                 potential += (k -> (c :: potential.getOrElse(k, Nil)))
               }
             }
             exists
           }
-        }
+        }.filterNot(_.isEmpty)
 
+        println("parallel causes = " + parallelCauses)
         if (parallelCauses.size == 1) {
-          insertLink ++= potential
+
+          // tentative
+          val pCauses = parallelCauses.head
+          val bool = pCauses.forall(pc => graph.nodes.exists(node =>
+            graph.shortestDistance(node, pc) != -1 &&
+              graph.mutuallyExclusive(node, n)))
+          if (bool) {
+            dontDelete = n :: dontDelete
+          } else {
+            // end of tentative
+            println("must insert link " + potential)
+            insertLink ++= potential
+          }
         } else if (parallelCauses.size > 1) {
+          println(n.name + " cannot be deleted")
           dontDelete = n :: dontDelete
         }
       }
 
       removedNodes = removedNodes.filterNot(dontDelete.contains)
       insertLink --= removedNodes
-      //      println("need to insert link " + insertLink)
-      //      println("dont delete " + dontDelete)
-      //      println("delete = " + removedNodes)
+      println("need to insert link " + insertLink)
+      println("dont delete " + dontDelete)
+      println("delete = " + removedNodes)
 
       if (removedNodes != Nil) {
         val newGraph = graph.detectAndAddSkipLinks(removedNodes).removeNodes(removedNodes)

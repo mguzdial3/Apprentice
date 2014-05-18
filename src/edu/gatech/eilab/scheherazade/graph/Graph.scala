@@ -219,6 +219,9 @@ package graph {
         //println("distance from " + source.name + " to " + target.name + " = " + longest)
         -1
       }
+    
+    def mutuallyExclusive(one:Cluster, two:Cluster):Boolean =
+      mutualExcls.exists(me => (( me.c1 == one && me.c2 == two) || (me.c2 == one && me.c1 == two))) 
 
     /**
      * find the diameter between the two nodes based on the graph
