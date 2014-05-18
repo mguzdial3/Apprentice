@@ -30,7 +30,7 @@ object PageRank {
     val mutexTransition = freqMtlExMatrix(graph)
 
     //print(mutexTransition.toString(300,300))
-    matrix = 0.7 * matrix + 0.3 * mutexTransition //mutexTransition // + 0.005 * uniform 
+    matrix = (matrix :* 0.7) + (mutexTransition :* 0.3)//mutexTransition // + 0.005 * uniform 
 
     //println(matrix.toString(200, 200))
     val t1 = System.currentTimeMillis()

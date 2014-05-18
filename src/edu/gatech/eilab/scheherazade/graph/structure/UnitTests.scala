@@ -155,8 +155,8 @@ class UnitTests extends FunSuite {
     //println("cleaned total = " + cleanTotal + ", good = " + cleanGood + " query = " + cleanQuery + " ratio = " + cleanQuery.toDouble / cleanGood)
     assert(originalQuery.toDouble / originalGood == cleanQuery.toDouble / cleanGood)
   }
-  
-    test("Mutual Exclusion Analysis on Sample Graph 16") {
+
+  test("Mutual Exclusion Analysis on Sample Graph 16") {
     val before = SampleGraph.sample16
     val graph = AnalysisMain.regularize(before)
     val background = graph.nodes(7)

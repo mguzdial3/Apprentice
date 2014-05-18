@@ -118,7 +118,7 @@ object GenModel5 {
       i = 0
       iter = oldCorpus.vectors.iterator
       for ((text, _) <- iter) {
-        var vector = newData(i, 0 until desiredDimension).toDenseVector
+        var vector = newData(i, 0 until desiredDimension).t //toDenseVector
         val min = vector.min
         vector = vector - min + SMALL
         vector = vector / vector.sum

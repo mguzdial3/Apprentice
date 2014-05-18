@@ -15,12 +15,12 @@ object AnalysisMain {
 
     //    val pw = new PrintWriter("mutexAnalysis.csv")
 
-    val before = SampleGraph.sample16
+    val before = SampleGraph.sample17
     before.draw("before")
     val graph = AnalysisMain.regularize(before)
     graph.draw("after")
-    val background = graph.nodes(8)
-    val queryCluster = graph.nodes(11)
+    val background = graph.nodes(6)
+    val queryCluster = graph.nodes(9)
 //    Thread.sleep(10000)
 //System.exit(1)
 //    var i = 1

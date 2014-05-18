@@ -611,21 +611,22 @@ object SampleGraph {
         new Link(c2, c3),
         new Link(c2, c5),
         new Link(c3, c4),
-        new Link(c5, c6),
-        new Link(c4, c6),
+        new Link(c3, c6),
+        new Link(c3, c7),
         new Link(c4, c7),
-        new Link(c6, c10),
-        new Link(c6, c9),
-        new Link(c7, c9),
+        new Link(c4, c8),
         new Link(c7, c8),
-        new Link(c6, c10),
-        new Link(c6, c8))
+        new Link(c3, c8),
+        new Link(c5, c8),
+        new Link(c8, c9),
+        new Link(c6, c9),
+        new Link(c9, c10))
 
       val me = List(
-        new MutualExcl(c1, c2),
-        new MutualExcl(c3, c2),
-        new MutualExcl(c2, c5),
-        new MutualExcl(c6, c7))
+        new MutualExcl(c3, c5),
+        new MutualExcl(c4, c7),
+        new MutualExcl(c6, c7),
+        new MutualExcl(c6, c8))
 
       new Graph(nodes, links, me)
     }
