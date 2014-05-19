@@ -42,6 +42,37 @@ object MutexAnalysis {
       all.toList
     }
 
+  def transClosureWithDenial(graph: Graph, kept: List[Cluster], dont:List[Cluster]) =
+  {
+    var deleted = List[Cluster]()
+
+    // immediately excluded
+    for (me <- graph.mutualExcls) {
+      var excluded: Cluster = null
+      var cause: Cluster = null
+      if (kept.contains(me.c1)) {
+        deleted = me.c2 :: deleted
+      } else if (kept.contains(me.c2)) {
+        deleted = me.c1 :: deleted
+      }
+    }
+     
+    deleted = deleted.filterNot(dont.contains) // dont prevents a cluster from being deleted
+    
+    val toposort = graph.topoSort
+
+    for (e <- toposort) {
+      val pred = graph.predecessorsOf(e)
+      if ((!pred.isEmpty) && pred.forall(deleted contains)) {
+
+        if ((!deleted.contains(e)) && (!dont.contains(e))) { // dont prevents a cluster from being deleted
+          deleted = e :: deleted
+        }
+      }
+    }
+    deleted
+  }
+
   /**
    * find who is responsible for deleting what
    *
@@ -154,7 +185,7 @@ object MutexAnalysis {
       }
     }
 
-//    println("immediately deleted = " + deleted)
+    //    println("immediately deleted = " + deleted)
 
     // delete nodes by transitive closure
     val toposort = graph.topoSort
@@ -167,9 +198,9 @@ object MutexAnalysis {
     }
 
     deleted = deleted.distinct
-    
-//    println("transtively deleted = " + deleted)
-    
+
+    //    println("transtively deleted = " + deleted)
+
     //val possibleCauses = graph.nodes.filterNot(deleted.contains)
 
     // second, figure out what causes immediately what to be deleted
@@ -187,11 +218,11 @@ object MutexAnalysis {
       }
     }
 
-//    println("all removed and their causes " + causes)
+    //    println("all removed and their causes " + causes)
     // Third, propogate the causes through the graph
 
     for (e <- toposort) {
-//      println("processing : " + e)
+      //      println("processing : " + e)
       // needs to get causes from parents.
       val pred = graph.predecessorsOf(e)
 
@@ -201,24 +232,23 @@ object MutexAnalysis {
 
         // AND relation between all predecessors
         var allCauses = causes.filter(p => pred.contains(p._1)).map(_._2) // retrieve all cause lists
-//        println("all causes 1 " + allCauses.map(_.mkString(" OR ")).mkString(", "))
+        //        println("all causes 1 " + allCauses.map(_.mkString(" OR ")).mkString(", "))
         // each item is a list. For each set in any list, remove it if it contains events that are not predecessors of e 
         // now I don't understand why
         //allCauses = allCauses.map(listOfSets => listOfSets.filterNot(set => set.exists(n => graph.shortestDistance(n, e) != -1)))
 
-        
-//        println("all causes 2 " + allCauses.map(_.mkString(" OR ")).mkString(", "))
+        //        println("all causes 2 " + allCauses.map(_.mkString(" OR ")).mkString(", "))
 
         if (allCauses != Nil) { // combine the causes from predecessors
           var comb = allCauses.head
           allCauses = allCauses.tail
 
           while (allCauses != Nil) {
-            val next = allCauses.head//.filterNot(set => set.exists(n => graph.shortestDistance(n, e) != -1))
+            val next = allCauses.head //.filterNot(set => set.exists(n => graph.shortestDistance(n, e) != -1))
             allCauses = allCauses.tail
 
             comb = comb.flatMap(x => next.map(y => x ++ y)).filterNot(s => s.size == 0)
-//            println("comb " + comb)
+            //            println("comb " + comb)
           }
 
           if (causes.contains(e)) {
@@ -331,8 +361,10 @@ object MutexAnalysis {
           dontDelete = n :: dontDelete
         }
       }
+      
+      removedNodes = transClosureWithDenial(graph, kept, dontDelete)
 
-      removedNodes = removedNodes.filterNot(dontDelete.contains)
+      //removedNodes = removedNodes.filterNot(dontDelete.contains) // try the above line
       insertLink --= removedNodes
       println("need to insert link " + insertLink)
       println("dont delete " + dontDelete)
@@ -407,49 +439,49 @@ object MutexAnalysis {
   //    }
   //  }
 
-  def cleanNodes(graph: Graph, kept: List[Cluster], clan: List[EventGroup] = Nil): Graph =
-    {
-      var removedNodes = List[Cluster]()
-      val realClans =
-        if (clan == Nil) {
-          UnitAnalysis.findClans(graph)
-        } else {
-          clan
-        }
-
-      //      println("rc " + realClans)
-
-      for (me <- graph.mutualExcls) {
-        if (kept.contains(me.c1) && !kept.contains(me.c2)) {
-          removedNodes = me.c2 :: removedNodes
-        } else if (kept.contains(me.c2) && !kept.contains(me.c1)) {
-          removedNodes = me.c1 :: removedNodes
-        }
-      }
-      //println("removed: " + removedNodes.map(_.name).mkString)
-
-      for (c <- realClans) {
-        val clan = c.nodes
-        if (clan.exists(removedNodes.contains)) {
-          removedNodes = clan ::: removedNodes
-        }
-      }
-
-      removedNodes = findTransitiveClosure(graph, removedNodes)
-
-      removedNodes = removedNodes.distinct
-      //println("removed: " + removedNodes.map(_.name).mkString)
-
-      if (removedNodes != Nil) {
-        //val cleanedGraph = graph.detectAndAddSkipLinks(removedNodes).removeNodes(removedNodes)
-        val cleanedGraph = graph.addSkipLinks(removedNodes).removeNodes(removedNodes)
-        // we should NOT re-check optionality because of deleted events! we must keep the original optional events!
-
-        cleanedGraph
-      } else {
-        graph
-      }
-    }
+  //  def cleanNodes(graph: Graph, kept: List[Cluster], clan: List[EventGroup] = Nil): Graph =
+  //    {
+  //      var removedNodes = List[Cluster]()
+  //      val realClans =
+  //        if (clan == Nil) {
+  //          UnitAnalysis.findClans(graph)
+  //        } else {
+  //          clan
+  //        }
+  //
+  //      //      println("rc " + realClans)
+  //
+  //      for (me <- graph.mutualExcls) {
+  //        if (kept.contains(me.c1) && !kept.contains(me.c2)) {
+  //          removedNodes = me.c2 :: removedNodes
+  //        } else if (kept.contains(me.c2) && !kept.contains(me.c1)) {
+  //          removedNodes = me.c1 :: removedNodes
+  //        }
+  //      }
+  //      //println("removed: " + removedNodes.map(_.name).mkString)
+  //
+  //      for (c <- realClans) {
+  //        val clan = c.nodes
+  //        if (clan.exists(removedNodes.contains)) {
+  //          removedNodes = clan ::: removedNodes
+  //        }
+  //      }
+  //
+  //      removedNodes = findTransitiveClosure(graph, removedNodes)
+  //
+  //      removedNodes = removedNodes.distinct
+  //      //println("removed: " + removedNodes.map(_.name).mkString)
+  //
+  //      if (removedNodes != Nil) {
+  //        val cleanedGraph = graph.detectAndAddSkipLinks(removedNodes).removeNodes(removedNodes)
+  //        //val cleanedGraph = graph.addSkipLinks(removedNodes).removeNodes(removedNodes)
+  //        // we should NOT re-check optionality because of deleted events! we must keep the original optional events!
+  //
+  //        cleanedGraph
+  //      } else {
+  //        graph
+  //      }
+  //    }
 
   /**
    * removes clusters that are mutually exclusive with a given list of clusters
