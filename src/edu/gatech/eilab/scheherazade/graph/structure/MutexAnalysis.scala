@@ -340,6 +340,7 @@ object MutexAnalysis {
 
       if (removedNodes != Nil) {
         val newGraph = graph.detectAndAddSkipLinks(removedNodes).removeNodes(removedNodes)
+        //val newGraph = graph.addSkipLinks(removedNodes).removeNodes(removedNodes)
         // we should NOT re-check optionality because of deleted events! we must keep the original optional events!
         val newLinks = insertLink.flatMap {
           case (n, list) =>
@@ -440,7 +441,8 @@ object MutexAnalysis {
       //println("removed: " + removedNodes.map(_.name).mkString)
 
       if (removedNodes != Nil) {
-        val cleanedGraph = graph.detectAndAddSkipLinks(removedNodes).removeNodes(removedNodes)
+        //val cleanedGraph = graph.detectAndAddSkipLinks(removedNodes).removeNodes(removedNodes)
+        val cleanedGraph = graph.addSkipLinks(removedNodes).removeNodes(removedNodes)
         // we should NOT re-check optionality because of deleted events! we must keep the original optional events!
 
         cleanedGraph

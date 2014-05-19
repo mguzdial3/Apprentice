@@ -248,9 +248,11 @@ package generation {
 
   }
 
-  class WalkOnDisk(val id: Int, val history: List[Cluster], val fringe: List[Cluster], val exclList: List[Cluster], val selfGraph: Graph, val debug:Boolean = false) {
-    
+  class WalkOnDisk(val id: Int, val history: List[Cluster], val fringe: List[Cluster], val exclList: List[Cluster], val selfGraph: Graph, val debug: Boolean = false) {
 
+    //TODO:avoid doing this computation for every walk object
+    //
+    
     /**
      * Takes one step in the graph
      *
@@ -265,13 +267,12 @@ package generation {
       //println(excl.map(_.name).mkString("closure mutex: ", ", ", ""))
       excluded = excl filterNot (exclList.contains)
       val expired = selfGraph.links.filter(l => l.target == step).map(_.source).filterNot(newHistory.contains) // preventing deleting history
-      val newGraph = selfGraph.addSkipLinks(excluded).removeNodes(excluded ::: expired)
+      val newGraph = selfGraph.detectAndAddSkipLinks(excluded).removeNodes(excluded ::: expired)
 
       var newFringe = WalkOnDisk.maxFringe(newHistory, newGraph, newGraph.optionals)
       // delete those already executed
       newFringe = newFringe filterNot (newHistory contains)
       // all steps preceding the step is prohibited
-
 
       if (debug) {
         println("*******************************")
@@ -303,8 +304,9 @@ package generation {
       new WalkOnDisk(id, newHistory, newFringe, excl, newGraph, debug)
     }
 
-    /** return all possible steps
-     *  
+    /**
+     * return all possible steps
+     *
      */
     def possibleSteps(): List[WalkOnDisk] =
       {
@@ -341,7 +343,7 @@ package generation {
         all.toList //::: canSkip
       }
 
-    def hasMoreSteps() = !fringe.isEmpty
+    def hasMoreSteps() = !(fringe.isEmpty)// || realEnds.exists(history.contains))
 
     override def toString(): String = {
       history.reverse.map(_.name).mkString("Story: " + id + "\n", "\n", "\n***\n")
@@ -380,7 +382,9 @@ package generation {
       {
         // if all of its parents are either included in the history or optionals, it is on the fringe
         val parents = optionals ::: history
-        var possible = graph.nodes.filter { node => graph.predecessorsOf(node).forall(parents.contains) }
+        var possible = graph.nodes.filter { node =>          
+            graph.predecessorsOf(node).forall(parents.contains)          
+        }
         possible
       }
 
@@ -394,8 +398,10 @@ package generation {
           melinks.filter(m => m.c2 == s).map(m => m.c1))
       }
 
-    def fromInits(inits: List[Cluster], graph: Graph, debug:Boolean = false): WalkOnDisk = {
+    def fromInits(inits: List[Cluster], graph: Graph, debug: Boolean = false): WalkOnDisk = {
       val fringe = inits
+//      val realEnds = graph.nodes.filter(n => graph.links.exists(l => l.source == n && l.target.name == "END"))
+//      println("real ends " + realEnds)
       new WalkOnDisk(nextId(), Nil, fringe, Nil, graph, debug)
     }
   }
