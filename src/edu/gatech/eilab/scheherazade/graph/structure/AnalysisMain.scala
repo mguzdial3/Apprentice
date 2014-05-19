@@ -15,12 +15,17 @@ object AnalysisMain {
 
     //    val pw = new PrintWriter("mutexAnalysis.csv")
 
-//    val before = SampleGraph.sample20
-//    before.draw("before")
+//        val before = SampleGraph.sample22
+//        before.draw("before")
+//        val graph = AnalysisMain.regularize(before)
+//        graph.draw("after")
+//        val background = graph.nodes(10)
+//        val queryCluster = graph.nodes(9)
+    
+//        val before = SampleGraph.sample16
 //    val graph = AnalysisMain.regularize(before)
-//    graph.draw("after")
-//    val background = graph.nodes(4)
-//    val queryCluster = graph.nodes(5)
+//    val background = graph.nodes(7)
+//    val queryCluster = graph.nodes(3)
 
     //        val before = SampleGraph.sample18
     //        val graph = AnalysisMain.regularize(before)
@@ -28,58 +33,57 @@ object AnalysisMain {
     //        val queryCluster = graph.nodes(3)
     //        Thread.sleep(10000)
     //System.exit(1)
-        var i = 1
-        var noMistake = true
-        var ratio = 0.0
-        while (i < 1000 && noMistake) {
-          i += 1
-          val graph = regularize(SampleGraph.randomDAG(10, 30, 4))
-          val (background, queryCluster) = generateQuery(graph)
+    var i = 1
+    var noMistake = true
+    var ratio = 0.0
+    while (i < 1000 && noMistake) {
+      i += 1
+      val graph = regularize(SampleGraph.randomDAG(10, 30, 4))
+      val (background, queryCluster) = generateQuery(graph)
 
-//    println("background cluster = " + background.name)
-//    println("query cluster = " + queryCluster.name)
-//    println("optionals = " + graph.optionals)
-//    println("conditionals = " + graph.conditionals)
-//    
-    //val originalEnds = graph.findEnds 
-  
-    val (cGraph, sGraph) = simplifyGraph(graph, List(background))
+          println("background cluster = " + background.name)
+          println("query cluster = " + queryCluster.name)
+          println("optionals = " + graph.optionals)
+          println("conditionals = " + graph.conditionals)
+      //    
+      //val originalEnds = graph.findEnds 
 
-    
-    val (originalTotal, originalGood, originalQuery) = countStories(graph, List(background), List(queryCluster))
-    println("original total = " + originalTotal + ", good = " + originalGood + " query = " + originalQuery + " ratio = " + originalQuery.toDouble / originalGood)
+      println("beging counting original...")
+      val (originalTotal, originalGood, originalQuery) = countStories(graph, List(background), List(queryCluster))
+      println("original total = " + originalTotal + ", good = " + originalGood + " query = " + originalQuery + " ratio = " + originalQuery.toDouble / originalGood)
 
-    
-    //TODO: if the cleaned graph does not contain query, then the probability is directly zero
+      var (cGraph, sGraph) = simplifyGraph(graph, List(background))
+      //TODO: if the cleaned graph does not contain query, then the probability is directly zero
 
-    val (cleanTotal, cleanGood, cleanQuery) = countStories(cGraph, List(background), List(queryCluster))
-    println("cleaned total = " + cleanTotal + ", good = " + cleanGood + " query = " + cleanQuery + " ratio = " + cleanQuery.toDouble / cleanGood)
-    //      pw.println(cleanTotal.toDouble / originalTotal)
-//    testStory(cGraph)
+      println("beging counting cleaned...")
+      val (cleanTotal, cleanGood, cleanQuery) = countStories(cGraph, List(background), List(queryCluster))
+      println("cleaned total = " + cleanTotal + ", good = " + cleanGood + " query = " + cleanQuery + " ratio = " + cleanQuery.toDouble / cleanGood)
+      //      pw.println(cleanTotal.toDouble / originalTotal)
+      //testStory(cGraph)
 
-    ratio += cleanTotal / originalTotal.toDouble
-    if (originalQuery.toDouble / originalGood != cleanQuery.toDouble / cleanGood) {
-      println("!!!!!!!!mistake!!!!!!!")
-      val original = recordStories(graph, List(background), List(queryCluster))
-      val mutex = recordStories(cGraph, List(background), List(queryCluster))
-      println("in original graph = \n" + original.filterNot(mutex.contains).mkString("\n"))
-      println("in mutex graph = \n" + mutex.filterNot(original.contains).mkString("\n"))
+      ratio += cleanTotal / originalTotal.toDouble
+      if (originalQuery.toDouble / originalGood != cleanQuery.toDouble / cleanGood) {
+        println("!!!!!!!!mistake!!!!!!!")
+        val original = recordStories(graph, List(background), List(queryCluster))
+        val mutex = recordStories(cGraph, List(background), List(queryCluster))
+        println("in original graph = \n" + original.filterNot(mutex.contains).mkString("\n"))
+        println("in mutex graph = \n" + mutex.filterNot(original.contains).mkString("\n"))
 
-              println("failed after " + i)
-              noMistake = false
-              Global.graphDrawing = true
-              graph.draw("unit-analysis")
-              cGraph.draw("mutex-analysis")
-              graph.compact.draw("unit-analysis-compact")
-              cGraph.compact.draw("mutex-analysis-compact")
-              println("background cluster = " + background.name)
-              println("query cluster = " + queryCluster.name)
-              println("optionals = " + graph.optionals)
-              println("conditionals = " + graph.conditionals)
-      
-              println("-----------------------------")
-              countStories(cGraph, List(background), List(queryCluster), true)
-            }
+        println("failed after " + i)
+        noMistake = false
+        Global.graphDrawing = true
+        graph.draw("unit-analysis")
+        cGraph.draw("mutex-analysis")
+        graph.compact.draw("unit-analysis-compact")
+        cGraph.compact.draw("mutex-analysis-compact")
+        println("background cluster = " + background.name)
+        println("query cluster = " + queryCluster.name)
+        println("optionals = " + graph.optionals)
+        println("conditionals = " + graph.conditionals)
+
+        println("-----------------------------")
+        countStories(cGraph, List(background), List(queryCluster), true)
+      }
     }
     //
     if (noMistake) {
@@ -309,9 +313,12 @@ object AnalysisMain {
       for (e <- graph.findSources) {
         val l = new Link(start, e)
         newLinks = l :: newLinks
+        //println("adding " + l)
         // need to handle the case where the sources are optional. Note sources cannot be conditional
         if (graph.optionals.contains(e)) {
+
           val successors = newLinks.filter(l => l.source == e).map(_.target)
+          //println("because " + e.name + "is optional, adding links to " + successors)
           newLinks = successors.map(new Link(start, _)) ::: newLinks
         }
       }

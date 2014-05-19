@@ -630,8 +630,8 @@ object SampleGraph {
 
       new Graph(nodes, links, me)
     }
-  
-    def sample18: Graph =
+
+  def sample18: Graph =
     {
       val c1 = new Cluster("C1", Nil)
       val c2 = new Cluster("C2", Nil)
@@ -673,8 +673,8 @@ object SampleGraph {
 
       new Graph(nodes, links, me)
     }
-    
-    def sample19: Graph =
+
+  def sample19: Graph =
     {
       val c1 = new Cluster("C1", Nil)
       val c2 = new Cluster("C2", Nil)
@@ -695,7 +695,7 @@ object SampleGraph {
         new Link(c3, c4),
         new Link(c4, c5),
         new Link(c4, c6),
-        new Link(c2, c7), 
+        new Link(c2, c7),
         new Link(c5, c7),
         new Link(c6, c7),
         new Link(c5, c8),
@@ -712,8 +712,8 @@ object SampleGraph {
 
       new Graph(nodes, links, me)
     }
-    
-    def sample20: Graph =
+
+  def sample20: Graph =
     {
       val c1 = new Cluster("C1", Nil)
       val c2 = new Cluster("C2", Nil)
@@ -734,7 +734,7 @@ object SampleGraph {
         new Link(c3, c4),
         new Link(c3, c5),
         new Link(c4, c6),
-        new Link(c4, c7), 
+        new Link(c4, c7),
         new Link(c5, c6),
         new Link(c5, c7),
         new Link(c6, c8),
@@ -751,6 +751,116 @@ object SampleGraph {
       new Graph(nodes, links, me)
     }
 
+  def sample21: Graph =
+    {
+      val c1 = new Cluster("C1", Nil)
+      val c2 = new Cluster("C2", Nil)
+      val c3 = new Cluster("C3", Nil)
+      val c4 = new Cluster("C4", Nil)
+      val c5 = new Cluster("C5", Nil)
+      val c6 = new Cluster("C6", Nil)
+      val c7 = new Cluster("C7", Nil)
+      val c8 = new Cluster("C8", Nil)
+      val c9 = new Cluster("C9", Nil)
+      val c10 = new Cluster("C10", Nil)
+
+      val nodes = List(c1, c2, c3, c4, c5, c6, c7, c8, c9, c10)
+
+      val links = List(
+        new Link(c1, c3),
+        new Link(c1, c4),
+        new Link(c2, c4),
+        new Link(c2, c6),
+        new Link(c3, c6),
+        new Link(c4, c5),
+        new Link(c6, c7),
+        new Link(c5, c7),
+        new Link(c7, c8),
+        new Link(c7, c10),
+        new Link(c8, c9))
+
+      val me = List(
+        new MutualExcl(c1, c7),
+        new MutualExcl(c2, c3),
+        new MutualExcl(c4, c10),
+        new MutualExcl(c8, c9))
+
+      new Graph(nodes, links, me)
+    }
+
+  def sample22: Graph =
+    {
+      val c1 = new Cluster("C1", Nil)
+      val c2 = new Cluster("C2", Nil)
+      val c3 = new Cluster("C3", Nil)
+      val c4 = new Cluster("C4", Nil)
+      val c5 = new Cluster("C5", Nil)
+      val c6 = new Cluster("C6", Nil)
+      val c7 = new Cluster("C7", Nil)
+      val c8 = new Cluster("C8", Nil)
+      val c9 = new Cluster("C9", Nil)
+      val c10 = new Cluster("C10", Nil)
+
+      val nodes = List(c1, c2, c3, c4, c5, c6, c7, c8, c9, c10)
+
+      val links = List(
+        new Link(c1, c3),
+        new Link(c3, c4),
+        new Link(c4, c5),
+        new Link(c2, c5),
+        new Link(c5, c6),
+        new Link(c5, c9),
+        new Link(c6, c7),
+        new Link(c9, c10),
+        new Link(c7, c8),
+        new Link(c7, c10))
+
+      val me = List(
+        new MutualExcl(c3, c4),
+        new MutualExcl(c2, c3),
+        new MutualExcl(c9, c10),
+        new MutualExcl(c6, c9))
+
+      new Graph(nodes, links, me)
+    }
+
+  def sample23: Graph =
+    {
+      val c1 = new Cluster("C1", Nil)
+      val c2 = new Cluster("C2", Nil)
+      val c3 = new Cluster("C3", Nil)
+      val c4 = new Cluster("C4", Nil)
+      val c5 = new Cluster("C5", Nil)
+      val c6 = new Cluster("C6", Nil)
+      val c7 = new Cluster("C7", Nil)
+      val c8 = new Cluster("C8", Nil)
+      val c9 = new Cluster("C9", Nil)
+      val c10 = new Cluster("C10", Nil)
+
+      val nodes = List(c1, c2, c3, c4, c5, c6, c7, c8, c9, c10)
+
+      val links = List(
+        new Link(c1, c3),
+        new Link(c1, c6),
+        new Link(c3, c4),
+        new Link(c2, c4),
+        new Link(c2, c6),
+        new Link(c4, c5),
+        new Link(c4, c8),
+        new Link(c6, c7),
+        new Link(c5, c9),
+        new Link(c7, c8),
+        new Link(c8, c9),
+        new Link(c9, c10))
+
+      val me = List(
+        new MutualExcl(c2, c3),
+        new MutualExcl(c6, c3),
+        new MutualExcl(c5, c6),
+        new MutualExcl(c5, c9))
+
+      new Graph(nodes, links, me)
+    }
   /**
    * generates a random DAG with n vertices and m edges
    * This is probably very similar to the Erdos-Renyi model
