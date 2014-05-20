@@ -11,31 +11,28 @@ object AnalysisMain {
   def main(args: Array[String]) {
 
     import java.io._
-    Global.graphDrawing = true
+    Global.graphDrawing = false
 
     //    val pw = new PrintWriter("mutexAnalysis.csv")
 
-//        val before = SampleGraph.sample23
-//        before.draw("before")
-//        val graph = AnalysisMain.regularize(before)
-//        graph.draw("after")
-//        val background = graph.nodes(11)
-//        val queryCluster = graph.nodes(9)
-    
+    // 18 and 23 are curious cases
+    val before = SampleGraph.sample25
+    val graph = AnalysisMain.regularize(before)
+    val background = graph.nodes(7)
+    val queryCluster = graph.nodes(3)
 
-    
-    var i = 1
-    var noMistake = true
-    var ratio = 0.0
-    while (i < 1000 && noMistake) {
-      i += 1
-      val graph = regularize(SampleGraph.randomDAG(10, 30, 4))
-      val (background, queryCluster) = generateQuery(graph)
+//    var i = 1
+//    var noMistake = true
+//    var ratio = 0.0
+//    while (i < 1000 && noMistake) {
+//      i += 1
+//      val graph = regularize(SampleGraph.randomDAG(10, 30, 4))
+//      val (background, queryCluster) = generateQuery(graph)
 
-          println("background cluster = " + background.name)
-          println("query cluster = " + queryCluster.name)
-          println("optionals = " + graph.optionals)
-          println("conditionals = " + graph.conditionals)
+      println("background cluster = " + background.name)
+      println("query cluster = " + queryCluster.name)
+      println("optionals = " + graph.optionals)
+      println("conditionals = " + graph.conditionals)
       //    
       //val originalEnds = graph.findEnds 
 
@@ -52,7 +49,7 @@ object AnalysisMain {
       //      pw.println(cleanTotal.toDouble / originalTotal)
       //testStory(cGraph)
 
-      ratio += cleanTotal / originalTotal.toDouble
+//      ratio += cleanTotal / originalTotal.toDouble
       if (originalQuery.toDouble / originalGood != cleanQuery.toDouble / cleanGood) {
         println("!!!!!!!!mistake!!!!!!!")
         val original = recordStories(graph, List(background), List(queryCluster))
@@ -60,27 +57,27 @@ object AnalysisMain {
         println("in original graph = \n" + original.filterNot(mutex.contains).mkString("\n"))
         println("in mutex graph = \n" + mutex.filterNot(original.contains).mkString("\n"))
 
-        println("failed after " + i)
-        noMistake = false
-        Global.graphDrawing = true
-        graph.draw("unit-analysis")
-        cGraph.draw("mutex-analysis")
-        graph.compact.draw("unit-analysis-compact")
-        cGraph.compact.draw("mutex-analysis-compact")
-        println("background cluster = " + background.name)
-        println("query cluster = " + queryCluster.name)
-        println("optionals = " + graph.optionals)
-        println("conditionals = " + graph.conditionals)
-
-        println("-----------------------------")
-        countStories(cGraph, List(background), List(queryCluster), true)
-      }
+//        println("failed after " + i)
+//        noMistake = false
+//        Global.graphDrawing = true
+//        graph.draw("unit-analysis")
+//        cGraph.draw("mutex-analysis")
+//        graph.compact.draw("unit-analysis-compact")
+//        cGraph.compact.draw("mutex-analysis-compact")
+//        println("background cluster = " + background.name)
+//        println("query cluster = " + queryCluster.name)
+//        println("optionals = " + graph.optionals)
+//        println("conditionals = " + graph.conditionals)
+//
+//        println("-----------------------------")
+//        countStories(cGraph, List(background), List(queryCluster), true)
+//      }
     }
     //
-    if (noMistake) {
-      println("finished a hundred")
-    }
-    println("ratio = " + ratio / 1000)
+//    if (noMistake) {
+//      println("finished a hundred")
+//    }
+//    println("ratio = " + ratio / 1000)
 
   }
 
@@ -271,19 +268,19 @@ object AnalysisMain {
     val cleanedGraph = MutexAnalysisBackup.cleanedGraph(newGraph, keptNodes)
     cleanedGraph.draw("mutex-analysis")
 
-//    var tGraph = cleanedGraph
-//    var numCol = 0
-//    var clans = UnitAnalysis.findClans(tGraph)
-//    while (clans != Nil) {
-//      //      println("clans = " + clans.mkString(", "))
-//      tGraph = UnitAnalysis.collapseClans(tGraph, clans)
-//      //println("collapsing...")
-//      numCol += 1
-//      //newGraph.draw("after-collapsing-" + numCol)
-//      clans = UnitAnalysis.findClans(tGraph)
-//    }
-//
-//    tGraph.draw("after-collapsing")
+    //    var tGraph = cleanedGraph
+    //    var numCol = 0
+    //    var clans = UnitAnalysis.findClans(tGraph)
+    //    while (clans != Nil) {
+    //      //      println("clans = " + clans.mkString(", "))
+    //      tGraph = UnitAnalysis.collapseClans(tGraph, clans)
+    //      //println("collapsing...")
+    //      numCol += 1
+    //      //newGraph.draw("after-collapsing-" + numCol)
+    //      clans = UnitAnalysis.findClans(tGraph)
+    //    }
+    //
+    //    tGraph.draw("after-collapsing")
 
     //    val closures = UnitAnalysis.findClosures(graph)
     //    println(closures.mkString(", "))

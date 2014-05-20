@@ -437,7 +437,26 @@ package graph {
             }
           }
         }
-        new Graph(nodes, newLinks, this.mutualExcls, optionals, conditionals)
+        
+        val g = new Graph(nodes, newLinks, this.mutualExcls, optionals, conditionals)
+        
+        newLinks = Nil
+        // add May 20 night
+        for(op <- optionals)
+        {
+        	val parents = g.predecessorsOf(op)
+        	val kids = g.successorsOf(op)
+        	for(p <- parents; k <- kids)
+        	{
+        	  val l = new Link(p, k)
+        	  if (!g.links.contains(l))
+        	  {
+        	    newLinks = l :: newLinks
+        	  }
+        	}
+        }
+        
+        new Graph(g.nodes, g.links ::: newLinks, g.mutualExcls, g.optionals, g.conditionals)
       }
 
     //    def skipLinks(skipped: List[Cluster]): List[Link] = {

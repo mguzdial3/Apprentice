@@ -247,4 +247,30 @@ class UnitTests extends FunSuite {
     assert(originalQuery.toDouble / originalGood == cleanQuery.toDouble / cleanGood)
   }
 
+  test("Mutual Exclusion Analysis on Sample Graph 23") {
+    val before = SampleGraph.sample23
+    val graph = AnalysisMain.regularize(before)
+    val background = graph.nodes(9)
+    val queryCluster = graph.nodes(10)
+    val (cGraph, sGraph) = AnalysisMain.simplifyGraph(graph, List(background))
+    val (originalTotal, originalGood, originalQuery) = AnalysisMain.countStories(graph, List(background), List(queryCluster))
+    //println("original total = " + originalTotal + ", good = " + originalGood + " query = " + originalQuery + " ratio = " + originalQuery.toDouble / originalGood)
+    val (cleanTotal, cleanGood, cleanQuery) = AnalysisMain.countStories(cGraph, List(background), List(queryCluster))
+    //println("cleaned total = " + cleanTotal + ", good = " + cleanGood + " query = " + cleanQuery + " ratio = " + cleanQuery.toDouble / cleanGood)
+    assert(originalQuery.toDouble / originalGood == cleanQuery.toDouble / cleanGood)
+  }
+
+  test("Mutual Exclusion Analysis on Sample Graph 24") {
+    val before = SampleGraph.sample24
+    val graph = AnalysisMain.regularize(before)
+    val background = graph.nodes(10)
+    val queryCluster = graph.nodes(2)
+    val (cGraph, sGraph) = AnalysisMain.simplifyGraph(graph, List(background))
+    val (originalTotal, originalGood, originalQuery) = AnalysisMain.countStories(graph, List(background), List(queryCluster))
+    //println("original total = " + originalTotal + ", good = " + originalGood + " query = " + originalQuery + " ratio = " + originalQuery.toDouble / originalGood)
+    val (cleanTotal, cleanGood, cleanQuery) = AnalysisMain.countStories(cGraph, List(background), List(queryCluster))
+    //println("cleaned total = " + cleanTotal + ", good = " + cleanGood + " query = " + cleanQuery + " ratio = " + cleanQuery.toDouble / cleanGood)
+    assert(originalQuery.toDouble / originalGood == cleanQuery.toDouble / cleanGood)
+  }
+
 }

@@ -430,7 +430,7 @@ object MutexAnalysisBackup {
         val parallelCauses = causeN.map { AndedCause =>
           AndedCause.filter { c =>
             var exists = false
-            for (k <- kids) {
+            for (k <- (kids.filterNot(removedNodes.contains))) {
               if (!graph.ordered(c, k)) {
                 println("unordered: " + k.name + " with cause " + c.name)
                 exists = true
@@ -450,9 +450,11 @@ object MutexAnalysisBackup {
             node != n && 
             node != pc &&
             graph.shortestDistance(node, pc) != -1 &&
+//            (!graph.ordered(node, n)) &&
               graph.mutuallyExclusive(node, n))) 
               // exists a node that is parallel to the cause of deletion (pc), the node is also mutual exclusive to n.
           if (bool) {
+            println("add don't delete 1 " + n)
             dontDelete = n :: dontDelete
           } else {
             // end of tentative
@@ -460,7 +462,7 @@ object MutexAnalysisBackup {
             insertLink ++= potential
           }
         } else if (parallelCauses.size > 1) {
-          println(n.name + " cannot be deleted")
+          println("add don't delete 2 " + n)
           dontDelete = n :: dontDelete
         }
       }
