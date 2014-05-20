@@ -11,28 +11,19 @@ object AnalysisMain {
   def main(args: Array[String]) {
 
     import java.io._
-    Global.graphDrawing = false
+    Global.graphDrawing = true
 
     //    val pw = new PrintWriter("mutexAnalysis.csv")
 
-//        val before = SampleGraph.sample22
+//        val before = SampleGraph.sample23
 //        before.draw("before")
 //        val graph = AnalysisMain.regularize(before)
 //        graph.draw("after")
-//        val background = graph.nodes(10)
+//        val background = graph.nodes(11)
 //        val queryCluster = graph.nodes(9)
     
-//        val before = SampleGraph.sample16
-//    val graph = AnalysisMain.regularize(before)
-//    val background = graph.nodes(7)
-//    val queryCluster = graph.nodes(3)
 
-    //        val before = SampleGraph.sample18
-    //        val graph = AnalysisMain.regularize(before)
-    //        val background = graph.nodes(7)
-    //        val queryCluster = graph.nodes(3)
-    //        Thread.sleep(10000)
-    //System.exit(1)
+    
     var i = 1
     var noMistake = true
     var ratio = 0.0
@@ -277,26 +268,26 @@ object AnalysisMain {
 
     //println("background = " + background.name)
 
-    val cleanedGraph = MutexAnalysis.cleanedGraph(newGraph, keptNodes)
+    val cleanedGraph = MutexAnalysisBackup.cleanedGraph(newGraph, keptNodes)
     cleanedGraph.draw("mutex-analysis")
 
-    var tGraph = cleanedGraph
-    var numCol = 0
-    var clans = UnitAnalysis.findClans(tGraph)
-    while (clans != Nil) {
-      //      println("clans = " + clans.mkString(", "))
-      tGraph = UnitAnalysis.collapseClans(tGraph, clans)
-      //println("collapsing...")
-      numCol += 1
-      //newGraph.draw("after-collapsing-" + numCol)
-      clans = UnitAnalysis.findClans(tGraph)
-    }
-
-    tGraph.draw("after-collapsing")
+//    var tGraph = cleanedGraph
+//    var numCol = 0
+//    var clans = UnitAnalysis.findClans(tGraph)
+//    while (clans != Nil) {
+//      //      println("clans = " + clans.mkString(", "))
+//      tGraph = UnitAnalysis.collapseClans(tGraph, clans)
+//      //println("collapsing...")
+//      numCol += 1
+//      //newGraph.draw("after-collapsing-" + numCol)
+//      clans = UnitAnalysis.findClans(tGraph)
+//    }
+//
+//    tGraph.draw("after-collapsing")
 
     //    val closures = UnitAnalysis.findClosures(graph)
     //    println(closures.mkString(", "))
-    (cleanedGraph, tGraph)
+    (cleanedGraph, null)
   }
 
   /**

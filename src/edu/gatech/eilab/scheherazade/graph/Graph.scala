@@ -166,6 +166,8 @@ package graph {
      */
     def findMiddle() = nodes.filter(n => links.exists(l => l.target == n || l.source == n))
 
+    def isOptional(c:Cluster) = optionals.contains(c)
+    
     // this alias is used in XStreamable
     override def alias() = "plot-graph"
 

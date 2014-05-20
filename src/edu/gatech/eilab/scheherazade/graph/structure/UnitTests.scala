@@ -88,7 +88,6 @@ class UnitTests extends FunSuite {
   }
 
   test("Mutual Exclusion Analysis on Sample Graph 12-1") {
-    Global.graphDrawing = false
     val before = SampleGraph.sample12
     val graph = AnalysisMain.regularize(before)
     val background = graph.nodes(4)
