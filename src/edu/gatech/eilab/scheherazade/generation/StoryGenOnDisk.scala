@@ -252,7 +252,7 @@ package generation {
 
     //TODO:avoid doing this computation for every walk object
     //
-    
+
     /**
      * Takes one step in the graph
      *
@@ -316,8 +316,7 @@ package generation {
       }
 
     /**
-     * if all direct predecessors of an event is in the event list, add that event to the event list
-     * continue adding events until no such event exists
+     * This is a specific function different from other "transitive closure". This function ignores links whose kind field is not equal to "R"
      */
     def findTransitiveClosure(graph: Graph, events: List[Cluster]): List[Cluster] =
       {
@@ -327,23 +326,25 @@ package generation {
 
         var all = ListBuffer[Cluster]() ++ events
         var newFound: ListBuffer[Cluster] = null
-        var remainder = graph.nodes filterNot (all contains)
+        var remainder = graph.nodes filterNot (all.contains)
         do {
           newFound = ListBuffer[Cluster]()
           for (e <- remainder) {
-            val pred = graph.predecessorsOf(e)
-            if ((!pred.isEmpty) &&
-              pred.forall(all contains))
+
+            val pred = graph.links.filter(l => l.kind == "R" && l.target == e).map(_.source)
+
+            if ((!pred.isEmpty) && pred.forall(all.contains)) {
               newFound += e
+            }
           }
           all ++= newFound
-          remainder = remainder filterNot (newFound contains)
+          remainder = remainder filterNot (newFound.contains)
         } while (!newFound.isEmpty)
 
         all.toList //::: canSkip
       }
 
-    def hasMoreSteps() = !(fringe.isEmpty)// || realEnds.exists(history.contains))
+    def hasMoreSteps() = !(fringe.isEmpty) // || realEnds.exists(history.contains))
 
     override def toString(): String = {
       history.reverse.map(_.name).mkString("Story: " + id + "\n", "\n", "\n***\n")
@@ -382,8 +383,8 @@ package generation {
       {
         // if all of its parents are either included in the history or optionals, it is on the fringe
         val parents = optionals ::: history
-        var possible = graph.nodes.filter { node =>          
-            graph.predecessorsOf(node).forall(parents.contains)          
+        var possible = graph.nodes.filter { node =>
+          graph.predecessorsOf(node).forall(parents.contains)
         }
         possible
       }
@@ -400,8 +401,8 @@ package generation {
 
     def fromInits(inits: List[Cluster], graph: Graph, debug: Boolean = false): WalkOnDisk = {
       val fringe = inits
-//      val realEnds = graph.nodes.filter(n => graph.links.exists(l => l.source == n && l.target.name == "END"))
-//      println("real ends " + realEnds)
+      //      val realEnds = graph.nodes.filter(n => graph.links.exists(l => l.source == n && l.target.name == "END"))
+      //      println("real ends " + realEnds)
       new WalkOnDisk(nextId(), Nil, fringe, Nil, graph, debug)
     }
   }

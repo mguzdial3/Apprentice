@@ -60,9 +60,11 @@ object ObservedLink {
 //}
 
 /**
- * the Link class now does not differentiate between causal and temporal links 
+ * the Link class now does not differentiate between causal and temporal links
+ * May 21 2014: added the kind field. If it is not "R", it is not counted when determining if a node can be deleted. 
+ * That is, links added for temporal purposes only will have a different value than "R"  
  */
-class Link(val source: Cluster, val target: Cluster) {  
+class Link(val source: Cluster, val target: Cluster, val kind:String = "R") {  
 
   override def toString() = source.name + " -> " + target.name
   

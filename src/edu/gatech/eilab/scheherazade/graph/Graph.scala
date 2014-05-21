@@ -590,6 +590,10 @@ package graph {
       // skip drawing when indicated by the Global object
       if (edu.gatech.eilab.scheherazade.main.Global.graphDrawing == false) return
 
+      if(fn.contains(" ")) {
+        throw new IOException("Filename " + fn + " contains space, which will disrupt the graph drawing program.")
+      }
+      
       val filename = fn + ".txt"
       val file = new File(filename)
       println(file.getCanonicalPath())
