@@ -330,4 +330,17 @@ class UnitTests extends FunSuite {
     assert(originalQuery.toDouble / originalGood == cleanQuery.toDouble / cleanGood)
   }
 
+  test("Mutual Exclusion Analysis on Sample Graph 29") { // putting recursiveDeleted at the right place, i.e. the last step
+    val before = SampleGraph.sample29
+    val graph = AnalysisMain.regularize(before)
+    val background = graph.nodes(7)
+    val queryCluster = graph.nodes(8)
+    val (cGraph, sGraph) = AnalysisMain.simplifyGraph(graph, List(background))
+    val (originalTotal, originalGood, originalQuery) = AnalysisMain.countStories(graph, List(background), List(queryCluster))
+    //println("original total = " + originalTotal + ", good = " + originalGood + " query = " + originalQuery + " ratio = " + originalQuery.toDouble / originalGood)
+    val (cleanTotal, cleanGood, cleanQuery) = AnalysisMain.countStories(cGraph, List(background), List(queryCluster))
+    //println("cleaned total = " + cleanTotal + ", good = " + cleanGood + " query = " + cleanQuery + " ratio = " + cleanQuery.toDouble / cleanGood)
+    assert(originalQuery.toDouble / originalGood == cleanQuery.toDouble / cleanGood)
+  }
+
 }

@@ -21,16 +21,16 @@ object AnalysisMain {
 //        val background = graph.nodes(7)
 //        val queryCluster = graph.nodes(5)
 
-//    val before = SampleGraph.sample28
+//    val before = SampleGraph.sample29
 //    val graph = AnalysisMain.regularize(before)
-//    val background = graph.nodes(9)
-//    val queryCluster = graph.nodes(7)
-    
+//    val background = graph.nodes(7)
+//    val queryCluster = graph.nodes(8)
+    val totalRuns = 20000
 
         var i = 1
         var noMistake = true
         var ratio = 0.0
-        while (i < 1000 && noMistake) {
+        while (i < totalRuns && noMistake) {
           i += 1
           val graph = regularize(SampleGraph.randomDAG(10, 30, 4))
           val (background, queryCluster) = generateQuery(graph)
@@ -81,9 +81,9 @@ object AnalysisMain {
     }
 
     if (noMistake) {
-      println("finished a hundred")
+      println("finished a thousand")
     }
-    println("ratio = " + ratio / 1000)
+    println("reduction ratio = " + ratio / totalRuns)
 
   }
 

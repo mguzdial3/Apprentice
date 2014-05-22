@@ -26,17 +26,17 @@ object MutexAnalysis {
 
       var all = ListBuffer[Cluster]() ++ events //.filterNot(e => graph.optionals.contains(e) || graph.conditionals.contains(e)) // optional or conditionals do not apply
       var newFound: ListBuffer[Cluster] = null
-      var remainder = graph.nodes filterNot (all contains)
+      var remainder = graph.nodes filterNot (all.contains)
       do {
         newFound = ListBuffer[Cluster]()
         for (e <- remainder) {
           val pred = graph.predecessorsOf(e)
           if ((!pred.isEmpty) &&
-            pred.forall(all contains))
+            pred.forall(all.contains))
             newFound += e
         }
         all ++= newFound
-        remainder = remainder filterNot (newFound contains)
+        remainder = remainder filterNot (newFound.contains)
       } while (!newFound.isEmpty)
 
       all.toList
@@ -408,10 +408,29 @@ object MutexAnalysis {
   //      all.toList ::: canSkip
   //    }
 
+  def threeOrMoreRancingConditions(causeN: List[Set[Cluster]]): Boolean =
+    {
+      var remainCauses =
+        for (set <- causeN) yield {
+          val rest = causeN.filterNot(_ == set)
+          var ns = set
+          for (rs <- rest) {
+            if (rs.forall(k => ns.contains(k))) {
+              ns = ns -- rs
+            }
+          }
+          ns
+        }
+
+      remainCauses = remainCauses.filterNot(_.isEmpty)
+
+      remainCauses.size >= 3
+    }
+
   /* a new version of clean nodes that fix the special case
    * 
    */
-  def cleanNodesNew(graph: Graph, kept: List[Cluster]) =
+  def cleanNodesNew(graph: Graph, kept: List[Cluster]): Graph =
     {
       val (causes, d, recursiveDeleted) = causeForDeletionNew(graph, kept)
       // recursiveDeleted contains nodes deleted because their parents are all deleted, not because they are deleted by mutual exclusions directly 
@@ -437,6 +456,12 @@ object MutexAnalysis {
         println("considering " + n.name)
         println("causeN " + causeN)
 
+        // ignore graphs with three or more events racing against each other
+        val ignore = threeOrMoreRancingConditions(causeN)
+        if (ignore) {
+          return graph
+        }
+
         val parallelCauses = causeN.map { AndedCause =>
           AndedCause.filter { c =>
             var exists = false
@@ -454,11 +479,11 @@ object MutexAnalysis {
         println("parallel causes = " + parallelCauses)
         if (parallelCauses.size == 1) {
 
-          // tentative
           val pCauses = parallelCauses.head
           val bool = causeN.filterNot(_ == pCauses).exists { set =>
             set.forall(s => graph.isOptional(s) || (!graph.ordered(s, n)))
-          }
+          } // there may be another causer that is optional or parallel to node n
+
           /*val bool = pCauses.forall(pc => graph.nodes.exists(node =>
             node != n &&
               node != pc &&
@@ -483,6 +508,14 @@ object MutexAnalysis {
       }
       println("should delete: " + removedNodes)
       dontDelete = dontDelete.filterNot(recursiveDeleted.contains)
+
+      /** another possibility for race condition: there are two parallel deletion causes, who lead to the deletion of different children of n **/
+      val dontFromTransClosure = detectRaceConditionForTransClosure(graph, kept, causes, removedNodes)
+      if (!dontFromTransClosure.isEmpty) {
+        return graph
+      }
+      //      dontDelete = dontFromTransClosure ::: dontDelete
+
       removedNodes = transClosureWithDenial(graph, kept, dontDelete)
       println("actually delete: " + removedNodes)
       //removedNodes = removedNodes.filterNot(dontDelete.contains) // try the above line
@@ -505,6 +538,30 @@ object MutexAnalysis {
       } else {
         graph
       }
+    }
+
+  def detectRaceConditionForTransClosure(graph: Graph, kept: List[Cluster], causes: HashMap[Cluster, List[Set[Cluster]]], removed: List[Cluster]): List[Cluster] =
+    {
+      var dontDelete = List[Cluster]()
+
+      for (n <- removed if (!graph.optionals.contains(n)) && causes(n).size > 1) {
+        val causeForN = causes(n)
+
+        val extra = kept.filterNot(k => causeForN.exists(set => set.contains(k)))
+
+        val recursive = causeForN.map {
+          set =>
+            findTransitiveClosure(graph, extra ::: set.toList).toSet
+        }
+
+        val identical = recursive.sliding(2).forall(list => list(0) == list(1))
+        if (!identical) {
+          dontDelete = n :: dontDelete
+          println("don't delete from different trans closure: " + n)
+        }
+      }
+
+      dontDelete
     }
 
   /**
