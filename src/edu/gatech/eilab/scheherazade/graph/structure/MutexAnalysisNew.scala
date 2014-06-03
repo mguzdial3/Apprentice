@@ -8,13 +8,18 @@ import scala.collection.mutable.HashMap
 object MutexAnalysisNew {
 
   def main(args: Array[String]) {
-    val graph = SampleGraph.sample18.graphWithOptionalsAndSkips
-    graph.draw("special-test")
-    val kept = List(graph.nodes(5))
-    println(kept)
-    val r = causeForDeletionNew(graph, kept)
-    println("causes =" + r._1.mkString("\n"))
-    cleanNodesNew(graph, kept)
+//    val graph = SampleGraph.sample18.graphWithOptionalsAndSkips
+//    graph.draw("special-test")
+//    val kept = List(graph.nodes(5))
+//    println(kept)
+//    val r = causeForDeletionNew(graph, kept)
+//    println("causes =" + r._1.mkString("\n"))
+//    cleanNodesNew(graph, kept)
+    
+    //val test = List(Set(new Cluster("c1", Nil), new Cluster("c2", Nil), new Cluster("c3", Nil)), Set(new Cluster("c3", Nil)), Set(new Cluster("c4", Nil)))
+    val test = List(Set(new Cluster("c1", Nil), new Cluster("c2", Nil), new Cluster("c3", Nil)), Set(new Cluster("c3", Nil)), Set(new Cluster("c4", Nil), new Cluster("c7", Nil)), Set(new Cluster("c4", Nil), new Cluster("c6", Nil)))
+    val r = simplify(test)
+    println(r)
   }
 
   /**
@@ -41,84 +46,42 @@ object MutexAnalysisNew {
 
       all.toList
     }
+  
+  def transClosureWithDenial(graph: Graph, kept: List[Cluster], dont: List[Cluster]) =
+    {
+      var deleted = List[Cluster]()
+
+      // immediately excluded
+      for (me <- graph.mutualExcls) {
+        if (kept.contains(me.c1)) {
+          deleted = me.c2 :: deleted
+        } else if (kept.contains(me.c2)) {
+          deleted = me.c1 :: deleted
+        }
+      }
+
+      deleted = deleted.filterNot(dont.contains) // dont prevents a cluster from being deleted
+
+      val toposort = graph.topoSort
+
+      for (e <- toposort) {
+        val pred = graph.predecessorsOf(e)
+        if ((!pred.isEmpty) && pred.forall(deleted contains)) {
+
+          if ((!deleted.contains(e)) && (!dont.contains(e))) { // dont prevents a cluster from being deleted
+            deleted = e :: deleted
+          }
+        }
+      }
+      deleted
+    }
 
   /**
-   * find who is responsible for deleting what
+   * find Causes for Deletion
+   * 
    *
    */
-  def causeForDeletion(graph: Graph, kept: List[Cluster]) = {
-
-    val causes = HashMap[Cluster, List[Set[Cluster]]]() // the cause for deleting a node
-    var deleted = List[Cluster]()
-
-    // immediately excluded
-    for (me <- graph.mutualExcls) {
-      var excluded: Cluster = null
-      var cause: Cluster = null
-      if (kept.contains(me.c1)) {
-        excluded = me.c2
-        cause = me.c1
-      } else if (kept.contains(me.c2)) {
-        excluded = me.c1
-        cause = me.c2
-      }
-
-      if (excluded != null) {
-        // either c1 or c2 is an node in kept.
-
-        //println(cause.name + " deletes " + excluded.name)
-
-        deleted = excluded :: deleted
-
-        if (causes.contains(excluded)) {
-          // this is an OR relationship
-          val oldList = causes(excluded)
-          causes += (excluded -> (Set(cause) :: oldList))
-        } else {
-          causes += ((excluded, List(Set(cause))))
-        }
-      }
-    }
-
-    val toposort = graph.topoSort
-
-    var remainder = graph.nodes filterNot (deleted contains)
-    var newFound: List[Cluster] = Nil
-
-    for (e <- toposort) {
-      val pred = graph.predecessorsOf(e)
-      if ((!pred.isEmpty) && pred.forall(deleted contains)) {
-
-        if (!deleted.contains(e)) {
-          deleted = e :: deleted
-        }
-
-        // needs to get causes from parents.
-
-        // AND relation between all predecessors
-        var allCauses = pred.map(causes(_))
-        var comb = allCauses.head
-        allCauses = allCauses.tail
-
-        while (allCauses != Nil) {
-          val next = allCauses.head
-          allCauses = allCauses.tail
-
-          comb = comb.flatMap(x => next.map(y => x ++ y))
-        }
-
-        if (causes.contains(e)) {
-          val old = causes(e)
-          causes += (e -> (comb ::: old).distinct) // OR relation            
-        } else {
-          causes += (e -> comb)
-        }
-
-      }
-    }
-
-    causes
-  }
+ 
 
   /**
    * helper method
@@ -134,6 +97,38 @@ object MutexAnalysisNew {
         map += ((excluded, List(Set(cause))))
       }
     }
+  
+  def simplify(formula:List[Set[Cluster]]):List[Set[Cluster]] =
+  {
+    var array = formula.toArray
+    var result = List[Set[Cluster]]()
+    var delete = List[Int]()
+    
+    for (i <- 0 until formula.length)
+    {
+      val cur = array(i)
+      for (j <- i + 1 until formula.length)
+      {
+        val comp = array(j)
+        if (comp.forall(cur.contains))
+        {
+          delete = i :: delete // comp is simpler; delete cur
+        }
+        else if (cur.forall(comp.contains))
+        {
+          delete = j :: delete // cur is simpler; delete comp
+        }
+      }
+    }
+       
+    for (i <- 0 until array.length if !delete.contains(i))
+    {
+      result = array(i) :: result
+    }
+    
+    result
+    
+  }
 
   /**
    * finds who is responsible for deleting what
