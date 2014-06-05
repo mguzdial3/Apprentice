@@ -5,6 +5,7 @@ import edu.gatech.eilab.scheherazade.data._
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.ListBuffer
 import scala.collection.mutable.HashMap
+
 object MutexAnalysisNew {
 
   def main(args: Array[String]) {
@@ -17,9 +18,7 @@ object MutexAnalysisNew {
 //    cleanNodesNew(graph, kept)
     
     //val test = List(Set(new Cluster("c1", Nil), new Cluster("c2", Nil), new Cluster("c3", Nil)), Set(new Cluster("c3", Nil)), Set(new Cluster("c4", Nil)))
-    val test = List(Set(new Cluster("c1", Nil), new Cluster("c2", Nil), new Cluster("c3", Nil)), Set(new Cluster("c3", Nil)), Set(new Cluster("c4", Nil), new Cluster("c7", Nil)), Set(new Cluster("c4", Nil), new Cluster("c6", Nil)))
-    val r = simplify(test)
-    println(r)
+
   }
 
   /**

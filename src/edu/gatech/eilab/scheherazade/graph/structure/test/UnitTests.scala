@@ -1,8 +1,9 @@
-package edu.gatech.eilab.scheherazade.graph.structure
+package edu.gatech.eilab.scheherazade.graph.structure.test
 
 import org.scalatest.FunSuite
 import edu.gatech.eilab.scheherazade.graph._
 import edu.gatech.eilab.scheherazade.main.Global
+import edu.gatech.eilab.scheherazade.graph.structure.AnalysisMain
 
 class UnitTests extends FunSuite {
 
