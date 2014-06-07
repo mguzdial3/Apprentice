@@ -9,14 +9,14 @@ import scala.collection.mutable.HashMap
 object MutexAnalysisNew {
 
   def main(args: Array[String]) {
-//    val graph = SampleGraph.sample18.graphWithOptionalsAndSkips
-//    graph.draw("special-test")
-//    val kept = List(graph.nodes(5))
-//    println(kept)
-//    val r = causeForDeletionNew(graph, kept)
-//    println("causes =" + r._1.mkString("\n"))
-//    cleanNodesNew(graph, kept)
-    
+    val graph = SampleGraph.sample18.graphWithOptionalsAndSkips
+    graph.draw("special-test")
+    val kept = List(graph.nodes(5))
+    println(kept)
+    val r = causeForDeletionNew(graph, kept)
+    println("causes =" + r._1.mkString("\n"))
+    cleanNodesNew(graph, kept)
+
     //val test = List(Set(new Cluster("c1", Nil), new Cluster("c2", Nil), new Cluster("c3", Nil)), Set(new Cluster("c3", Nil)), Set(new Cluster("c4", Nil)))
 
   }
@@ -45,7 +45,7 @@ object MutexAnalysisNew {
 
       all.toList
     }
-  
+
   def transClosureWithDenial(graph: Graph, kept: List[Cluster], dont: List[Cluster]) =
     {
       var deleted = List[Cluster]()
@@ -77,10 +77,9 @@ object MutexAnalysisNew {
 
   /**
    * find Causes for Deletion
-   * 
+   *
    *
    */
- 
 
   /**
    * helper method
@@ -96,38 +95,32 @@ object MutexAnalysisNew {
         map += ((excluded, List(Set(cause))))
       }
     }
-  
-  def simplify(formula:List[Set[Cluster]]):List[Set[Cluster]] =
-  {
-    var array = formula.toArray
-    var result = List[Set[Cluster]]()
-    var delete = List[Int]()
-    
-    for (i <- 0 until formula.length)
+
+  def simplifyBoolean(formula: List[Set[Cluster]]): List[Set[Cluster]] =
     {
-      val cur = array(i)
-      for (j <- i + 1 until formula.length)
-      {
-        val comp = array(j)
-        if (comp.forall(cur.contains))
-        {
-          delete = i :: delete // comp is simpler; delete cur
-        }
-        else if (cur.forall(comp.contains))
-        {
-          delete = j :: delete // cur is simpler; delete comp
+      var array = formula.toArray
+      var result = List[Set[Cluster]]()
+      var delete = List[Int]()
+
+      for (i <- 0 until formula.length) {
+        val cur = array(i)
+        for (j <- i + 1 until formula.length) {
+          val comp = array(j)
+          if (comp.forall(cur.contains)) {
+            delete = i :: delete // comp is simpler; delete cur
+          } else if (cur.forall(comp.contains)) {
+            delete = j :: delete // cur is simpler; delete comp
+          }
         }
       }
+
+      for (i <- 0 until array.length if !delete.contains(i)) {
+        result = array(i) :: result
+      }
+
+      result
+
     }
-       
-    for (i <- 0 until array.length if !delete.contains(i))
-    {
-      result = array(i) :: result
-    }
-    
-    result
-    
-  }
 
   /**
    * finds who is responsible for deleting what
@@ -202,9 +195,12 @@ object MutexAnalysisNew {
           listOfSets =>
             listOfSets.filterNot {
               set =>
-                set.exists(
+                set.exists {
                   x =>
-                    graph.shortestDistance(x, e) != -1 && (!graph.isOptional(x)))
+                    // if x is not parallel to e, it is not parallel to kids of e
+                    //graph.shortestDistance(x, e) != -1 && (!graph.isOptional(x)) // QUESTION: why check for optionality here?
+                    graph.ordered(x, e) // TENTATIVE CHANGE
+                }
             }
         }.filterNot(_ == Nil)
 
@@ -224,19 +220,21 @@ object MutexAnalysisNew {
 
           if (causes.contains(e)) {
             val old = causes(e)
-            val newl = (comb ::: old).distinct
+            val newl = simplifyBoolean((comb ::: old).distinct)
             if (newl != Nil) {
               causes += (e -> newl) // OR relation
             } else {
               causes.remove(e)
             }
           } else if (comb != Nil) {
-            causes += (e -> comb)
+            causes += (e -> simplifyBoolean(comb))
           }
         }
       }
 
     }
+
+    //println("causes = " + causes)
 
     (causes, deleted, recursiveDeleted)
   }
@@ -347,30 +345,6 @@ object MutexAnalysisNew {
     (causes, deleted)
   }
 
-  //  def findTransitiveClosureBAD(graph: Graph, events: List[Cluster]): List[Cluster] =
-  //    {
-  //
-  //      val canSkip = events.filterNot(e => graph.optionals.contains(e) || graph.conditionals.contains(e)) // optional or conditionals do not apply
-  //      val cannotSkip = events.filterNot(canSkip contains)
-  //
-  //      var all = ListBuffer[Cluster]() ++ cannotSkip
-  //      var newFound: ListBuffer[Cluster] = null
-  //      var remainder = graph.nodes filterNot (all contains)
-  //      do {
-  //        newFound = ListBuffer[Cluster]()
-  //        for (e <- remainder) {
-  //          val pred = graph.predecessorsOf(e)
-  //          if ((!pred.isEmpty) &&
-  //            pred.forall(all contains))
-  //            newFound += e
-  //        }
-  //        all ++= newFound
-  //        remainder = remainder filterNot (newFound contains)
-  //      } while (!newFound.isEmpty)
-  //
-  //      all.toList ::: canSkip
-  //    }
-
   def threeOrMoreRancingConditions(causeN: List[Set[Cluster]]): Boolean =
     {
       var remainCauses =
@@ -406,7 +380,7 @@ object MutexAnalysisNew {
 	  */
       val insertLink = HashMap[Cluster, List[Cluster]]()
       var dontDelete = List[Cluster]()
-      for (n <- removedNodes if (!graph.optionals.contains(n))) { //&& (! recursiveDeleted.contains(n))) {
+      for (n <- removedNodes if (!graph.optionals.contains(n) && causes.contains(n))) { //&& (! recursiveDeleted.contains(n))) {
         // don't perform this test if n is optional
         // because an optional event is not a precondition for anything, 
         // so removing it is not removing any preconditions
@@ -507,7 +481,7 @@ object MutexAnalysisNew {
     {
       var dontDelete = List[Cluster]()
 
-      for (n <- removed if (!graph.optionals.contains(n)) && causes(n).size > 1) {
+      for (n <- removed if (!graph.optionals.contains(n)) && causes.contains(n) && causes(n).size > 1) {
         val causeForN = causes(n)
 
         val extra = kept.filterNot(k => causeForN.exists(set => set.contains(k)))
