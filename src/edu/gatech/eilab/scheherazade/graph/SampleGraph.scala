@@ -972,6 +972,9 @@ object SampleGraph {
       new Graph(nodes, links, me)
     }
 
+  /** this is a test case for adding temporal relations
+   *  
+   */ 
   def sample27: Graph =
     {
       val c1 = new Cluster("C1", Nil)
@@ -1084,6 +1087,34 @@ object SampleGraph {
         new MutualExcl(c3, c6),
         new MutualExcl(c4, c5),
         new MutualExcl(c4, c6))
+
+      new Graph(nodes, links, me)
+    }
+  
+  def sample30: Graph =
+    {
+      val c1 = new Cluster("C1", Nil)
+      val c2 = new Cluster("C2", Nil)
+      val c3 = new Cluster("C3", Nil)
+      val c4 = new Cluster("C4", Nil)
+      val c5 = new Cluster("C5", Nil)
+      val c6 = new Cluster("C6", Nil)
+
+      val nodes = List(c1, c2, c3, c4, c5, c6)
+
+      val links = List(
+        new Link(c1, c2),
+        new Link(c1, c3),
+        new Link(c1, c4),
+        new Link(c2, c5),
+        new Link(c4, c5),
+        new Link(c2, c6),
+        new Link(c3, c6),
+        new Link(c5, c6))
+
+      val me = List(
+        new MutualExcl(c2, c3),
+        new MutualExcl(c2, c4))
 
       new Graph(nodes, links, me)
     }

@@ -11,7 +11,7 @@ object AnalysisMain {
   def main(args: Array[String]) {
 
     import java.io._
-    Global.graphDrawing = false
+    Global.graphDrawing = true
 
     //    val pw = new PrintWriter("mutexAnalysis.csv")
 
@@ -30,21 +30,27 @@ object AnalysisMain {
     //    val graph = AnalysisMain.regularize(before)
     //    val background = graph.nodes(7)
     //    val queryCluster = graph.nodes(5)
+    
+     val before = SampleGraph.sample16
+    val graph = AnalysisMain.regularize(before)
+    graph.draw("sample16")
+    val background = graph.nodes(7)
+    val queryCluster = graph.nodes(3)
 
-    val totalRuns = 1000//20000
+//    val totalRuns = 1000//20000
+//
+//    var i = 1
+//    var noMistake = true
+//    var ratio = 0.0
+//    while (i < totalRuns && noMistake) {
+//      i += 1
+//      val graph = regularize(SampleGraph.randomDAG(10, 30, 4))
+//      val (background, queryCluster) = generateQuery(graph)
 
-    var i = 1
-    var noMistake = true
-    var ratio = 0.0
-    while (i < totalRuns && noMistake) {
-      i += 1
-      val graph = regularize(SampleGraph.randomDAG(10, 30, 4))
-      val (background, queryCluster) = generateQuery(graph)
-
-//      println("background cluster = " + background.name)
-//      println("query cluster = " + queryCluster.name)
-//      println("optionals = " + graph.optionals)
-//      println("conditionals = " + graph.conditionals)
+      println("background cluster = " + background.name)
+      println("query cluster = " + queryCluster.name)
+      println("optionals = " + graph.optionals)
+      println("conditionals = " + graph.conditionals)
       //    
       //val originalEnds = graph.findEnds 
 
@@ -61,7 +67,7 @@ object AnalysisMain {
       //      pw.println(cleanTotal.toDouble / originalTotal)
       //testStory(graph)
 
-      ratio += cleanTotal / originalTotal.toDouble
+//      ratio += cleanTotal / originalTotal.toDouble
       if (originalQuery.toDouble / originalGood != cleanQuery.toDouble / cleanGood) {
         println("!!!!!!!!mistake!!!!!!!")
         val original = recordStories(graph, List(background), List(queryCluster))
@@ -69,27 +75,27 @@ object AnalysisMain {
         println("in original graph = \n" + original.filterNot(mutex.contains).mkString("\n"))
         println("in mutex graph = \n" + mutex.filterNot(original.contains).mkString("\n"))
 
-        println("failed after " + i)
-        noMistake = false
-        Global.graphDrawing = true
-        graph.draw("unit-analysis")
-        cGraph.draw("mutex-analysis")
+//        println("failed after " + i)
+//        noMistake = false
+//        Global.graphDrawing = true
+//        graph.draw("unit-analysis")
+//        cGraph.draw("mutex-analysis")
         graph.compact.draw("unit-analysis-compact")
         cGraph.compact.draw("mutex-analysis-compact")
-        println("background cluster = " + background.name)
-        println("query cluster = " + queryCluster.name)
-        println("optionals = " + graph.optionals)
-        println("conditionals = " + graph.conditionals)
-
-        println("-----------------------------")
-        countStories(cGraph, List(background), List(queryCluster), true)
-      }
+//        println("background cluster = " + background.name)
+//        println("query cluster = " + queryCluster.name)
+//        println("optionals = " + graph.optionals)
+//        println("conditionals = " + graph.conditionals)
+//
+//        println("-----------------------------")
+//        countStories(cGraph, List(background), List(queryCluster), true)
+//      }
     }
 
-    if (noMistake) {
-      println("finished a thousand")
-    }
-    println("reduction ratio = " + ratio / totalRuns)
+//    if (noMistake) {
+//      println("finished a thousand")
+//    }
+//    println("reduction ratio = " + ratio / totalRuns)
 
   }
 

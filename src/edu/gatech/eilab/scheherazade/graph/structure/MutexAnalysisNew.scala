@@ -234,7 +234,7 @@ object MutexAnalysisNew {
 
     }
 
-    //println("causes = " + causes)
+    println("causes = " + causes)
 
     (causes, deleted, recursiveDeleted)
   }
@@ -399,7 +399,27 @@ object MutexAnalysisNew {
           return graph
         }
 
-        val parallelCauses = causeN.map { AndedCause =>
+        if (causeN.size > 1) {
+          val (activeCauses, inactiveCauses) = causeN.partition(c => c.forall(kept.contains))
+          
+          // ASSUMPTION TO BE RELAXED: only one active cause at one time. If there are two or more, and they are ordered, we need
+          // to delete in order
+          if (inactiveCauses.exists(
+              ic => activeCauses.exists(ac => 
+                ic.exists(icn =>
+                  ac.exists{acn =>
+                    val v = (graph.shortestDistance(icn, acn) != -1) // icn is ordered before acn
+                    if (v) println("active c = " + acn + " that is ordered after inactive c = " + icn )
+                    v
+                  }))))
+          {
+             println("don't delete due to ordered race condition " + n)
+             dontDelete = n :: dontDelete
+          }
+          
+        }
+
+        val causesParallelToKid = causeN.map { AndedCause =>
           AndedCause.filter { c =>
             var exists = false
             for (k <- (kids.filterNot(removedNodes.contains))) {
@@ -413,12 +433,15 @@ object MutexAnalysisNew {
           }
         }.filterNot(_.isEmpty)
 
-        println("parallel causes = " + parallelCauses)
-        if (parallelCauses.size == 1) {
+        println("parallel causes = " + causesParallelToKid)
+        if (causesParallelToKid.size == 1) {
 
-          val pCauses = parallelCauses.head
+          val pCauses = causesParallelToKid.head
           val bool = causeN.filterNot(_ == pCauses).exists { set =>
-            set.forall(s => graph.isOptional(s) || (!graph.ordered(s, n)))
+            val v = set.forall(s => graph.isOptional(s) || (!graph.ordered(s, n)))
+            if (v) println("yes " + set + " pCauses = " + pCauses)
+            //false // TENTATIVE CHANGE
+            v
           } // there may be another causer that is optional or parallel to node n
 
           /*val bool = pCauses.forall(pc => graph.nodes.exists(node =>
@@ -431,14 +454,13 @@ object MutexAnalysisNew {
               */
           // exists a node that is parallel to the cause of deletion (pc), the node is also mutual exclusive to n.
           if (bool) {
-            println("add don't delete 1 " + n)
-            dontDelete = n :: dontDelete
+            //            println("add don't delete 1 " + n)
+            //            dontDelete = n :: dontDelete
           } else {
-            // end of tentative
             println("must insert link " + potential)
             insertLink ++= potential
           }
-        } else if (parallelCauses.size > 1) {
+        } else if (causesParallelToKid.size > 1) {
           println("add don't delete 2 " + n)
           dontDelete = n :: dontDelete
         }
@@ -447,10 +469,10 @@ object MutexAnalysisNew {
       dontDelete = dontDelete.filterNot(recursiveDeleted.contains)
 
       /** another possibility for race condition: there are two parallel deletion causes, who lead to the deletion of different children of n **/
-      val dontFromTransClosure = detectRaceConditionForTransClosure(graph, kept, causes, removedNodes)
-      if (!dontFromTransClosure.isEmpty) {
-        return graph
-      }
+      //      val dontFromTransClosure = detectRaceConditionForTransClosure(graph, kept, causes, removedNodes)
+      //      if (!dontFromTransClosure.isEmpty) {
+      //        return graph
+      //      }
       //      dontDelete = dontFromTransClosure ::: dontDelete
 
       removedNodes = transClosureWithDenial(graph, kept, dontDelete)
