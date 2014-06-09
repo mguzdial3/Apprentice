@@ -65,7 +65,7 @@ object AnalysisMain {
       //      pw.println(cleanTotal.toDouble / originalTotal)
       
       println("all links : " + cGraph.links.map(l => l.toString + " " + l.kind).mkString("\n"))
-      testStory(cGraph)
+      //testStory(cGraph)
       
       ratio += cleanTotal / originalTotal.toDouble
       if (originalQuery.toDouble / originalGood != cleanQuery.toDouble / cleanGood) {

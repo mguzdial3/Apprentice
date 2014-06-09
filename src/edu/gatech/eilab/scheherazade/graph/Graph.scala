@@ -458,6 +458,8 @@ package graph {
         
         new Graph(g.nodes, g.links ::: newLinks, g.mutualExcls, g.optionals, g.conditionals)
       }
+    
+    
 
     //    def skipLinks(skipped: List[Cluster]): List[Link] = {
     //

@@ -526,7 +526,7 @@ object MutexAnalysis {
       println("delete = " + removedNodes)
 
       if (removedNodes != Nil) {
-        val newGraph = graph.detectAndAddSkipLinks(removedNodes).removeNodes(removedNodes)
+        val newGraph = detectAndAddSkipLinksOnly(graph, removedNodes).removeNodes(removedNodes)
         //val newGraph = graph.addSkipLinks(removedNodes).removeNodes(removedNodes)
         // we should NOT re-check optionality because of deleted events! we must keep the original optional events!
         val newLinks = insertLink.flatMap {
@@ -780,7 +780,57 @@ object MutexAnalysis {
     val allKeep = keepMap.filter(_._2 == "k").map(_._1).toList
     (allKeep, allDelete)
   }
+  
+  /**
+     * This version does not add skip links for optional events. This is needed for mutual analysis. 
+     * We cannot add new links for skipping optionals after events have been deleted.
+     */
+    def detectAndAddSkipLinksOnly(graph:Graph, skipped: List[Cluster]): Graph =
+      {
+        val compactGraph = graph.compact
+        val removedGraph = graph.removeNodes(skipped) // a graph where the skipped nodes are directly removed without adding skipping links
+        //removedGraph.draw("removedgraph")
+        //var newLinks = graph.links
+        var newLinks = compactGraph.links
+        
+        for (e <- skipped) {
 
-  //TODO: If node A is kept, and node A has only one (non-optional) parent, the parent must be kept.
-  // If A has two parents, who always happen together, they must both happen as well. Thus, we need detection of always-happen-togethers
+          val predecessors = newLinks.filter(l => l.target == e).map(_.source)
+          val successors = newLinks.filter(l => l.source == e).map(_.target)
+
+          //          if (e.name == "C7") {
+          //            println("*****lalalala wc5")
+          //            removedGraph.draw("removed-graph")
+          //          }
+
+          for (p <- predecessors; s <- successors) {
+            if (removedGraph.shortestDistance(p, s) == -1) {
+              newLinks = new Link(p, s) :: newLinks // only add this link when p cannot reach s without going thru some skipped nodes
+              //println("detected and added " + p.name + " " + s.name)
+            }
+          }
+        }
+        
+        val g = new Graph(graph.nodes, newLinks, graph.mutualExcls, graph.optionals, graph.conditionals)
+        
+//        newLinks = Nil
+//        // add May 20 night
+//        for(op <- optionals)
+//        {
+//        	val parents = g.predecessorsOf(op)
+//        	val kids = g.successorsOf(op)
+//        	for(p <- parents; k <- kids)
+//        	{
+//        	  val l = new Link(p, k)
+//        	  if (!g.links.contains(l))
+//        	  {
+//        	    newLinks = l :: newLinks
+//        	  }
+//        	}
+//        }
+        
+        //new Graph(g.nodes, g.links ::: newLinks, g.mutualExcls, g.optionals, g.conditionals)
+        g
+      }
+
 }
