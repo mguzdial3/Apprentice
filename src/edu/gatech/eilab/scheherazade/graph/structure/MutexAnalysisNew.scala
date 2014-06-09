@@ -4,7 +4,6 @@ import edu.gatech.eilab.scheherazade.graph._
 import edu.gatech.eilab.scheherazade.data._
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.ListBuffer
-import scala.collection.mutable.HashMap
 
 object MutexAnalysisNew {
 
@@ -121,6 +120,33 @@ object MutexAnalysisNew {
       result
 
     }
+  
+  def removeImpossible(formula: List[Set[Cluster]], CfR:HashMap[Cluster, List[Set[Cluster]]]): List[Set[Cluster]] =
+  {
+     var result = List[Set[Cluster]]()
+     for(clause <- formula)
+     {
+       if (clause.exists{
+         v => 
+           CfR.contains(v) && CfR(v).exists(_.forall(clause.contains))
+       })
+       {
+         // this is an impossible clause
+       }
+       else
+       {
+         result = clause :: result
+       }
+     }
+     
+     result
+  }
+  
+  def simplifyAll(formula: List[Set[Cluster]], CfR:HashMap[Cluster, List[Set[Cluster]]]): List[Set[Cluster]] =
+  {
+    val f1 = simplifyBoolean(formula)
+    removeImpossible(f1, CfR)
+  }
 
   /**
    * finds who is responsible for deleting what
@@ -191,7 +217,7 @@ object MutexAnalysisNew {
         // AND relation between all predecessors
         var allCauses = causes.filter(p => pred.contains(p._1)).map(_._2) // retrieve all cause lists
         //        println("all causes 1 " + allCauses.map(_.mkString(" OR ")).mkString(", "))
-        allCauses = allCauses.map {
+        /*allCauses = allCauses.map {
           listOfSets =>
             listOfSets.filterNot {
               set =>
@@ -203,7 +229,7 @@ object MutexAnalysisNew {
                 }
             }
         }.filterNot(_ == Nil)
-
+		*/
         //        println("all causes 2 " + allCauses.map(_.mkString(" OR ")).mkString(", "))
 
         if (allCauses != Nil) { // combine the causes from predecessors
@@ -220,14 +246,16 @@ object MutexAnalysisNew {
 
           if (causes.contains(e)) {
             val old = causes(e)
-            val newl = simplifyBoolean((comb ::: old).distinct)
+            //val newl = simplifyBoolean((comb ::: old).distinct)
+            val newl = simplifyAll((comb ::: old).distinct, causes)
             if (newl != Nil) {
               causes += (e -> newl) // OR relation
             } else {
               causes.remove(e)
             }
           } else if (comb != Nil) {
-            causes += (e -> simplifyBoolean(comb))
+            //causes += (e -> simplifyBoolean(comb))
+            causes += (e -> simplifyAll(comb, causes))
           }
         }
       }
@@ -399,11 +427,10 @@ object MutexAnalysisNew {
           return graph
         }
 
+        // this is detecting race conditions where two causes are ordered
         if (causeN.size > 1) {
           val (activeCauses, inactiveCauses) = causeN.partition(c => c.forall(kept.contains))
           
-          // ASSUMPTION TO BE RELAXED: only one active cause at one time. If there are two or more, and they are ordered, we need
-          // to delete in order
           if (inactiveCauses.exists(
               ic => activeCauses.exists(ac => 
                 ic.exists(icn =>
@@ -438,7 +465,7 @@ object MutexAnalysisNew {
 
           val pCauses = causesParallelToKid.head
           val bool = causeN.filterNot(_ == pCauses).exists { set =>
-            val v = set.forall(s => graph.isOptional(s) || (!graph.ordered(s, n)))
+            val v = set.forall(s => graph.isOptional(s))// || (!graph.ordered(s, n)))
             if (v) println("yes " + set + " pCauses = " + pCauses)
             //false // TENTATIVE CHANGE
             v
@@ -454,8 +481,8 @@ object MutexAnalysisNew {
               */
           // exists a node that is parallel to the cause of deletion (pc), the node is also mutual exclusive to n.
           if (bool) {
-            //            println("add don't delete 1 " + n)
-            //            dontDelete = n :: dontDelete
+            println("don't delete " + n + " since a competing cause is optional, even if the cause is ordered w.r.t to kid")
+            dontDelete = n :: dontDelete
           } else {
             println("must insert link " + potential)
             insertLink ++= potential
@@ -469,11 +496,11 @@ object MutexAnalysisNew {
       dontDelete = dontDelete.filterNot(recursiveDeleted.contains)
 
       /** another possibility for race condition: there are two parallel deletion causes, who lead to the deletion of different children of n **/
-      //      val dontFromTransClosure = detectRaceConditionForTransClosure(graph, kept, causes, removedNodes)
-      //      if (!dontFromTransClosure.isEmpty) {
-      //        return graph
-      //      }
-      //      dontDelete = dontFromTransClosure ::: dontDelete
+      val dontFromTransClosure = detectRaceConditionForTransClosure(graph, kept, causes, removedNodes)
+      if (!dontFromTransClosure.isEmpty) {
+        return graph
+      }
+      //dontDelete = dontFromTransClosure ::: dontDelete
 
       removedNodes = transClosureWithDenial(graph, kept, dontDelete)
       println("actually delete: " + removedNodes)

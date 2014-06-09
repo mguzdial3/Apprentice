@@ -3,6 +3,7 @@ package edu.gatech.eilab.scheherazade.graph.structure.test
 import org.scalatest.FunSuite
 import edu.gatech.eilab.scheherazade.data._
 import edu.gatech.eilab.scheherazade.graph.structure.MutexAnalysisNew
+import scala.collection.mutable.HashMap
 
 class BooleanSimplifyTest extends FunSuite {
 
@@ -21,5 +22,18 @@ class BooleanSimplifyTest extends FunSuite {
     val correct = List(Set(new Cluster("c3", Nil)))
     assert(correct.forall(result.contains) && result.forall(correct.contains))
   }
+  
+  test("Test removing impossible boolean formula 1") {
+      val c2 = new Cluster("c2", Nil)
+      val c3 = new Cluster("c3", Nil)
+    val test = List(Set(new Cluster("c1", Nil), c2, c3), Set(c3, new Cluster("c4", Nil)))
+    val CfR = HashMap[Cluster,List[Set[Cluster]]]()
+    CfR += (c2 -> List(Set(c3)))
+    val result = MutexAnalysisNew.removeImpossible(test, CfR)
+    println(result)
+    val correct = List(Set(c3, new Cluster("c4", Nil)))
+    assert(correct.forall(result.contains) && result.forall(correct.contains))
+  }
+  
 
 }

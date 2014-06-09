@@ -159,7 +159,8 @@ class UnitTests extends FunSuite {
   }
 
   test("Mutual Exclusion Analysis on Sample Graph 16") {
-    // A race condition between C3 and C6, who are ordered.
+    // A race condition between C3 and C6, which are ordered. 
+    // Since C6 is ordered after C3, the contended node cannot be deleted
     val before = SampleGraph.sample16
     val graph = AnalysisMain.regularize(before)
     graph.draw("sample16")
@@ -281,6 +282,8 @@ class UnitTests extends FunSuite {
   }
 
   test("Mutual Exclusion Analysis on Sample Graph 25") {
+    // a race condition between a kept node and an optional node. 
+    // The optional node is not precondition for anything, so it is not a precondition for children of deleted node.
     val before = SampleGraph.sample25
     val graph = AnalysisMain.regularize(before)
     val background = graph.nodes(7)
@@ -337,6 +340,7 @@ class UnitTests extends FunSuite {
   }
 
   test("Mutual Exclusion Analysis on Sample Graph 29") {
+    // this is a test for race conditions concerning kid deletion
     val before = SampleGraph.sample29
     val graph = AnalysisMain.regularize(before)
     val background = graph.nodes(7)
