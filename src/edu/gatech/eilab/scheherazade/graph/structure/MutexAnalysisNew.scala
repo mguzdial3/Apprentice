@@ -8,13 +8,14 @@ import scala.collection.mutable.ListBuffer
 object MutexAnalysisNew {
 
   def main(args: Array[String]) {
-    val graph = SampleGraph.sample18.graphWithOptionalsAndSkips
+    val before = SampleGraph.sample10
+    val graph = AnalysisMain.regularize(before)
+    val background = graph.nodes(6)
+    val queryCluster = graph.nodes(7)
     graph.draw("special-test")
-    val kept = List(graph.nodes(5))
-    println(kept)
-    val r = causeForDeletionNew(graph, kept)
+    val r = causeForDeletionNew(graph, List(background))
     println("causes =" + r._1.mkString("\n"))
-    cleanNodesNew(graph, kept)
+    cleanNodesNew(graph, List(background))
 
     //val test = List(Set(new Cluster("c1", Nil), new Cluster("c2", Nil), new Cluster("c3", Nil)), Set(new Cluster("c3", Nil)), Set(new Cluster("c4", Nil)))
 
@@ -120,33 +121,29 @@ object MutexAnalysisNew {
       result
 
     }
-  
-  def removeImpossible(formula: List[Set[Cluster]], CfR:HashMap[Cluster, List[Set[Cluster]]]): List[Set[Cluster]] =
-  {
-     var result = List[Set[Cluster]]()
-     for(clause <- formula)
-     {
-       if (clause.exists{
-         v => 
-           CfR.contains(v) && CfR(v).exists(_.forall(clause.contains))
-       })
-       {
-         // this is an impossible clause
-       }
-       else
-       {
-         result = clause :: result
-       }
-     }
-     
-     result
-  }
-  
-  def simplifyAll(formula: List[Set[Cluster]], CfR:HashMap[Cluster, List[Set[Cluster]]]): List[Set[Cluster]] =
-  {
-    val f1 = simplifyBoolean(formula)
-    removeImpossible(f1, CfR)
-  }
+
+  def removeImpossible(formula: List[Set[Cluster]], CfR: HashMap[Cluster, List[Set[Cluster]]]): List[Set[Cluster]] =
+    {
+      var result = List[Set[Cluster]]()
+      for (clause <- formula) {
+        if (clause.exists {
+          v =>
+            CfR.contains(v) && CfR(v).exists(_.forall(clause.contains))
+        }) {
+          // this is an impossible clause
+        } else {
+          result = clause :: result
+        }
+      }
+
+      result
+    }
+
+  def simplifyAll(formula: List[Set[Cluster]], CfR: HashMap[Cluster, List[Set[Cluster]]]): List[Set[Cluster]] =
+    {
+      val f1 = simplifyBoolean(formula)
+      removeImpossible(f1, CfR)
+    }
 
   /**
    * finds who is responsible for deleting what
@@ -392,12 +389,40 @@ object MutexAnalysisNew {
       remainCauses.size >= 3
     }
 
+  def allME(cause: List[Set[Cluster]], graph: Graph): Boolean =
+    {
+      for (i <- 0 until cause.size; j <- i + 1 until cause.size) {
+        val c1 = cause(i)
+        val c2 = cause(j)
+
+        val test = c1.exists(c1n => c2.exists(c2n => graph.mutuallyExclusive(c1n, c2n)))
+        if (!test) {
+          return false
+        }
+      }
+      true
+      //      cause.forall { c =>
+      //        val rest = cause.filterNot(_ == c)
+      //        rest.forall {
+      //          cr => cr.exists(crnode => c.exists(cnode => graph.mutuallyExclusive(crnode, cnode)))
+      //        }
+      //      }
+    }
+
+  // cluster n does not have any kids, other than the END vertex
+  def hasNoKids(n: Cluster, graph: Graph): Boolean =
+    {
+      println("kids = " + graph.successorsOf(n))
+      !graph.successorsOf(n).exists(_.name != "END")
+    }
+
   /* a new version of clean nodes that fix the special case
    * 
    */
   def cleanNodesNew(graph: Graph, kept: List[Cluster]): Graph =
     {
       val (causes, d, recursiveDeleted) = causeForDeletionNew(graph, kept)
+      //graph.draw("graphISee")
       // recursiveDeleted contains nodes deleted because their parents are all deleted, not because they are deleted by mutual exclusions directly 
       var removedNodes = d
       //      println("causes = " + causes)
@@ -408,6 +433,8 @@ object MutexAnalysisNew {
 	  */
       val insertLink = HashMap[Cluster, List[Cluster]]()
       var dontDelete = List[Cluster]()
+
+      var allRaceConditions = false
       for (n <- removedNodes if (!graph.optionals.contains(n) && causes.contains(n))) { //&& (! recursiveDeleted.contains(n))) {
         // don't perform this test if n is optional
         // because an optional event is not a precondition for anything, 
@@ -421,29 +448,39 @@ object MutexAnalysisNew {
         println("considering " + n.name)
         println("causeN " + causeN)
 
-        // ignore graphs with three or more events racing against each other
-        val ignore = threeOrMoreRancingConditions(causeN)
-        if (ignore) {
-          return graph
-        }
+        val noKids = hasNoKids(n, graph)
+        var noRaceCondition = allME(causeN, graph) || noKids
+        //println("no race condition = " + noRaceCondition)
+        if (!noRaceCondition) {
 
-        // this is detecting race conditions where two causes are ordered
-        if (causeN.size > 1) {
-          val (activeCauses, inactiveCauses) = causeN.partition(c => c.forall(kept.contains))
-          
-          if (inactiveCauses.exists(
-              ic => activeCauses.exists(ac => 
-                ic.exists(icn =>
-                  ac.exists{acn =>
-                    val v = (graph.shortestDistance(icn, acn) != -1) // icn is ordered before acn
-                    if (v) println("active c = " + acn + " that is ordered after inactive c = " + icn )
-                    v
-                  }))))
-          {
-             println("don't delete due to ordered race condition " + n)
-             dontDelete = n :: dontDelete
+          // ignore graphs with three or more events racing against each other
+          val ignore = causeN.size > 2
+          if (ignore) {
+            println("more than 2 race conditions: " + n)
+            return graph
           }
-          
+
+          // may have race conditions
+//          if (causeN.size > 1) {
+//            
+//          }
+
+          // this is detecting race conditions where two causes are ordered
+          if (causeN.size > 1) {
+            val (activeCauses, inactiveCauses) = causeN.partition(c => c.forall(kept.contains))
+
+            if (inactiveCauses.exists(
+              ic => activeCauses.exists(ac =>
+                ic.exists(icn =>
+                  ac.exists { acn =>
+                    val v = (graph.shortestDistance(icn, acn) != -1) // icn is ordered before acn
+                    if (v) println("active c = " + acn + " that is ordered after inactive c = " + icn)
+                    v
+                  })))) {
+              println("don't delete due to ordered race condition " + n)
+              dontDelete = n :: dontDelete
+            }
+          }
         }
 
         val causesParallelToKid = causeN.map { AndedCause =>
@@ -461,11 +498,17 @@ object MutexAnalysisNew {
         }.filterNot(_.isEmpty)
 
         println("parallel causes = " + causesParallelToKid)
+        
+        if (causesParallelToKid.size > 0)
+        {
+          allRaceConditions = true
+        }
+        
         if (causesParallelToKid.size == 1) {
 
           val pCauses = causesParallelToKid.head
           val bool = causeN.filterNot(_ == pCauses).exists { set =>
-            val v = set.forall(s => graph.isOptional(s))// || (!graph.ordered(s, n)))
+            val v = set.forall(s => graph.isOptional(s)) // || (!graph.ordered(s, n)))
             if (v) println("yes " + set + " pCauses = " + pCauses)
             //false // TENTATIVE CHANGE
             v
@@ -483,6 +526,7 @@ object MutexAnalysisNew {
           if (bool) {
             println("don't delete " + n + " since a competing cause is optional, even if the cause is ordered w.r.t to kid")
             dontDelete = n :: dontDelete
+                     
           } else {
             println("must insert link " + potential)
             insertLink ++= potential
@@ -490,15 +534,19 @@ object MutexAnalysisNew {
         } else if (causesParallelToKid.size > 1) {
           println("add don't delete 2 " + n)
           dontDelete = n :: dontDelete
+          
         }
+
       }
       println("should delete: " + removedNodes)
       dontDelete = dontDelete.filterNot(recursiveDeleted.contains)
 
       /** another possibility for race condition: there are two parallel deletion causes, who lead to the deletion of different children of n **/
-      val dontFromTransClosure = detectRaceConditionForTransClosure(graph, kept, causes, removedNodes)
-      if (!dontFromTransClosure.isEmpty) {
-        return graph
+      if (allRaceConditions) {
+        val dontFromTransClosure = detectRaceConditionForTransClosure(graph, kept, causes, removedNodes)
+        if (!dontFromTransClosure.isEmpty) {
+          return graph
+        }
       }
       //dontDelete = dontFromTransClosure ::: dontDelete
 

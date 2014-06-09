@@ -8,7 +8,7 @@ import edu.gatech.eilab.scheherazade.graph.structure._
 class UnitTests extends FunSuite {
 
   test("Mutual Exclusion Analysis on Sample Graph 6") {
-    Global.graphDrawing = false
+    Global.graphDrawing = true
     val before = SampleGraph.sample6
     val graph = AnalysisMain.regularize(before)
     val background = graph.nodes(7)
@@ -82,9 +82,7 @@ class UnitTests extends FunSuite {
 
     val (cGraph, sGraph) = AnalysisMain.simplifyGraph(graph, List(background))
     val (originalTotal, originalGood, originalQuery) = AnalysisMain.countStories(graph, List(background), List(queryCluster))
-    //println("original total = " + originalTotal + ", good = " + originalGood + " query = " + originalQuery + " ratio = " + originalQuery.toDouble / originalGood)
     val (cleanTotal, cleanGood, cleanQuery) = AnalysisMain.countStories(cGraph, List(background), List(queryCluster))
-    //println("cleaned total = " + cleanTotal + ", good = " + cleanGood + " query = " + cleanQuery + " ratio = " + cleanQuery.toDouble / cleanGood)
     assert(originalQuery.toDouble / originalGood == cleanQuery.toDouble / cleanGood)
   }
 
@@ -352,12 +350,30 @@ class UnitTests extends FunSuite {
     //println("cleaned total = " + cleanTotal + ", good = " + cleanGood + " query = " + cleanQuery + " ratio = " + cleanQuery.toDouble / cleanGood)
     assert(originalQuery.toDouble / originalGood == cleanQuery.toDouble / cleanGood)
   }
-  
-    test("Mutual Exclusion Analysis on Sample Graph 30") {
+
+  test("Mutual Exclusion Analysis on Sample Graph 30") {
     val before = SampleGraph.sample30
     val graph = AnalysisMain.regularize(before)
     val background = graph.nodes(4)
     val queryCluster = graph.nodes(6)
+    println(background)
+    println(queryCluster)
+    println("optionals = " + graph.optionals)
+    println("conditionals = " + graph.conditionals)
+    val (cGraph, sGraph) = AnalysisMain.simplifyGraph(graph, List(background))
+    val (originalTotal, originalGood, originalQuery) = AnalysisMain.countStories(graph, List(background), List(queryCluster))
+    //println("original total = " + originalTotal + ", good = " + originalGood + " query = " + originalQuery + " ratio = " + originalQuery.toDouble / originalGood)
+    val (cleanTotal, cleanGood, cleanQuery) = AnalysisMain.countStories(cGraph, List(background), List(queryCluster))
+    //println("cleaned total = " + cleanTotal + ", good = " + cleanGood + " query = " + cleanQuery + " ratio = " + cleanQuery.toDouble / cleanGood)
+    assert(originalQuery.toDouble / originalGood == cleanQuery.toDouble / cleanGood)
+  }
+
+  test("Mutual Exclusion Analysis on Sample Graph 31") {
+    // This test shows we cannot add new links for skipping optional events after mutual analysis deletes events
+    val before = SampleGraph.sample31
+    val graph = AnalysisMain.regularize(before)
+    val background = graph.nodes(6)
+    val queryCluster = graph.nodes(5)
     println(background)
     println(queryCluster)
     println("optionals = " + graph.optionals)

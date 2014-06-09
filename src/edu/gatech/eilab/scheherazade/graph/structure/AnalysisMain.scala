@@ -11,7 +11,7 @@ object AnalysisMain {
   def main(args: Array[String]) {
 
     import java.io._
-    Global.graphDrawing = false
+    Global.graphDrawing = true
 
     //    val pw = new PrintWriter("mutexAnalysis.csv")
 
@@ -26,41 +26,47 @@ object AnalysisMain {
     //    val background = graph.nodes(7)
     //    val queryCluster = graph.nodes(8)
 
-    //        val before = SampleGraph.sample27
-    //    val graph = AnalysisMain.regularize(before)
-    //    val background = graph.nodes(7)
-    //    val queryCluster = graph.nodes(5)
 
-    val totalRuns = 1000 //20000
+    val totalRuns = 20000
 
     var i = 1
     var noMistake = true
     var ratio = 0.0
     while (i < totalRuns && noMistake) {
-      i += 1
-      val graph = regularize(SampleGraph.randomDAG(10, 30, 4))
-      val (background, queryCluster) = generateQuery(graph)
+      
+          val before = SampleGraph.sample31
+    val graph = AnalysisMain.regularize(before)
+    val background = graph.nodes(6)
+    val queryCluster = graph.nodes(5)
+    
+//      i += 1
+//      val graph = regularize(SampleGraph.randomDAG(10, 30, 4))
+//      val (background, queryCluster) = generateQuery(graph)
+      
+      
 
-      //    println("background cluster = " + background.name)
-      //    println("query cluster = " + queryCluster.name)
-      //    println("optionals = " + graph.optionals)
-      //    println("conditionals = " + graph.conditionals)
-      //    
-      //val originalEnds = graph.findEnds 
+          println("background cluster = " + background.name)
+          println("query cluster = " + queryCluster.name)
+          println("optionals = " + graph.optionals)
+          println("conditionals = " + graph.conditionals)
+          
+      val originalEnds = graph.findEnds 
 
-      println("beging counting original...")
+      println("begin counting original...")
       val (originalTotal, originalGood, originalQuery) = countStories(graph, List(background), List(queryCluster))
       println("original total = " + originalTotal + ", good = " + originalGood + " query = " + originalQuery + " ratio = " + originalQuery.toDouble / originalGood)
 
       var (cGraph, sGraph) = simplifyGraph(graph, List(background))
       //TODO: if the cleaned graph does not contain query, then the probability is directly zero
 
-      println("beging counting cleaned...")
+      println("begin counting cleaned...")
       val (cleanTotal, cleanGood, cleanQuery) = countStories(cGraph, List(background), List(queryCluster))
       println("cleaned total = " + cleanTotal + ", good = " + cleanGood + " query = " + cleanQuery + " ratio = " + cleanQuery.toDouble / cleanGood)
       //      pw.println(cleanTotal.toDouble / originalTotal)
-      //testStory(graph)
-
+      
+      println("all links : " + cGraph.links.map(l => l.toString + " " + l.kind).mkString("\n"))
+      testStory(cGraph)
+      
       ratio += cleanTotal / originalTotal.toDouble
       if (originalQuery.toDouble / originalGood != cleanQuery.toDouble / cleanGood) {
         println("!!!!!!!!mistake!!!!!!!")
