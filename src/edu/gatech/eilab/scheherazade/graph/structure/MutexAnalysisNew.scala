@@ -577,6 +577,10 @@ object MutexAnalysisNew {
       }
     }
 
+  /**
+   * so far, useless
+   *
+   */
   def updateCfR(cfr: HashMap[Cluster, List[Set[Cluster]]], kept: List[Cluster], removed: List[Cluster]): HashMap[Cluster, List[Set[Cluster]]] =
     {
       val result = HashMap[Cluster, List[Set[Cluster]]]()
@@ -613,12 +617,19 @@ object MutexAnalysisNew {
         //          }
 
         for (p <- predecessors; s <- successors) {
-          if (removedGraph.shortestDistance(p, s) == -1 && (!cfr.contains(s) || cfr(s).forall(!_.contains(p)))) {
-            // only add the link when
-            // (1) p cannot reach s without going thru some skipped nodes
-            // (2) if the cfr(s) formula exists, p is not in any cfr for s
-            newLinks = new Link(p, s) :: newLinks
-            //println("detected and added " + p.name + " " + s.name)
+          if (removedGraph.shortestDistance(p, s) == -1) {
+            if (!cfr.contains(s) || cfr(s).forall(!_.contains(p))) {
+              // only add the link when
+              // (1) p cannot reach s without going thru some skipped nodes
+              // (2) if the cfr(s) formula exists, p is not in any cfr clause of s
+              newLinks = new Link(p, s) :: newLinks
+              //println("detected and added " + p.name + " " + s.name)
+            } else {
+              // if the second condition is not met, we can insert a temporal link, 
+              // which does not count toward vertex preservation but counts toward ordering
+              newLinks = new Link(p, s, "T") :: newLinks
+            }
+
           } else {
             //println("we don't add link from " + p.name + " to " + s.name)
           }
@@ -628,17 +639,18 @@ object MutexAnalysisNew {
       val g = new Graph(graph.nodes, newLinks, graph.mutualExcls, graph.optionals, graph.conditionals)
 
       newLinks = Nil
-      // add May 20 night
-      for (op <- graph.optionals) {
-        val parents = g.predecessorsOf(op)
-        val kids = g.successorsOf(op)
-        for (p <- parents; k <- kids) {
-          val l = new Link(p, k)
-          if (!g.links.contains(l)) {
-            newLinks = l :: newLinks
-          }
-        }
-      }
+      // added May 20 night
+//      for (op <- graph.optionals) {
+//        val parents = g.predecessorsOf(op)
+//        val kids = g.successorsOf(op)
+//        for (p <- parents; k <- kids) {          
+//          val l = new Link(p, k)
+//          if (!g.links.contains(l)) {
+//            newLinks = l :: newLinks
+//            println("position 1, added link " + l )
+//          }
+//        }
+//      }
 
       new Graph(g.nodes, g.links ::: newLinks, g.mutualExcls, g.optionals, g.conditionals)
     }
@@ -765,9 +777,10 @@ object MutexAnalysisNew {
   //      }
   //    }
 
+  
   /**
    * removes clusters that are mutually exclusive with a given list of clusters
-   *
+   * The main entrance of mutex analysis
    */
   def cleanedGraph(graph: Graph, keep: List[Cluster]): Graph =
     {
@@ -828,6 +841,7 @@ object MutexAnalysisNew {
       g3
     }
 
+  /*
   /**
    * this marker passing is incorrect. Need to label parents of kept clusters and pass markers from there, too
    *  TODO!!!!
@@ -885,4 +899,5 @@ object MutexAnalysisNew {
 
   //TODO: If node A is kept, and node A has only one (non-optional) parent, the parent must be kept.
   // If A has two parents, who always happen together, they must both happen as well. Thus, we need detection of always-happen-togethers
+   * */
 }
