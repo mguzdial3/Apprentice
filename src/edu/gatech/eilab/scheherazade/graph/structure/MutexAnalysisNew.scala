@@ -417,7 +417,7 @@ object MutexAnalysisNew {
     }
 
   private def raceConditionDeletionCase1(graph: Graph, removed: Cluster, CfR: HashMap[Cluster, List[Set[Cluster]]], kept: List[Cluster]): Boolean =
-    {
+    { /*
       // this is for test case 31
       // there is a kid whose CfR = a AND b, a -> b, b is in kept
       // there may be better way to deal with this, but let's try this first
@@ -429,7 +429,8 @@ object MutexAnalysisNew {
               clause.exists(b => !kept.contains(b) && graph.ordered(b, a)))
           }
         }
-      }
+      }*/
+      false
     }
 
   /* a new version of clean nodes that fix the special case
@@ -494,56 +495,48 @@ object MutexAnalysisNew {
           }
         }
 
-        val case1 = raceConditionDeletionCase1(graph, n, causes, kept)
+        val causesParallelToKid = causeN.map { AndedCause =>
+          AndedCause.filter { c =>
+            var exists = false
+            for (k <- (kids.filterNot(removedNodes.contains))) {
+              if (!graph.ordered(c, k)) {
+                println("unordered: " + k.name + " with cause " + c.name)
+                exists = true
+                potential += (k -> (c :: potential.getOrElse(k, Nil)))
+              }
+            }
+            exists
+          }
+        }.filterNot(_.isEmpty)
 
-          if (case1) {
-            println("case 1 don't delete " + n )
+        println("parallel causes = " + causesParallelToKid)
+
+        if (causesParallelToKid.size > 0) {
+          allRaceConditions = true
+        }
+
+        if (causesParallelToKid.size == 1) {
+
+          val pCauses = causesParallelToKid.head
+          var bool = causeN.filterNot(_ == pCauses).exists { set =>
+            val v = set.forall(s => graph.isOptional(s)) // || (!graph.ordered(s, n)))
+            if (v) println("yes " + set + " pCauses = " + pCauses)
+            v
+          } // there may be another causer that is optional or parallel to node n
+
+          if (bool) {
+            println("don't delete " + n + " since a competing cause is optional, even if the cause is ordered w.r.t to kid")
             dontDelete = n :: dontDelete
 
           } else {
-            val causesParallelToKid = causeN.map { AndedCause =>
-              AndedCause.filter { c =>
-                var exists = false
-                for (k <- (kids.filterNot(removedNodes.contains))) {
-                  if (!graph.ordered(c, k)) {
-                    println("unordered: " + k.name + " with cause " + c.name)
-                    exists = true
-                    potential += (k -> (c :: potential.getOrElse(k, Nil)))
-                  }
-                }
-                exists
-              }
-            }.filterNot(_.isEmpty)
-
-            println("parallel causes = " + causesParallelToKid)
-
-            if (causesParallelToKid.size > 0) {
-              allRaceConditions = true
-            }
-
-            if (causesParallelToKid.size == 1) {
-
-              val pCauses = causesParallelToKid.head
-              var bool = causeN.filterNot(_ == pCauses).exists { set =>
-                val v = set.forall(s => graph.isOptional(s)) // || (!graph.ordered(s, n)))
-                if (v) println("yes " + set + " pCauses = " + pCauses)
-                v
-              } // there may be another causer that is optional or parallel to node n
-
-              if (bool) {
-                println("don't delete " + n + " since a competing cause is optional, even if the cause is ordered w.r.t to kid")
-                dontDelete = n :: dontDelete
-
-              } else {
-                println("must insert link " + potential)
-                insertLink ++= potential
-              }
-            } else if (causesParallelToKid.size > 1) {
-              println("add don't delete 2 " + n)
-              dontDelete = n :: dontDelete
-
-            }
+            println("must insert link " + potential)
+            insertLink ++= potential
           }
+        } else if (causesParallelToKid.size > 1) {
+          println("add don't delete 2 " + n)
+          dontDelete = n :: dontDelete
+
+        }
 
       }
       println("should delete: " + removedNodes)
@@ -567,7 +560,8 @@ object MutexAnalysisNew {
       println("delete = " + removedNodes)
 
       if (removedNodes != Nil) {
-        val newGraph = graph.detectAndAddSkipLinks(removedNodes).removeNodes(removedNodes)
+        //val CfR = updateCfR(causes, kept, removedNodes)
+        val newGraph = detectAndAddSkipLinksCfR(graph, removedNodes, causes).removeNodes(removedNodes)
         println("")
         //val newGraph = graph.addSkipLinks(removedNodes).removeNodes(removedNodes)
         // we should NOT re-check optionality because of deleted events! we must keep the original optional events!
@@ -581,6 +575,72 @@ object MutexAnalysisNew {
       } else {
         graph
       }
+    }
+
+  def updateCfR(cfr: HashMap[Cluster, List[Set[Cluster]]], kept: List[Cluster], removed: List[Cluster]): HashMap[Cluster, List[Set[Cluster]]] =
+    {
+      val result = HashMap[Cluster, List[Set[Cluster]]]()
+      for (entry <- cfr) {
+        val head = entry._1
+        val list = entry._2
+        if (!removed.contains(head)) {
+          val newList = list.map { clause =>
+            clause.filterNot(kept.contains)
+          }
+
+          result += (head -> newList)
+        }
+
+      }
+
+      result
+    }
+
+  def detectAndAddSkipLinksCfR(graph: Graph, skipped: List[Cluster], cfr: HashMap[Cluster, List[Set[Cluster]]]): Graph =
+    {
+      val removedGraph = graph.removeNodes(skipped) // a graph where the skipped nodes are directly removed without adding skipping links
+      //removedGraph.draw("removedgraph")
+      var newLinks = graph.links
+
+      for (e <- skipped) {
+
+        val predecessors = newLinks.filter(l => l.target == e).map(_.source)
+        val successors = newLinks.filter(l => l.source == e).map(_.target)
+
+        //          if (e.name == "C7") {
+        //            println("*****lalalala wc5")
+        //            removedGraph.draw("removed-graph")
+        //          }
+
+        for (p <- predecessors; s <- successors) {
+          if (removedGraph.shortestDistance(p, s) == -1 && (!cfr.contains(s) || cfr(s).forall(!_.contains(p)))) {
+            // only add the link when
+            // (1) p cannot reach s without going thru some skipped nodes
+            // (2) if the cfr(s) formula exists, p is not in any cfr for s
+            newLinks = new Link(p, s) :: newLinks
+            //println("detected and added " + p.name + " " + s.name)
+          } else {
+            //println("we don't add link from " + p.name + " to " + s.name)
+          }
+        }
+      }
+
+      val g = new Graph(graph.nodes, newLinks, graph.mutualExcls, graph.optionals, graph.conditionals)
+
+      newLinks = Nil
+      // add May 20 night
+      for (op <- graph.optionals) {
+        val parents = g.predecessorsOf(op)
+        val kids = g.successorsOf(op)
+        for (p <- parents; k <- kids) {
+          val l = new Link(p, k)
+          if (!g.links.contains(l)) {
+            newLinks = l :: newLinks
+          }
+        }
+      }
+
+      new Graph(g.nodes, g.links ::: newLinks, g.mutualExcls, g.optionals, g.conditionals)
     }
 
   def detectRaceConditionForTransClosure(graph: Graph, kept: List[Cluster], causes: HashMap[Cluster, List[Set[Cluster]]], removed: List[Cluster]): List[Cluster] =

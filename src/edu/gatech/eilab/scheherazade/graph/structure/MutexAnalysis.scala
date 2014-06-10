@@ -787,11 +787,11 @@ object MutexAnalysis {
      */
     def detectAndAddSkipLinksOnly(graph:Graph, skipped: List[Cluster]): Graph =
       {
-        val compactGraph = graph.compact
+        //val compactGraph = graph.compact
         val removedGraph = graph.removeNodes(skipped) // a graph where the skipped nodes are directly removed without adding skipping links
         //removedGraph.draw("removedgraph")
-        //var newLinks = graph.links
-        var newLinks = compactGraph.links
+        var newLinks = graph.links
+        //var newLinks = compactGraph.links
         
         for (e <- skipped) {
 
@@ -806,7 +806,11 @@ object MutexAnalysis {
           for (p <- predecessors; s <- successors) {
             if (removedGraph.shortestDistance(p, s) == -1) {
               newLinks = new Link(p, s) :: newLinks // only add this link when p cannot reach s without going thru some skipped nodes
-              //println("detected and added " + p.name + " " + s.name)
+              println("detected and added " + p.name + " " + s.name)
+            }
+            else
+            {
+              println("we don't add link from " + p.name + " to " + s.name)
             }
           }
         }

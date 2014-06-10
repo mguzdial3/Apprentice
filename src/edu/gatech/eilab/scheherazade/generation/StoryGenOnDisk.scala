@@ -267,8 +267,9 @@ package generation {
       //println(excl.map(_.name).mkString("closure mutex: ", ", ", ""))
       excluded = excl filterNot (exclList.contains)
       val expired = selfGraph.links.filter(l => l.target == step).map(_.source).filterNot(newHistory.contains) // preventing deleting history
-      val newGraph = selfGraph.detectAndAddSkipLinks(excluded).removeNodes(excluded ::: expired)
+      var newGraph = selfGraph.detectAndAddSkipLinks(excluded).removeNodes(excluded ::: expired)
 
+      newGraph = new Graph(newGraph.nodes, newGraph.links.distinct, newGraph.mutualExcls, newGraph.optionals, newGraph.conditionals) 
       var newFringe = WalkOnDisk.maxFringe(newHistory, newGraph, newGraph.optionals)
       // delete those already executed
       newFringe = newFringe filterNot (newHistory contains)

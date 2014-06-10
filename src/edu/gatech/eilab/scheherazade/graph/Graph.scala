@@ -435,6 +435,10 @@ package graph {
               newLinks = new Link(p, s) :: newLinks // only add this link when p cannot reach s without going thru some skipped nodes
               //println("detected and added " + p.name + " " + s.name)
             }
+            else
+            {
+              //println("we don't add link from " + p.name + " to " + s.name)
+            }
           }
         }
         
