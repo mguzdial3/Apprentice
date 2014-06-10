@@ -416,6 +416,22 @@ object MutexAnalysisNew {
       !graph.successorsOf(n).exists(_.name != "END")
     }
 
+  private def raceConditionDeletionCase1(graph: Graph, removed: Cluster, CfR: HashMap[Cluster, List[Set[Cluster]]], kept: List[Cluster]): Boolean =
+    {
+      // this is for test case 31
+      // there is a kid whose CfR = a AND b, a -> b, b is in kept
+      // there may be better way to deal with this, but let's try this first
+      graph.successorsOf(removed).exists { succ =>
+        CfR.contains(succ) && {
+          val ca = CfR(succ)
+          ca.exists { clause =>
+            clause.exists(a => kept.contains(a) &&
+              clause.exists(b => !kept.contains(b) && graph.ordered(b, a)))
+          }
+        }
+      }
+    }
+
   /* a new version of clean nodes that fix the special case
    * 
    */
@@ -460,11 +476,6 @@ object MutexAnalysisNew {
             return graph
           }
 
-          // may have race conditions
-//          if (causeN.size > 1) {
-//            
-//          }
-
           // this is detecting race conditions where two causes are ordered
           if (causeN.size > 1) {
             val (activeCauses, inactiveCauses) = causeN.partition(c => c.forall(kept.contains))
@@ -483,59 +494,56 @@ object MutexAnalysisNew {
           }
         }
 
-        val causesParallelToKid = causeN.map { AndedCause =>
-          AndedCause.filter { c =>
-            var exists = false
-            for (k <- (kids.filterNot(removedNodes.contains))) {
-              if (!graph.ordered(c, k)) {
-                println("unordered: " + k.name + " with cause " + c.name)
-                exists = true
-                potential += (k -> (c :: potential.getOrElse(k, Nil)))
-              }
-            }
-            exists
-          }
-        }.filterNot(_.isEmpty)
+        val case1 = raceConditionDeletionCase1(graph, n, causes, kept)
 
-        println("parallel causes = " + causesParallelToKid)
-        
-        if (causesParallelToKid.size > 0)
-        {
-          allRaceConditions = true
-        }
-        
-        if (causesParallelToKid.size == 1) {
-
-          val pCauses = causesParallelToKid.head
-          val bool = causeN.filterNot(_ == pCauses).exists { set =>
-            val v = set.forall(s => graph.isOptional(s)) // || (!graph.ordered(s, n)))
-            if (v) println("yes " + set + " pCauses = " + pCauses)
-            //false // TENTATIVE CHANGE
-            v
-          } // there may be another causer that is optional or parallel to node n
-
-          /*val bool = pCauses.forall(pc => graph.nodes.exists(node =>
-            node != n &&
-              node != pc &&
-              graph.shortestDistance(node, pc) != -1 &&
-              //            (!graph.ordered(node, n)) &&
-              graph.mutuallyExclusive(node, n)))
-              * 
-              */
-          // exists a node that is parallel to the cause of deletion (pc), the node is also mutual exclusive to n.
-          if (bool) {
-            println("don't delete " + n + " since a competing cause is optional, even if the cause is ordered w.r.t to kid")
+          if (case1) {
+            println("case 1 don't delete " + n )
             dontDelete = n :: dontDelete
-                     
+
           } else {
-            println("must insert link " + potential)
-            insertLink ++= potential
+            val causesParallelToKid = causeN.map { AndedCause =>
+              AndedCause.filter { c =>
+                var exists = false
+                for (k <- (kids.filterNot(removedNodes.contains))) {
+                  if (!graph.ordered(c, k)) {
+                    println("unordered: " + k.name + " with cause " + c.name)
+                    exists = true
+                    potential += (k -> (c :: potential.getOrElse(k, Nil)))
+                  }
+                }
+                exists
+              }
+            }.filterNot(_.isEmpty)
+
+            println("parallel causes = " + causesParallelToKid)
+
+            if (causesParallelToKid.size > 0) {
+              allRaceConditions = true
+            }
+
+            if (causesParallelToKid.size == 1) {
+
+              val pCauses = causesParallelToKid.head
+              var bool = causeN.filterNot(_ == pCauses).exists { set =>
+                val v = set.forall(s => graph.isOptional(s)) // || (!graph.ordered(s, n)))
+                if (v) println("yes " + set + " pCauses = " + pCauses)
+                v
+              } // there may be another causer that is optional or parallel to node n
+
+              if (bool) {
+                println("don't delete " + n + " since a competing cause is optional, even if the cause is ordered w.r.t to kid")
+                dontDelete = n :: dontDelete
+
+              } else {
+                println("must insert link " + potential)
+                insertLink ++= potential
+              }
+            } else if (causesParallelToKid.size > 1) {
+              println("add don't delete 2 " + n)
+              dontDelete = n :: dontDelete
+
+            }
           }
-        } else if (causesParallelToKid.size > 1) {
-          println("add don't delete 2 " + n)
-          dontDelete = n :: dontDelete
-          
-        }
 
       }
       println("should delete: " + removedNodes)

@@ -8,7 +8,7 @@ import edu.gatech.eilab.scheherazade.graph.structure._
 class UnitTests extends FunSuite {
 
   test("Mutual Exclusion Analysis on Sample Graph 6") {
-    Global.graphDrawing = true
+    Global.graphDrawing = false
     val before = SampleGraph.sample6
     val graph = AnalysisMain.regularize(before)
     val background = graph.nodes(7)

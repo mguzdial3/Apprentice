@@ -34,10 +34,10 @@ object AnalysisMain {
     var ratio = 0.0
     while (i < totalRuns && noMistake) {
       
-          val before = SampleGraph.sample31
+    val before = SampleGraph.sample29
     val graph = AnalysisMain.regularize(before)
-    val background = graph.nodes(6)
-    val queryCluster = graph.nodes(5)
+    val background = graph.nodes(7)
+    val queryCluster = graph.nodes(8)
     
 //      i += 1
 //      val graph = regularize(SampleGraph.randomDAG(10, 30, 4))
