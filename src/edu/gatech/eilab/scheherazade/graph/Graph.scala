@@ -534,8 +534,8 @@ package graph {
 
                 optionals.contains(sorted.head) && conditionals.contains(sorted.last)
               }
-          } && // May 16 2014: In addition, the path cannot depend on our source      
-            path.forall(p => !links.exists(l => l.source == sourceC && l.target == p))
+          } //&& // May 16 2014: In addition, the path cannot depend on our source      
+            //path.forall(p => !links.exists(l => l.source == sourceC && l.target == p)) June 23 2014: commented this condition helps to solve problems?
 
         // a breadth-first search
         var longest = -1

@@ -5,19 +5,24 @@ import edu.gatech.eilab.scheherazade.data._
 import scala.collection.immutable.HashMap
 import scala.collection.mutable.ListBuffer
 
+/**
+ * This is the quadratic integer programming problem for
+ * learning temporal relations in plot graphs
+ */
 object EdgeIntegerProblem {
-  
-  /** Can we consider mutual exclusions during graph generation?
+
+  /**
+   * Can we consider mutual exclusions during graph generation?
    *  We should weaken the optional events, but how to do it in a principled way?
-   *  
-   */ 
-    def selectEdgesME(clusters: List[Cluster], edges: List[ObservedLink], mutex:List[MutualExcl]): Graph =
+   *
+   */
+  def selectEdgesME(clusters: List[Cluster], edges: List[ObservedLink], mutex: List[MutualExcl]): Graph =
     {
       val n = clusters.size
       val cNumber = new HashMap[Cluster, Int]() ++ clusters.zip(1 to n).toList
 
       val lambda = -0.1
-      
+
       val env = new GRBEnv("graph_qp.log")
       env.set(GRB.DoubleParam.TimeLimit, 20)
       val model = new GRBModel(env)
@@ -30,23 +35,23 @@ object EdgeIntegerProblem {
       val z = model.addVars(zeros, Array.fill[Double](n)(n), zeros, types, names)
 
       // regularizer
-//      for(i <- 0 until n)
-//      {
-//    	  objective.addTerm(lambda, z(i))
-//      }
-      
+      //      for(i <- 0 until n)
+      //      {
+      //    	  objective.addTerm(lambda, z(i))
+      //      }
+
       // for each link, produce a variable y_ij
       val y = Array.ofDim[GRBVar](n, n)
       for (link <- edges) {
         val i = cNumber(link.source)
         val j = cNumber(link.target)
-        val yName = "y" + i + "t" +  j
+        val yName = "y" + i + "t" + j
         val yVar = model.addVar(0.0, 1.0, 0.0, GRB.INTEGER, yName) // add the variable
         //println("adding " + yName)
         y(i - 1)(j - 1) = yVar
         objective.addTerm(link.confidence, yVar) // add term to the objective
       }
-      
+
       //println("number of variables = " + edges.size)
       model.update()
 
@@ -83,14 +88,13 @@ object EdgeIntegerProblem {
 
       env.dispose()
       model.dispose()
-      
-//      goodEdges foreach{
-//        e => println(e.toString)
-//      }
-      
+
+      //      goodEdges foreach{
+      //        e => println(e.toString)
+      //      }
+
       new Graph(clusters, goodEdges.toList)
     }
-
 
   def selectEdges(clusters: List[Cluster], edges: List[ObservedLink]): Graph =
     {
@@ -98,7 +102,7 @@ object EdgeIntegerProblem {
       val cNumber = new HashMap[Cluster, Int]() ++ clusters.zip(1 to n).toList
 
       val lambda = -0.1
-      
+
       val env = new GRBEnv("graph_qp.log")
       env.set(GRB.DoubleParam.TimeLimit, 20)
       val model = new GRBModel(env)
@@ -111,23 +115,23 @@ object EdgeIntegerProblem {
       val z = model.addVars(zeros, Array.fill[Double](n)(n), zeros, types, names)
 
       // regularizer
-//      for(i <- 0 until n)
-//      {
-//    	  objective.addTerm(lambda, z(i))
-//      }
-      
+      //      for(i <- 0 until n)
+      //      {
+      //    	  objective.addTerm(lambda, z(i))
+      //      }
+
       // for each link, produce a variable y_ij
       val y = Array.ofDim[GRBVar](n, n)
       for (link <- edges) {
         val i = cNumber(link.source)
         val j = cNumber(link.target)
-        val yName = "y" + i + "t" +  j
+        val yName = "y" + i + "t" + j
         val yVar = model.addVar(0.0, 1.0, 0.0, GRB.INTEGER, yName) // add the variable
         //println("adding " + yName)
         y(i - 1)(j - 1) = yVar
         objective.addTerm(link.confidence, yVar) // add term to the objective
       }
-      
+
       //println("number of variables = " + edges.size)
       model.update()
 
@@ -164,11 +168,11 @@ object EdgeIntegerProblem {
 
       env.dispose()
       model.dispose()
-      
-//      goodEdges foreach{
-//        e => println(e.toString)
-//      }
-      
+
+      //      goodEdges foreach{
+      //        e => println(e.toString)
+      //      }
+
       new Graph(clusters, goodEdges.toList)
     }
 

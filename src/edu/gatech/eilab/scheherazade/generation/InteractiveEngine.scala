@@ -20,8 +20,8 @@ package generation {
     def loadData(dataset: String) {
       dataset match {
         case "movie" =>
-          desc = readDescriptions("../data/new_movie/textDescriptions.csv")
-          reader = new ConfigReader("../configNewMvBest.txt")
+          desc = readDescriptions("./data/new_movie/textDescriptions.csv")
+          reader = new ConfigReader("./configNewMvBest.txt")
         case "robbery" =>
           desc = readDescriptions("./data/robbery/textDescriptions.csv")
           reader = new ConfigReader("configRobBest.txt")
@@ -33,7 +33,7 @@ package generation {
     
     def main(args: Array[String]) {
       
-      loadData("movie")
+      loadData("robbery")
 
       var (stories, clusters) = reader.initDataFiltered()
 
