@@ -77,7 +77,7 @@ package graph {
       //        }
       //      }
 
-      allRelations = allRelations.filter(_.confidence > 0.5)
+      allRelations = allRelations.filter(_.confidence > 0.5) // only filtering at the 50% threshold.
       val totalGraph = EdgeIntegerProblem.selectEdges(clusterList, allRelations)
 
       var compactGraph = totalGraph.compact
