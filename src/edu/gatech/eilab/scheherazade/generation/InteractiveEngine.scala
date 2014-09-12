@@ -6,6 +6,7 @@ import data._
 import graph._
 import io._
 import java.io._
+import graph.passage._
 
 package generation {
 
@@ -46,15 +47,15 @@ package generation {
 //      println(insideClusters.map(_.name).mkString("\n"))
 //      System.exit(10)
       val gen = new GraphGenerator(insideStories, insideClusters)
-      var graph: Graph = gen.generate(para)("mutualExcl")._1
+      var graph: Graph = gen.generateQIP(para)("mutualExcl")._1
 
       graph.draw("abcdefg.png")
-      var walk = Walk(graph)
+      var walk:AbstractPassage = Passage.init(graph)
 
       execute(walk, desc)
     }
 
-    def execute(walk: Walk, desc: List[TextDescription]) {
+    def execute(walk: AbstractPassage, desc: List[TextDescription]) {
       var playAgain = true
       do {
         var stroll = walk
@@ -99,7 +100,7 @@ package generation {
          */
 
       } while (playAgain)
-      println("Thank you for playing the game! \n Copyright 2012-2013 Entertainment Intelligence Lab, Georgia Tech.")
+      println("Thank you for playing the game! \n Copyright 2012-2014 Entertainment Intelligence Lab, Georgia Tech.")
     }
 
     def makeChoice(choices: List[Cluster], desc: List[TextDescription], actor: String): Cluster = {

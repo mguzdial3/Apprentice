@@ -69,7 +69,7 @@ package graph {
         i += 1
 
         val gen = new GraphGenerator(insideStories, insideClusters)
-        val hashmap: scala.collection.mutable.HashMap[String, (Graph, Double)] = gen.generate(para)
+        val hashmap: scala.collection.mutable.HashMap[String, (Graph, Double)] = gen.generateQIP(para)
 
         var beforeErr = 0.0
         var afterErr = 0.0

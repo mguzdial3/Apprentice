@@ -375,7 +375,7 @@ package graph {
 
     /**
      * remove nodes from the graph and any links involving these nodes
-     * ATTENTION: if you want to remove mutual excluded nodes from the graph, you must add skipped links!
+     * ATTENTION: if you want to remove mutual excluded nodes from the graph, you must add skipped links first!
      */
     def removeNodes(excluded: List[Cluster]): Graph =
       {
@@ -424,8 +424,8 @@ package graph {
       }
 
     /**
-     * First detects if a skip link is needed. Adds it if it is needed.
-     * In fact, a skip link is not needed iff the nodes being skipped is optional or conditional. We could simply check that.
+     * First detects if a skip link is needed. Adds it to the graph if it is needed.
+     * A skip link is not needed iff the nodes being skipped is optional or conditional. We could simply check that.
      * However, for the sake of safety, we do the extra detection.
      *
      */
@@ -447,7 +447,7 @@ package graph {
           val temporalSuccessors = newLinks.filter(l => l.source == e && l.kind == "T").map(_.target)
 
           for (p <- regularPredecessors; s <- regularSuccessors) {
-            if (removedGraph.shortestDistance(p, s) == -1) {
+            if (removedGraph.shortestDistance(p, s) == -1) { // add link only when there is no path from p to s. This is a new update in 2014.
               newLinks = new Link(p, s) :: newLinks
             }
           }

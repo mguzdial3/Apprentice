@@ -5,6 +5,7 @@ import edu.gatech.eilab.scheherazade.data._
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.ListBuffer
 
+// this is the real thing
 object MutexAnalysisNew {
 
   def main(args: Array[String]) {

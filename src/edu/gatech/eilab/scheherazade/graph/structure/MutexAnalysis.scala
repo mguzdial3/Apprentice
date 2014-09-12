@@ -6,6 +6,7 @@ import scala.collection.mutable.HashMap
 import scala.collection.mutable.ListBuffer
 import scala.collection.mutable.HashMap
 
+// this is obsolete code
 object MutexAnalysis {
 
   def main(args: Array[String]) {

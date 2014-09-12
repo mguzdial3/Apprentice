@@ -9,7 +9,7 @@ import java.io._
 import graph._
 import data._
 import graph.metric._
-import generation.Walk
+import graph.passage._
 
 package graph {
   class GraphGenerator(stories: List[Story], clusters: List[Cluster]) {
@@ -40,19 +40,19 @@ package graph {
 
     def thresholdFilter = ((r: ObservedLink) => (r.confidence > PROBABILITY_THRESHOLD))
 
-    /**
-     * Generates the graph according to the property
-     * returns everything in a hashmap:
-     * GraphName:String -> (graph:Graph, graphError:Double)
-     * This is the Quadratic Integer Programming version
+    /** Generate a graph using the quadratic integer programming method 
+     * @input a property object specifying the parameters
+     * @return several different graphs stored in a hashmap: GraphName:String -> (graph:Graph, graphError:Double)
+     * possible names are: original, mutualExcl
+     *    		
      */
-    def generate(property: SingleProperty): HashMap[String, (Graph, Double)] = {
+    def generateQIP(property: SingleProperty): HashMap[String, (Graph, Double)] = {
 
-      PROBABILITY_THRESHOLD = property.doubleParam("probThresholds")
+      PROBABILITY_THRESHOLD = 0.5 // property.doubleParam("probThresholds") // filtering at the 50% threshold.
       MUTUAL_INFO_THRESHOLD = property.doubleParam("miThresholds")
 
-      println("generating plot graph using the following parameters: \n" +
-        property.toString)
+      println("generating a plot graph using the QIP method. Parameters: \nProbability threshold = " + PROBABILITY_THRESHOLD +
+          "Mutual Information threshold = " + MUTUAL_INFO_THRESHOLD)
 
       val hashmap = new HashMap[String, (Graph, Double)]()
       var errorBefore = -1.0
@@ -60,24 +60,7 @@ package graph {
 
       var allRelations: List[ObservedLink] = GraphGenerator.computeRelations(storyList, clusterList)
 
-      // create the graph that contains every link
-      //      val links = allRelations filter thresholdFilter
-      //      var totalGraph = new Graph(clusterList, links)
-      //
-      //      if (totalGraph.containsLoop()) {
-      //        hashmap += ("withLoops" -> (totalGraph, 0))
-      //        // find the loops and break them
-      //        try {
-      //          totalGraph = breakLoops(totalGraph, links)
-      //        } catch {
-      //          case ge: GraphException =>
-      //            println(ge.msg)
-      //            hashmap += ("original" -> (totalGraph, 0))
-      //            return hashmap
-      //        }
-      //      }
-
-      allRelations = allRelations.filter(_.confidence > 0.5) // only filtering at the 50% threshold.
+      allRelations = allRelations.filter(_.confidence > PROBABILITY_THRESHOLD) 
       val totalGraph = EdgeIntegerProblem.selectEdges(clusterList, allRelations)
 
       var compactGraph = totalGraph.compact
@@ -91,8 +74,6 @@ package graph {
       val mes = findMtlExcl(storyList, clusterList, MUTUAL_INFO_THRESHOLD)
       var meGraph = new Graph(compactGraph.nodes, compactGraph.links, mes);
       
-//      val anotherGraph = EdgeIntegerProblem.selectEdgesME(clusterList, allRelations, mes)
-//      anotherGraph.draw("another")
       
       meGraph = meGraph.graphWithOptionals
       
@@ -103,12 +84,13 @@ package graph {
 
     }
 
-    /**
-     * Generates the graph according to the property
-     * returns everything in a hashmap:
-     * GraphName:String -> (graph:Graph, graphError:Double)
+    /** Generate a graph using the smart thresholding method 
+     * @input a property object specifying the parameters
+     * @return several different graphs stored in a hashmap: GraphName:String -> (graph:Graph, graphError:Double)
+     * possible names are: withLoops, original, improved, mutualExcl
+     *    		
      */
-    def oldGenerate(property: SingleProperty): HashMap[String, (Graph, Double)] = {
+    def GenerateST(property: SingleProperty): HashMap[String, (Graph, Double)] = {
 
       PROBABILITY_THRESHOLD = property.doubleParam("probThresholds")
       MUTUAL_INFO_THRESHOLD = property.doubleParam("miThresholds")
@@ -127,10 +109,10 @@ package graph {
       var totalGraph = new Graph(clusterList, links)
 
       if (totalGraph.containsLoop()) {
+        // loop detected.
         hashmap += ("withLoops" -> (totalGraph, 0))
-        // find the loops and break them
         try {
-          //TODO: fix loop breaking. Does not work for gas
+          //This is a primitive method for breaking loops that does not work for everything, e.g. the gas situation
           totalGraph = breakLoops(totalGraph, links)
         } catch {
           case ge: GraphException =>
@@ -154,7 +136,7 @@ package graph {
       errorAfter = avg
       hashmap += (("improved", (improvedGraph, avg)))
 
-      // TODO compute mutual exclusions below
+      // compute the mutual exclusions
       val mes = findMtlExcl(storyList, clusterList, MUTUAL_INFO_THRESHOLD)
       val meGraph = new Graph(improvedGraph.nodes, improvedGraph.links, mes);
 
@@ -164,6 +146,9 @@ package graph {
 
     }
 
+    /** This is a primitive method for breaking loops that do not work for every situation
+     *  
+     */
     def breakLoops(graph: Graph, links: List[ObservedLink]): Graph =
       {
         val loops = graph.simpleLoops

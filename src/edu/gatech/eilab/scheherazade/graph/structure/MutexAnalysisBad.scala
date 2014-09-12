@@ -5,6 +5,8 @@ import edu.gatech.eilab.scheherazade.data._
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.ListBuffer
 import scala.collection.mutable.HashMap
+
+// This is bad, apparently. 
 object MutexAnalysisBad {
 
   def main(args: Array[String]) {
