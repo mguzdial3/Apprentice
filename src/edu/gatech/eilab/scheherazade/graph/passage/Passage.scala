@@ -85,7 +85,7 @@ package graph.passage {
         // if all of its parents are either included in the history or optionals, it is on the fringe
         val parents = optional ::: newHistory
         newGraph.nodes.filter { node =>
-          newGraph.predecessorsOf(node).forall(parents.contains)
+          newGraph.parentsOf(node).forall(parents.contains)
         }
       }
 
@@ -108,7 +108,7 @@ package graph.passage {
         do {
           newFound = ListBuffer[Cluster]()
           for (e <- remainder) {
-            val pred = graph.predecessorsOf(e)
+            val pred = graph.parentsOf(e)
             if ((!pred.isEmpty) &&
               pred.forall(all contains))
               newFound += e

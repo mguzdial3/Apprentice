@@ -390,7 +390,7 @@ package generation {
         // if all of its parents are either included in the history or optionals, it is on the fringe
         val parents = optionals ::: history
         var possible = graph.nodes.filter { node =>
-          graph.predecessorsOf(node).forall(parents.contains)
+          graph.parentsOf(node).forall(parents.contains)
         }
         possible
       }

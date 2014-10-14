@@ -35,7 +35,7 @@ object MutexAnalysisNew {
       do {
         newFound = ListBuffer[Cluster]()
         for (e <- remainder) {
-          val pred = graph.predecessorsOf(e)
+          val pred = graph.parentsOf(e)
           if ((!pred.isEmpty) &&
             pred.forall(all.contains))
             newFound += e
@@ -65,7 +65,7 @@ object MutexAnalysisNew {
       val toposort = graph.topoSort
 
       for (e <- toposort) {
-        val pred = graph.predecessorsOf(e)
+        val pred = graph.parentsOf(e)
         if ((!pred.isEmpty) && pred.forall(deleted contains)) {
 
           if ((!deleted.contains(e)) && (!dont.contains(e))) { // dont prevents a cluster from being deleted
@@ -171,7 +171,7 @@ object MutexAnalysisNew {
     // delete nodes by transitive closure
     val toposort = graph.topoSort
     for (e <- toposort) {
-      val pred = graph.predecessorsOf(e)
+      val pred = graph.parentsOf(e)
 
       if ((!pred.isEmpty) && pred.forall(deleted contains) && !deleted.contains(e)) {
         deleted = e :: deleted
@@ -206,7 +206,7 @@ object MutexAnalysisNew {
     for (e <- toposort) {
       //      println("processing : " + e)
       // needs to get causes from parents.
-      val pred = graph.predecessorsOf(e)
+      val pred = graph.parentsOf(e)
 
       // if all predecessors can be deleted
 
@@ -291,7 +291,7 @@ object MutexAnalysisNew {
     // delete nodes by transitive closure
     val toposort = graph.topoSort
     for (e <- toposort) {
-      val pred = graph.predecessorsOf(e)
+      val pred = graph.parentsOf(e)
 
       if ((!pred.isEmpty) && pred.forall(deleted contains) && !deleted.contains(e)) {
         deleted = e :: deleted
@@ -325,7 +325,7 @@ object MutexAnalysisNew {
     for (e <- toposort) {
       //      println("processing : " + e)
       // needs to get causes from parents.
-      val pred = graph.predecessorsOf(e)
+      val pred = graph.parentsOf(e)
 
       // only if all predecessors can be deleted, should we pass on deletion causes, this is added to handle sample graph 18
       // only if the node may be deleted, this is for another special case.

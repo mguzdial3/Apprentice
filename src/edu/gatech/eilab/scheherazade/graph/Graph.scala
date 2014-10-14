@@ -351,7 +351,7 @@ package graph {
      * returns the direct predecessors of a graph node
      *
      */
-    def predecessorsOf(c: Cluster): List[Cluster] =
+    def parentsOf(c: Cluster): List[Cluster] =
       {
         if (!nodes.contains(c))
           throw new GraphException("The graph does not contain the node specified: " + c.name)
@@ -359,6 +359,7 @@ package graph {
           links.filter(_.target == c).map(_.source)
         }
       }
+    
 
     /**
      * returns the direct successors of a graph node

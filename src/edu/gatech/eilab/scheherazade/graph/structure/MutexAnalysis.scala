@@ -32,7 +32,7 @@ object MutexAnalysis {
       do {
         newFound = ListBuffer[Cluster]()
         for (e <- remainder) {
-          val pred = graph.predecessorsOf(e)
+          val pred = graph.parentsOf(e)
           if ((!pred.isEmpty) &&
             pred.forall(all.contains))
             newFound += e
@@ -64,7 +64,7 @@ object MutexAnalysis {
       val toposort = graph.topoSort
 
       for (e <- toposort) {
-        val pred = graph.predecessorsOf(e)
+        val pred = graph.parentsOf(e)
         if ((!pred.isEmpty) && pred.forall(deleted contains)) {
 
           if ((!deleted.contains(e)) && (!dont.contains(e))) { // dont prevents a cluster from being deleted
@@ -119,7 +119,7 @@ object MutexAnalysis {
     var newFound: List[Cluster] = Nil
 
     for (e <- toposort) {
-      val pred = graph.predecessorsOf(e)
+      val pred = graph.parentsOf(e)
       if ((!pred.isEmpty) && pred.forall(deleted contains)) {
 
         if (!deleted.contains(e)) {
@@ -193,7 +193,7 @@ object MutexAnalysis {
     // delete nodes by transitive closure
     val toposort = graph.topoSort
     for (e <- toposort) {
-      val pred = graph.predecessorsOf(e)
+      val pred = graph.parentsOf(e)
 
       if ((!pred.isEmpty) && pred.forall(deleted contains) && !deleted.contains(e)) {
         deleted = e :: deleted
@@ -228,7 +228,7 @@ object MutexAnalysis {
     for (e <- toposort) {
       //      println("processing : " + e)
       // needs to get causes from parents.
-      val pred = graph.predecessorsOf(e)
+      val pred = graph.parentsOf(e)
 
       // if all predecessors can be deleted
 
@@ -306,7 +306,7 @@ object MutexAnalysis {
     // delete nodes by transitive closure
     val toposort = graph.topoSort
     for (e <- toposort) {
-      val pred = graph.predecessorsOf(e)
+      val pred = graph.parentsOf(e)
 
       if ((!pred.isEmpty) && pred.forall(deleted contains) && !deleted.contains(e)) {
         deleted = e :: deleted
@@ -340,7 +340,7 @@ object MutexAnalysis {
     for (e <- toposort) {
       //      println("processing : " + e)
       // needs to get causes from parents.
-      val pred = graph.predecessorsOf(e)
+      val pred = graph.parentsOf(e)
 
       // only if all predecessors can be deleted, should we pass on deletion causes, this is added to handle sample graph 18
       // only if the node may be deleted, this is for another special case.

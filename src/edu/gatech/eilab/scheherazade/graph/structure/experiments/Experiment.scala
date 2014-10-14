@@ -5,6 +5,7 @@ import edu.gatech.eilab.scheherazade.graph._
 import edu.gatech.eilab.scheherazade.graph.sample._
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.ListBuffer
+import scala.collection.mutable.Queue
 
 object Experiment {
 
@@ -34,9 +35,9 @@ object Experiment {
    */
   def propFromParent(graph: Graph, map: HashMap[Cluster, List[List[Cluster]]], order: List[Cluster]): HashMap[Cluster, List[List[Cluster]]] =
     {
-      for (c <- order if graph.predecessorsOf(c) != Nil) {
+      for (c <- order if graph.parentsOf(c) != Nil) {
         println("processing " + c.name)
-        val parents = graph.predecessorsOf(c)
+        val parents = graph.parentsOf(c)
 
         val allPossibleAssignment = assignParents(c, parents, graph, map)
         println(c)
@@ -101,7 +102,7 @@ object Experiment {
 
   def isCaseOne(p: Cluster, graph: Graph, hashmap: HashMap[Cluster, List[List[Cluster]]]): Boolean =
     {
-      graph.predecessorsOf(p) == Nil && hashmap.contains(p) && hashmap(p) != Nil
+      graph.parentsOf(p) == Nil && hashmap.contains(p) && hashmap(p) != Nil
     }
 
   def isCaseTwo(p: Cluster, graph: Graph, map: HashMap[Cluster, List[List[Cluster]]]): Boolean =
@@ -109,14 +110,20 @@ object Experiment {
       if (!map.contains(p)) return false // no cfr for p
 
       val cause4p = map(p)
-      val grandparents = graph.predecessorsOf(p)
+      var grandparents = graph.parentsOf(p)
 
       if (grandparents == Nil) {
         return false
       }
 
+      var visited = List[Cluster]()
+      var queue = Queue[Cluster]()
+      queue.enqueue(grandparents:_*)
+      
       var intersection: List[List[Cluster]] = cause4p
-      for (gp <- grandparents) {
+      while (!queue.isEmpty) {
+        val gp = queue.dequeue        
+
         if (!map.contains(gp)) {
           return false
         }
@@ -126,14 +133,19 @@ object Experiment {
         if (intersection == Nil) {
           return false
         }
+
+        visited = gp :: visited
+        val pred = graph.parentsOf(gp).filter(visited.contains)
+        queue.enqueue(pred:_*)
+
       }
 
       return true
     }
 
-  def isCaseThree(p: Cluster, graph: Graph, map: HashMap[Cluster, List[List[Cluster]]]): Boolean =
+  def isCaseThree(c: Cluster, graph: Graph, map: HashMap[Cluster, List[List[Cluster]]]): Boolean =
     {
-      graph.predecessorsOf(p) != Nil && graph.mutualExcls.exists(mx => mx.c1 == p || mx.c2 == p)
+      graph.parentsOf(c) != Nil && map.contains(c) && map(c).exists(_.size == 1)
     }
 
   def isFeasible(grouping: (ListBuffer[Cluster], ListBuffer[Cluster], ListBuffer[Cluster]), graph: Graph, hashmap: HashMap[Cluster, List[List[Cluster]]]): List[List[Cluster]] =
@@ -150,8 +162,8 @@ object Experiment {
       val g3 = grouping._3
       if (g3 != Nil) {
         val c4g3 = g3.map(hashmap(_).filter(_.size == 1)) // cfr with only one node
-        println(c4g3)
-        if (c4g3 != Nil) {
+        println("cfrs in group 3. Do you see one cfr shared by all vertices? " + c4g3)
+        if (c4g3 != Nil) { // checking if there is one CfR that is shared by all vertices
           var intersection = c4g3.head
           for (n <- c4g3.tail) {
             intersection = intersection.intersect(n)
@@ -168,7 +180,7 @@ object Experiment {
       var bigIntersection: List[List[Cluster]] = Nil
       for (p <- g2) {
         val cause4p = hashmap(p)
-        val grandparents = graph.predecessorsOf(p)
+        val grandparents = graph.parentsOf(p)
         var intersection: List[List[Cluster]] = cause4p
         for (gp <- grandparents) {
           val cause4gp = hashmap(gp)
@@ -188,8 +200,8 @@ object Experiment {
 
       // collect group 1
       val g1 = grouping._1
-      var g1result:List[List[Cluster]] = Nil
-      
+      var g1result: List[List[Cluster]] = Nil
+
       if (g1 != Nil) {
         g1result = hashmap(g1.head)
         for (n <- g1.tail) {
@@ -197,13 +209,11 @@ object Experiment {
           g1result = g1result.zip(r).map(x => x._1 ::: x._2)
         }
       }
-      
+
       // this is a set product
-      if (g1result != Nil && bigIntersection != Nil)
-      {
+      if (g1result != Nil && bigIntersection != Nil) {
         bigIntersection = g1result.zip(bigIntersection).map(x => x._1 ::: x._2)
-      } else if (g1result != Nil && bigIntersection == Nil)
-      {
+      } else if (g1result != Nil && bigIntersection == Nil) {
         bigIntersection = g1result
       }
 
