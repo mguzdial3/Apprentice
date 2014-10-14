@@ -9,6 +9,20 @@ import scala.collection.mutable.Queue
 
 object Experiment {
 
+  var group2cfr: HashMap[Cluster, List[List[Cluster]]] = null
+
+  /**
+   * must call this init function before computing any CfR for any graphs
+   *
+   */
+  def init() {
+    group2cfr = HashMap[Cluster, List[List[Cluster]]]()
+  }
+
+  /**
+   * computes the vertices that are directly invovled in mutual exclusion relations
+   *
+   */
   def immediateMutex(graph: Graph): HashMap[Cluster, List[List[Cluster]]] =
     {
       val map = HashMap[Cluster, List[List[Cluster]]]()
@@ -118,11 +132,11 @@ object Experiment {
 
       var visited = List[Cluster]()
       var queue = Queue[Cluster]()
-      queue.enqueue(grandparents:_*)
-      
+      queue.enqueue(grandparents: _*)
+
       var intersection: List[List[Cluster]] = cause4p
       while (!queue.isEmpty) {
-        val gp = queue.dequeue        
+        val gp = queue.dequeue
 
         if (!map.contains(gp)) {
           return false
@@ -136,9 +150,12 @@ object Experiment {
 
         visited = gp :: visited
         val pred = graph.parentsOf(gp).filter(visited.contains)
-        queue.enqueue(pred:_*)
+        queue.enqueue(pred: _*)
 
       }
+
+      println("update " + p + " with  " + intersection)
+      group2cfr.update(p, intersection)
 
       return true
     }
@@ -175,28 +192,19 @@ object Experiment {
         }
       }
 
-      // check group 2
+      // collect cfr from group 2
       val g2 = grouping._2
-      var bigIntersection: List[List[Cluster]] = Nil
+      var group2Collection: List[List[Cluster]] = Nil
       for (p <- g2) {
-        val cause4p = hashmap(p)
-        val grandparents = graph.parentsOf(p)
-        var intersection: List[List[Cluster]] = cause4p
-        for (gp <- grandparents) {
-          val cause4gp = hashmap(gp)
-          // if there does not exist a cfr for p that is a superset of one cfr for gp, return false
-          intersection = intersection.filter(c4p => cause4gp.exists(c4gp => c4gp.forall(c4p.contains)))
-        }
-
-        if (bigIntersection == Nil) {
-          bigIntersection = intersection // initialization
-        } else {
-          bigIntersection = bigIntersection.intersect(intersection)
-          if (bigIntersection == Nil) {
-            return Nil
-          }
+        val cfr = group2cfr(p) // need to compute a set product
+        println("cfr for " + p + "is " + cfr)
+        if (group2Collection == Nil) {
+          group2Collection = cfr
+        } else {          
+          group2Collection = setProduct(group2Collection, cfr)
         }
       }
+      group2Collection = group2Collection.distinct
 
       // collect group 1
       val g1 = grouping._1
@@ -211,19 +219,19 @@ object Experiment {
       }
 
       // this is a set product
-      if (g1result != Nil && bigIntersection != Nil) {
-        bigIntersection = g1result.zip(bigIntersection).map(x => x._1 ::: x._2)
-      } else if (g1result != Nil && bigIntersection == Nil) {
-        bigIntersection = g1result
+      if (g1result != Nil && group2Collection != Nil) {
+        group2Collection = setProduct(group2Collection, g1result)
+      } else if (g1result != Nil && group2Collection == Nil) {
+        group2Collection = g1result
       }
 
-      if (results == Nil && bigIntersection != Nil) {
-        return bigIntersection
-      } else if (results != Nil && bigIntersection == Nil) {
+      if (results == Nil && group2Collection != Nil) {
+        return group2Collection
+      } else if (results != Nil && group2Collection == Nil) {
         return results
       } else {
         // cfr in group three must happen after every nodes in group two
-        val pairs = results.zip(bigIntersection)
+        val pairs = for(x <- results; y <- group2Collection) yield (x, y)
         return pairs.filter {
           p =>
             val after = p._1.head
@@ -235,16 +243,14 @@ object Experiment {
       }
     }
 
-  //  def setProduct(set1: List[List[Cluster]], set2: List[List[Cluster]]) =
-  //    {
-  //      set1.zip(set2).map {
-  //        z =>
-  //          z._1 ::: z._2
-  //      }
-  //    }
+  def setProduct(set1: List[List[Cluster]], set2: List[List[Cluster]]) =
+    {
+      for (x <- set1; y <- set2) yield x ::: y
+    }
 
   def main(args: Array[String]) {
-    val graph = CRFPropagation.graph4()
+    init()
+    val graph = CRFPropagation.graph1()
     var map = immediateMutex(graph)
     println(formatMap(map))
     val order = graph.topoSort

@@ -127,4 +127,79 @@ object CRFPropagation {
     
     new Graph(nodes, links, mutex)
   }
+  
+  /** This is Figure 18(d) modified
+   *  cfr(i) = {{d, e, h}} 
+   */
+  def graph5() = {
+    val a = new Cluster("a", Nil)
+    val b = new Cluster("b", Nil)
+    val c = new Cluster("c", Nil)
+    val d = new Cluster("d", Nil)
+    val e = new Cluster("e", Nil)
+    val f = new Cluster("f", Nil)
+    val g = new Cluster("g", Nil)
+    val h = new Cluster("h", Nil)
+    val i = new Cluster("i", Nil)
+    val j = new Cluster("j", Nil)
+    
+    val nodes = List(a, b, c, d, e, f, g, h, i, j)
+
+    val links = List(
+      new Link(a, j),
+      new Link(j, i),
+      new Link(b, f),
+      new Link(c, g),
+      new Link(f, i),
+      new Link(g, i),
+      new Link(d, h),
+      new Link(e, h))
+      
+    val mutex = List(
+        new MutualExcl(a, d),
+        new MutualExcl(b, e),
+        new MutualExcl(g, h)
+        )
+    
+    new Graph(nodes, links, mutex)
+  }
+  
+  /** This is Figure 18(d) modified
+   *  cfr(i) = {{d, e, h}, {d, l, h}} 
+   */
+  def graph6() = {
+    val a = new Cluster("a", Nil)
+    val b = new Cluster("b", Nil)
+    val c = new Cluster("c", Nil)
+    val d = new Cluster("d", Nil)
+    val e = new Cluster("e", Nil)
+    val f = new Cluster("f", Nil)
+    val g = new Cluster("g", Nil)
+    val h = new Cluster("h", Nil)
+    val i = new Cluster("i", Nil)
+    val j = new Cluster("j", Nil)
+    val l = new Cluster("l", Nil)
+    
+    val nodes = List(a, b, c, d, e, f, g, h, i, j, l)
+
+    val links = List(
+      new Link(a, j),
+      new Link(l, h),
+      new Link(j, i),
+      new Link(b, f),
+      new Link(c, g),
+      new Link(f, i),
+      new Link(g, i),
+      new Link(d, h),
+      new Link(e, h))
+      
+    val mutex = List(
+        new MutualExcl(a, d),
+        new MutualExcl(b, e),
+        new MutualExcl(b, l),
+        new MutualExcl(g, h)
+        )
+    
+    new Graph(nodes, links, mutex)
+  }
 }
