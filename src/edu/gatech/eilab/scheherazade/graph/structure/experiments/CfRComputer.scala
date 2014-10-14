@@ -7,7 +7,7 @@ import scala.collection.mutable.HashMap
 import scala.collection.mutable.ListBuffer
 import scala.collection.mutable.Queue
 
-object Experiment {
+object CfRComputer {
 
   var group2cfr: HashMap[Cluster, List[List[Cluster]]] = null
 
@@ -250,12 +250,21 @@ object Experiment {
 
   def main(args: Array[String]) {
     init()
-    val graph = CRFPropagation.graph1()
+    val graph = CfRSample.graph7()
     var map = immediateMutex(graph)
     println(formatMap(map))
     val order = graph.topoSort
     map = propFromParent(graph, map, order)
     println(formatMap(map))
+  }
+  
+  def processGraph(graph:Graph):HashMap[Cluster, List[List[Cluster]]] =
+  {
+    init()
+    var map = immediateMutex(graph)
+    val order = graph.topoSort
+    map = propFromParent(graph, map, order)
+    map
   }
 
   def formatMap(map: HashMap[Cluster, List[List[Cluster]]]): String =
