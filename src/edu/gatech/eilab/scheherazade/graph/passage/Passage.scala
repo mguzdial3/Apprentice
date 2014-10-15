@@ -15,7 +15,7 @@ package graph.passage {
       this(0, graph, sources, ends, mutex, optional, List[Cluster](), fringe, List[Cluster]())
 
     def totalGenerated() = Passage.totalGenerated
-      
+
     /**
      *  Takes one step forward in the graph
      *
@@ -141,34 +141,26 @@ package graph.passage {
   }
 
   object Passage extends AbstractPassageFactory {
- 
-    def init(graph: Graph):Passage = {
+
+    def init(graph: Graph): Passage = {
       val me = graph.mutualExcls
 
-      // starting point:
-      var sources = graph.findSources()
       //println(sources.map(_.name).mkString("sources 1: ", "\n", ""))
       val ends = graph.findEnds()
       //println(ends.map(_.name).mkString("ends : ", "\n", ""))
-      //readLine()
+
 
       val graphIndex = new GraphIndex(graph)
 
       // remove from the graph nodes without predecessors that are not sources
       //graph = eGraph.removeIrregularSourceEnds()
 
-      val (optionals, conditionals) = graph.findOptionals()
+      val finalGraph = graph.graphWithOptionalsAndSkips
+      var sources = finalGraph.findSources()
 
-      val canSkip = (optionals ::: conditionals).distinct
-      //println("can Skip : " + canSkip.map(_.name).mkString("\n"))
-      val finalGraph = graph.addSkipLinks(canSkip)
+//      println(sources.map(_.name).mkString("sources 2 : ", "\n", ""))
 
-      sources = finalGraph.nodes.filter(n => (!sources.contains(n)) &&
-        finalGraph.links.filter(l => l.target == n).map(_.source).forall(optionals contains)) ::: sources
-
-      //println(sources.map(_.name).mkString("sources 2 : ", "\n", ""))
-
-      new Passage(finalGraph, sources, ends, me, optionals, sources)
+      new Passage(finalGraph, sources, ends, me, finalGraph.optionals, sources)
     }
   }
 }

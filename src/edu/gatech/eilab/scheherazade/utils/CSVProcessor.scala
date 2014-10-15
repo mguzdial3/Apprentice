@@ -21,7 +21,7 @@ object CSVProcessor {
 
     lines foreach {
       l =>
-        println("line = " + l)
+        //println("line = " + l)
         val events = l.trim.replace(",,", ", ,").split(",")
         var next = 0
         var lineBuffer = ArrayBuffer[String]()

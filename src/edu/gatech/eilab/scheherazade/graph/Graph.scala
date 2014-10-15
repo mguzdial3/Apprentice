@@ -145,13 +145,15 @@ package graph {
     }
 
     /**
-     * finds all the source nodes, i.e. nodes without temporal predecessors
-     *
+     * Finds all the source nodes, i.e. nodes without predecessors or all predecessors are optional
+     * Important Notice: You should only call this method after all skip links for optional events are added! 
+     * Otherwise, we cannot find indirect predecessors of a node that are not optional  
      */
     def findSources() = {
-      var sources = nodes.filterNot(n => links.exists(l => l.target == n)) // nodes without any predecessors 
+      var sources = nodes.filterNot(n => links.exists(l => l.target == n)) // nodes without any predecessors
+
       nodes.filter(n => (!sources.contains(n)) &&
-        links.filter(l => l.target == n).map(_.source).forall(optionals.contains)) ::: sources // nodes with all predecessors being optional events
+        links.filter(l => l.target == n).map(_.source).forall(optionals.contains)) ::: sources // nodes with all parents being optional events
     }
 
     /**
@@ -359,7 +361,6 @@ package graph {
           links.filter(_.target == c).map(_.source)
         }
       }
-    
 
     /**
      * returns the direct successors of a graph node
@@ -410,15 +411,19 @@ package graph {
 
           for (p <- regularPredecessors; s <- regularSuccessors) {
             newLinks = new Link(p, s) :: newLinks
+            //println("added skip precedence link from " + p.name + " to " + s.name)
           }
           for (p <- temporalPredecessors; s <- regularSuccessors) {
             newLinks = new Link(p, s, "T") :: newLinks
+            //println("added skip temporal link from " + p.name + " to " + s.name)
           }
           for (p <- regularPredecessors; s <- temporalSuccessors) {
             newLinks = new Link(p, s, "T") :: newLinks
+            //println("added skip temporal link from " + p.name + " to " + s.name)
           }
           for (p <- temporalPredecessors; s <- temporalSuccessors) {
             newLinks = new Link(p, s, "T") :: newLinks
+            //println("added skip temporal link from " + p.name + " to " + s.name)
           }
         }
         new Graph(nodes, newLinks.distinct, this.mutualExcls, optionals, conditionals)
@@ -472,20 +477,20 @@ package graph {
         val g = new Graph(nodes, newLinks, this.mutualExcls, optionals, conditionals)
 
         g.addSkipLinks(optionals)
-//        newLinks = Nil
-//        // add May 20 night
-//        for (op <- optionals) {
-//          val parents = g.predecessorsOf(op)
-//          val kids = g.successorsOf(op)
-//          for (p <- parents; k <- kids) {
-//            val l = new Link(p, k)
-//            if (!g.links.contains(l)) {
-//              newLinks = l :: newLinks
-//            }
-//          }
-//        }
-//
-//        new Graph(g.nodes, g.links ::: newLinks, g.mutualExcls, g.optionals, g.conditionals)
+        //        newLinks = Nil
+        //        // add May 20 night
+        //        for (op <- optionals) {
+        //          val parents = g.predecessorsOf(op)
+        //          val kids = g.successorsOf(op)
+        //          for (p <- parents; k <- kids) {
+        //            val l = new Link(p, k)
+        //            if (!g.links.contains(l)) {
+        //              newLinks = l :: newLinks
+        //            }
+        //          }
+        //        }
+        //
+        //        new Graph(g.nodes, g.links ::: newLinks, g.mutualExcls, g.optionals, g.conditionals)
       }
 
     /**
@@ -536,7 +541,7 @@ package graph {
                 optionals.contains(sorted.head) && conditionals.contains(sorted.last)
               }
           } //&& // May 16 2014: In addition, the path cannot depend on our source      
-            //path.forall(p => !links.exists(l => l.source == sourceC && l.target == p)) June 23 2014: commented this condition helps to solve problems?
+        //path.forall(p => !links.exists(l => l.source == sourceC && l.target == p)) June 23 2014: commented this condition helps to solve problems?
 
         // a breadth-first search
         var longest = -1

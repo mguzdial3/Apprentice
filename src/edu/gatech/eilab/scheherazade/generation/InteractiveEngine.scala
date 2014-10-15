@@ -57,6 +57,7 @@ package generation {
 
     def execute(walk: AbstractPassage, desc: List[TextDescription]) {
       var playAgain = true
+      println("\n\n")
       do {
         var stroll = walk
         var step: Cluster = null

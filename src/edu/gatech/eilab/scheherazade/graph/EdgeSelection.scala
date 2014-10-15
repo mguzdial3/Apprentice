@@ -105,6 +105,7 @@ object EdgeIntegerProblem {
 
       val env = new GRBEnv("graph_qp.log")
       env.set(GRB.DoubleParam.TimeLimit, 20)
+      env.set(GRB.IntParam.LogToConsole, 0)
       val model = new GRBModel(env)
       val objective = new GRBLinExpr()
 
@@ -151,7 +152,10 @@ object EdgeIntegerProblem {
       }
 
       // solve
+      val starting = System.currentTimeMillis()
       model.optimize
+      val duration = (System.currentTimeMillis() - starting) / 1000.0
+      println("The QIP problem is solved in " + duration + " seconds")
 
       // retrieve results
       var goodEdges = ListBuffer[ObservedLink]()
