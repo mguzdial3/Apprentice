@@ -42,7 +42,7 @@ package generation {
       }
     
   def main(args: Array[String]) {
-    val graph = CfRSample.graph9
+    val graph = CfRSample.graph10
     val all = generate(graph)
     println(all.map(_.map(_.name).mkString(", ")).mkString("\n"))
   }
