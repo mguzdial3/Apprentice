@@ -60,13 +60,15 @@ object CfRComputer {
         var newCfR = List[List[Cluster]]()
         for (assignment <- allPossibleAssignment) {
           // filtering bad solutions and collect correct solutions
-          val answer = isFeasible(assignment, graph, map)
+          val answer = collectFeasible(assignment, graph, map)
           println("answer =" + answer)
           if (answer != Nil) {
             newCfR = answer ::: newCfR
           }
         }
-        map.update(c, newCfR ::: list)
+
+        val cfrList = simplify((newCfR ::: list).distinct)
+        map.update(c, cfrList)
       }
       map
     }
@@ -165,7 +167,7 @@ object CfRComputer {
       graph.parentsOf(c) != Nil && map.contains(c) && map(c).exists(_.size == 1)
     }
 
-  def isFeasible(grouping: (ListBuffer[Cluster], ListBuffer[Cluster], ListBuffer[Cluster]), graph: Graph, hashmap: HashMap[Cluster, List[List[Cluster]]]): List[List[Cluster]] =
+  def collectFeasible(grouping: (ListBuffer[Cluster], ListBuffer[Cluster], ListBuffer[Cluster]), graph: Graph, hashmap: HashMap[Cluster, List[List[Cluster]]]): List[List[Cluster]] =
     {
 
       // check for empty list
@@ -200,7 +202,7 @@ object CfRComputer {
         println("cfr for " + p + "is " + cfr)
         if (group2Collection == Nil) {
           group2Collection = cfr
-        } else {          
+        } else {
           group2Collection = setProduct(group2Collection, cfr)
         }
       }
@@ -214,7 +216,7 @@ object CfRComputer {
         g1result = hashmap(g1.head)
         for (n <- g1.tail) {
           val r = hashmap(n)
-          g1result = g1result.zip(r).map(x => x._1 ::: x._2)
+          g1result = setProduct(g1result, r)
         }
       }
 
@@ -231,41 +233,70 @@ object CfRComputer {
         return results
       } else {
         // cfr in group three must happen after every nodes in group two
-        val pairs = for(x <- results; y <- group2Collection) yield (x, y)
+        val pairs = for (x <- results; y <- group2Collection) yield (x, y)
         return pairs.filter {
           p =>
             val after = p._1.head
             val before = p._2
             println("check ordering: " + before.forall(x => graph.shortestDistance(x, after) > 0))
             before.forall(x => graph.shortestDistance(x, after) > 0)
-        }.map(x => x._1 ::: x._2)
+        }.map(x => (x._1 ::: x._2).distinct)
 
       }
     }
 
   def setProduct(set1: List[List[Cluster]], set2: List[List[Cluster]]) =
     {
-      for (x <- set1; y <- set2) yield x ::: y
+      for (x <- set1; y <- set2) yield (x ::: y).distinct
+    }
+
+  def simplify(cfrList: List[List[Cluster]]): List[List[Cluster]] =
+    {
+      var list = List[List[Cluster]]()
+      for (cfr <- cfrList) {
+        if (!cfrList.exists(
+          x => x.forall(cfr.contains) && (!cfr.forall(x.contains)))) {
+          list = cfr :: list
+        }
+      }
+
+      list
     }
 
   def main(args: Array[String]) {
     init()
-    val graph = CfRSample.graph7()
+    val graph = CfRSample.graph10().graphWithOptionalsAndSkips
+    graph.draw("aaaa")
     var map = immediateMutex(graph)
     println(formatMap(map))
     val order = graph.topoSort
     map = propFromParent(graph, map, order)
     println(formatMap(map))
+    //    testSimplification()
   }
-  
-  def processGraph(graph:Graph):HashMap[Cluster, List[List[Cluster]]] =
-  {
-    init()
-    var map = immediateMutex(graph)
-    val order = graph.topoSort
-    map = propFromParent(graph, map, order)
-    map
+
+  def testSimplification() {
+    val a = new Cluster("a", Nil)
+    val b = new Cluster("b", Nil)
+    val c = new Cluster("c", Nil)
+    val d = new Cluster("d", Nil)
+
+    val l1 = List(a, b, c)
+    val l2 = List(a, c)
+    val l3 = List(b, c)
+
+    val list = List(l1, l2, l3)
+    println(simplify(list))
   }
+
+  def processGraph(graph: Graph): HashMap[Cluster, List[List[Cluster]]] =
+    {
+      init()
+      var map = immediateMutex(graph.graphWithOptionalsAndSkips)
+      val order = graph.topoSort
+      map = propFromParent(graph, map, order)
+      map
+    }
 
   def formatMap(map: HashMap[Cluster, List[List[Cluster]]]): String =
     {

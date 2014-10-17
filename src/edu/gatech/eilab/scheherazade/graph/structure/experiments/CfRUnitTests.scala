@@ -10,7 +10,6 @@ class CfRUnitTests extends FunSuite {
     val graph = CfRSample.graph1
     val result = CfRComputer.processGraph(graph)
     val f = result(new Cluster("f", Nil))
-    //    println(f)
     assert(f.size == 1 && f.contains(List(new Cluster("d", Nil))))
   }
 
@@ -18,7 +17,6 @@ class CfRUnitTests extends FunSuite {
     val graph = CfRSample.graph2
     val result = CfRComputer.processGraph(graph)
     val f = result(new Cluster("f", Nil))
-    //    println(f)
     assert(f.size == 1 && f.contains(List(new Cluster("d", Nil), new Cluster("e", Nil))))
   }
 
@@ -26,7 +24,6 @@ class CfRUnitTests extends FunSuite {
     val graph = CfRSample.graph3
     val result = CfRComputer.processGraph(graph)
     val i = result(new Cluster("i", Nil))
-    //    println(i)
     assert(i.size == 1 && containsCause(i, List(new Cluster("d", Nil), new Cluster("e", Nil), new Cluster("h", Nil))))
   }
 
@@ -34,7 +31,6 @@ class CfRUnitTests extends FunSuite {
     val graph = CfRSample.graph4
     val result = CfRComputer.processGraph(graph)
     val f = result(new Cluster("h", Nil))
-    //    println(f)
     assert(f.size == 2 && containsCause(f, List(new Cluster("d", Nil), new Cluster("e", Nil))) &&
       f.contains(List(new Cluster("g", Nil))))
   }
@@ -43,7 +39,6 @@ class CfRUnitTests extends FunSuite {
     val graph = CfRSample.graph5
     val result = CfRComputer.processGraph(graph)
     val f = result(new Cluster("i", Nil))
-    //    println(f)
     assert(f.size == 1 && containsCause(f, List(new Cluster("d", Nil), new Cluster("e", Nil), new Cluster("h", Nil))))
   }
 
@@ -51,7 +46,6 @@ class CfRUnitTests extends FunSuite {
     val graph = CfRSample.graph6
     val result = CfRComputer.processGraph(graph)
     val f = result(new Cluster("i", Nil))
-    //    println(f)
     assert(f.size == 2 && containsCause(f, List(new Cluster("d", Nil), new Cluster("e", Nil), new Cluster("h", Nil))) &&
       containsCause(f, List(new Cluster("d", Nil), new Cluster("l", Nil), new Cluster("h", Nil))))
   }
@@ -60,8 +54,28 @@ class CfRUnitTests extends FunSuite {
     val graph = CfRSample.graph7
     val result = CfRComputer.processGraph(graph)
     val f = result(new Cluster("i", Nil))
-    println(f)
     assert(f.size == 1 && containsCause(f, List(new Cluster("d", Nil), new Cluster("l", Nil), new Cluster("h", Nil))))
+  }
+
+  test("Sample Graph 8") {
+    val graph = CfRSample.graph8
+    val result = CfRComputer.processGraph(graph)
+    val f = result(new Cluster("g", Nil))
+    assert(f.size == 1 && containsCause(f, List(new Cluster("d", Nil))))
+  }
+
+  test("Sample Graph 9") {
+    val graph = CfRSample.graph9
+    val result = CfRComputer.processGraph(graph)
+    val f = result(new Cluster("e", Nil))
+    assert(f.size == 1 && containsCause(f, List(new Cluster("c", Nil))))
+  }
+
+  test("Sample Graph 10") {
+    val graph = CfRSample.graph10
+    val result = CfRComputer.processGraph(graph)
+    val f = result(new Cluster("f", Nil))
+    assert(f.size == 0)
   }
 
   def containsCause(allCauses: List[List[Cluster]], oneCause: List[Cluster]): Boolean =

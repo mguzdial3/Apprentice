@@ -8,6 +8,7 @@ import io._
 import java.io._
 import graph.passage._
 
+
 package generation {
 
   //TODO: A thorough test to make sure there is bugs and is consistent with the graph. 
@@ -31,9 +32,9 @@ package generation {
           System.exit(1)
       }
     }
-    
+
     def main(args: Array[String]) {
-      
+
       loadData("robbery")
 
       var (stories, clusters) = reader.initDataFiltered()
@@ -44,13 +45,13 @@ package generation {
       val insideClusters = clusters.filterNot(c => c.members.size < minimumSize)
       val insideStories = reader.filterUnused(stories, insideClusters)
 
-//      println(insideClusters.map(_.name).mkString("\n"))
-//      System.exit(10)
+      //      println(insideClusters.map(_.name).mkString("\n"))
+      //      System.exit(10)
       val gen = new GraphGenerator(insideStories, insideClusters)
       var graph: Graph = gen.generateQIP(para)("mutualExcl")._1
 
       graph.draw("abcdefg.png")
-      var walk:AbstractPassage = Passage.init(graph)
+      var walk: AbstractPassage = Passage.init(graph)
 
       execute(walk, desc)
     }
@@ -108,7 +109,10 @@ package generation {
 
       val descripts = choices.map { c =>
         val o = desc.find(_.name == c.name)
-        if (o.isEmpty) throw new RuntimeException(c.name + " is missing from the descriptions")
+        if (o.isEmpty) {
+          throw new RuntimeException(c.name + " is missing from the descriptions")
+          //(c, c.name)
+        }
         val d = o.get
         (c, d)
       }
@@ -198,7 +202,7 @@ package generation {
     def readDescriptions(filename: String): List[TextDescription] = {
       val lines = CSVProcessor.readCSV(filename)
       val answer = for (row <- lines) yield {
-        
+
         new TextDescription(row(0), row(1), row(2), row(3), row(4))
       }
       answer.toList.tail

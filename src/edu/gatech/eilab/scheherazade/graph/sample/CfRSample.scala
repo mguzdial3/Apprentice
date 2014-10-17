@@ -166,7 +166,7 @@ object CfRSample {
   }
 
   /**
-   * This is graph5 modified. A new vertex l is added as the parent of h. 
+   * This is graph5 modified. A new vertex l is added as the parent of h.
    *  cfr(i) = {{d, e, h}, {d, l, h}}
    */
   def graph6() = {
@@ -238,6 +238,99 @@ object CfRSample {
       new MutualExcl(b, e),
       new MutualExcl(b, l),
       new MutualExcl(g, h))
+
+    new Graph(nodes, links, mutex)
+  }
+
+  /**
+   * This is Figure 19(a). It tests the ability to simplify CfR boolean formulas
+   *  cfr(g) = { {d}, {c, d} } = {{d}}
+   */
+  def graph8() = {
+    val a = new Cluster("a", Nil)
+    val b = new Cluster("b", Nil)
+    val c = new Cluster("c", Nil)
+    val d = new Cluster("d", Nil)
+    val e = new Cluster("e", Nil)
+    val f = new Cluster("f", Nil)
+    val g = new Cluster("g", Nil)
+
+    val nodes = List(a, b, c, d, e, f, g)
+
+    val links = List(
+      new Link(a, e),
+      new Link(b, e),
+      new Link(b, f),
+      new Link(e, g),
+      new Link(f, g),
+      new Link(c, d))
+
+    val mutex = List(
+      new MutualExcl(b, c),
+      new MutualExcl(d, e),
+      new MutualExcl(d, f))
+
+    new Graph(nodes, links, mutex)
+  }
+
+  /**
+   * This is figure 19(b)
+   *  cfr(e) = { {c,c,c} } = {{c}}
+   */
+  def graph9() = {
+    val a = new Cluster("a", Nil)
+    val b = new Cluster("b", Nil)
+    val c = new Cluster("c", Nil)
+    val d = new Cluster("d", Nil)
+    val e = new Cluster("e", Nil)
+    val f = new Cluster("f", Nil)
+    val g = new Cluster("g", Nil)
+
+    val nodes = List(a, b, c, d, e, f, g)
+
+    val links = List(
+      new Link(a, e),
+      new Link(b, d),
+      new Link(d, e),
+      new Link(e, f),
+      new Link(f, g))
+
+    val mutex = List(
+      new MutualExcl(a, c),
+      new MutualExcl(b, c),
+      new MutualExcl(d, g))
+
+    new Graph(nodes, links, mutex)
+  }
+
+  /**
+   *  This is a graph deleted from the dissertation because it is no longer a race condition.
+   *  cfr(f) = { }. f cannot be removed!
+   */
+  def graph10() = {
+    val a = new Cluster("a", Nil)
+    val b = new Cluster("b", Nil)
+    val c = new Cluster("c", Nil)
+    val d = new Cluster("d", Nil)
+    val e = new Cluster("e", Nil)
+    val f = new Cluster("f", Nil)
+    val g = new Cluster("g", Nil)
+
+    val nodes = List(a, b, c, d, e, f, g)
+
+    val links = List(
+      new Link(a, b),
+      new Link(a, c),
+      new Link(a, d),
+      new Link(c, e),
+      new Link(e, f),
+      new Link(b, f),
+      new Link(e, g))
+
+    val mutex = List(
+      new MutualExcl(b, c),
+      new MutualExcl(e, d),
+      new MutualExcl(c, g))
 
     new Graph(nodes, links, mutex)
   }
