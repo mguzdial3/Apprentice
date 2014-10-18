@@ -43,6 +43,7 @@ package generation {
     
   def main(args: Array[String]) {
     val graph = CfRSample.graph11
+    graph.draw("exhaustive")
     val all = generate(graph)
     println(all.map(_.map(_.name).mkString(", ")).mkString("\n"))
   }

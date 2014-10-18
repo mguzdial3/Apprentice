@@ -334,9 +334,11 @@ object CfRSample {
 
     new Graph(nodes, links, mutex)
   }
-  
-    /**
-   *  Not sure what will happen in this graph
+
+  /**
+   *  This is a race condition graph. G and F are in the race condition. G is mutually exclusive
+   *  to both parents of E. F is mutually exclusive to one parent of E. If F executes first, E will
+   *  remain in the graph.
    */
   def graph11() = {
     val a = new Cluster("a", Nil)
@@ -346,16 +348,18 @@ object CfRSample {
     val e = new Cluster("e", Nil)
     val f = new Cluster("f", Nil)
     val g = new Cluster("g", Nil)
+    val h = new Cluster("h", Nil)
 
-    val nodes = List(a, b, c, d, e, f, g)
+    val nodes = List(a, b, c, d, e, f, g, h)
 
     val links = List(
       new Link(a, b),
       new Link(a, c),
       new Link(c, d),
       new Link(d, e),
-      new Link(b, e)
-      )
+      new Link(b, e),
+      new Link(g, h),
+      new Link(f, h))
 
     val mutex = List(
       new MutualExcl(f, c),
