@@ -334,4 +334,34 @@ object CfRSample {
 
     new Graph(nodes, links, mutex)
   }
+  
+    /**
+   *  Not sure what will happen in this graph
+   */
+  def graph11() = {
+    val a = new Cluster("a", Nil)
+    val b = new Cluster("b", Nil)
+    val c = new Cluster("c", Nil)
+    val d = new Cluster("d", Nil)
+    val e = new Cluster("e", Nil)
+    val f = new Cluster("f", Nil)
+    val g = new Cluster("g", Nil)
+
+    val nodes = List(a, b, c, d, e, f, g)
+
+    val links = List(
+      new Link(a, b),
+      new Link(a, c),
+      new Link(c, d),
+      new Link(d, e),
+      new Link(b, e)
+      )
+
+    val mutex = List(
+      new MutualExcl(f, c),
+      new MutualExcl(g, b),
+      new MutualExcl(g, d))
+
+    new Graph(nodes, links, mutex)
+  }
 }
