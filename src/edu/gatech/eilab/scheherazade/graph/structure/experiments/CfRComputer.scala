@@ -265,7 +265,7 @@ object CfRComputer {
 
   def main(args: Array[String]) {
     init()
-    val graph = CfRSample.graph10().graphWithOptionalsAndSkips
+    val graph = CfRSample.graph6().graphWithOptionalsAndSkips
     graph.draw("aaaa")
     var map = immediateMutex(graph)
     println(formatMap(map))
