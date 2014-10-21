@@ -5,7 +5,7 @@ import edu.gatech.eilab.scheherazade.data._
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.ListBuffer
 
-// this is the real thing
+// this is the real thing. June 2014
 object MutexAnalysisNew {
 
   def main(args: Array[String]) {

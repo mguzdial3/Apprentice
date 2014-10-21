@@ -47,8 +47,10 @@ object CfRComputer {
    * Note: This function modifies the content of the map object.
    *
    */
-  def propFromParent(graph: Graph, map: HashMap[Cluster, List[List[Cluster]]], order: List[Cluster]): HashMap[Cluster, List[List[Cluster]]] =
+  def propFromParent(graph: Graph, map: HashMap[Cluster, List[List[Cluster]]], order: List[Cluster]): (HashMap[Cluster, List[List[Cluster]]], List[(List[Cluster], List[Cluster])]) =
     {
+
+      var raceConditions = List[(List[Cluster], List[Cluster])]()
       for (c <- order if graph.parentsOf(c) != Nil) {
         println("processing " + c.name)
         val parents = graph.parentsOf(c)
@@ -62,15 +64,20 @@ object CfRComputer {
           // filtering bad solutions and collect correct solutions
           val answer = collectFeasible(assignment, graph, map)
           println("answer =" + answer)
-          if (answer != Nil) {
-            newCfR = answer ::: newCfR
+          if (answer._1 != Nil) {
+            newCfR = answer._1 ::: newCfR
+          }
+          if (answer._2 != Nil) {
+            raceConditions = answer._2 ::: raceConditions
           }
         }
 
         val cfrList = simplify((newCfR ::: list).distinct)
         map.update(c, cfrList)
       }
-      map
+
+      (map, raceConditions)
+
     }
 
   def assignParents(c: Cluster, parents: List[Cluster], graph: Graph, map: HashMap[Cluster, List[List[Cluster]]]): List[(ListBuffer[Cluster], ListBuffer[Cluster], ListBuffer[Cluster])] =
@@ -167,12 +174,12 @@ object CfRComputer {
       graph.parentsOf(c) != Nil && map.contains(c) && map(c).exists(_.size == 1)
     }
 
-  def collectFeasible(grouping: (ListBuffer[Cluster], ListBuffer[Cluster], ListBuffer[Cluster]), graph: Graph, hashmap: HashMap[Cluster, List[List[Cluster]]]): List[List[Cluster]] =
+  def collectFeasible(grouping: (ListBuffer[Cluster], ListBuffer[Cluster], ListBuffer[Cluster]), graph: Graph, hashmap: HashMap[Cluster, List[List[Cluster]]]): (List[List[Cluster]], List[(List[Cluster], List[Cluster])]) =
     {
 
       // check for empty list
       if (grouping._1.size == 0 && grouping._2.size == 0 && grouping._3.size == 0) {
-        return Nil
+        return (Nil, Nil)
       }
 
       var results = List[List[Cluster]]()
@@ -186,11 +193,11 @@ object CfRComputer {
           var intersection = c4g3.head
           for (n <- c4g3.tail) {
             intersection = intersection.intersect(n)
-            if (intersection == Nil) return Nil
+            if (intersection == Nil) return (Nil, Nil)
           }
           results = intersection
         } else {
-          return Nil // nothing with size == 1
+          return (Nil, Nil) // nothing with size == 1
         }
       }
 
@@ -228,20 +235,29 @@ object CfRComputer {
       }
 
       if (results == Nil && group2Collection != Nil) {
-        return group2Collection
+        return (group2Collection, Nil)
       } else if (results != Nil && group2Collection == Nil) {
-        return results
+        return (results, Nil)
       } else {
-        // cfr in group three must happen after every nodes in group two
+        // cfr in group three must happen after every nodes in group two and one
         val pairs = for (x <- results; y <- group2Collection) yield (x, y)
-        return pairs.filter {
-          p =>
-            val after = p._1.head
-            val before = p._2
-            println("check ordering: " + before.forall(x => graph.shortestDistance(x, after) > 0))
-            before.forall(x => graph.shortestDistance(x, after) > 0)
-        }.map(x => (x._1 ::: x._2).distinct)
 
+        var good = List[List[Cluster]]()
+        var raceConditions = List[(List[Cluster], List[Cluster])]()
+        for (p <- pairs) {
+          val after = p._1.head
+          val before = p._2
+          val passTest = before.forall(x => graph.shortestDistance(x, after) > 0)
+          println("check ordering: " + passTest)
+          if (passTest) {
+            good = (p._1 ::: p._2) :: good
+          } else {
+            // if we don't pass this test, there is a race condition we must note
+            raceConditions = (p._1, p._2) :: raceConditions
+          }
+        }
+
+        return (good, raceConditions)
       }
     }
 
@@ -270,7 +286,9 @@ object CfRComputer {
     var map = immediateMutex(graph)
     println(formatMap(map))
     val order = graph.topoSort
-    map = propFromParent(graph, map, order)
+    val answer = propFromParent(graph, map, order)
+    map = answer._1
+    val raceConditions = answer._2
     println(formatMap(map))
     //    testSimplification()
   }
@@ -289,13 +307,13 @@ object CfRComputer {
     println(simplify(list))
   }
 
-  def processGraph(graph: Graph): HashMap[Cluster, List[List[Cluster]]] =
+  def processGraph(graph: Graph) =
     {
       init()
       var map = immediateMutex(graph.graphWithOptionalsAndSkips)
       val order = graph.topoSort
-      map = propFromParent(graph, map, order)
-      map
+      val answer = propFromParent(graph, map, order)
+      answer
     }
 
   def formatMap(map: HashMap[Cluster, List[List[Cluster]]]): String =
