@@ -145,13 +145,15 @@ package graph {
     }
 
     /**
-     * finds all the source nodes, i.e. nodes without temporal predecessors
-     *
+     * Finds all the source nodes, i.e. nodes without predecessors or all predecessors are optional
+     * Important Notice: You should only call this method after all skip links for optional events are added! 
+     * Otherwise, we cannot find indirect predecessors of a node that are not optional  
      */
     def findSources() = {
-      var sources = nodes.filterNot(n => links.exists(l => l.target == n)) // nodes without any predecessors 
+      var sources = nodes.filterNot(n => links.exists(l => l.target == n)) // nodes without any predecessors
+
       nodes.filter(n => (!sources.contains(n)) &&
-        links.filter(l => l.target == n).map(_.source).forall(optionals.contains)) ::: sources // nodes with all predecessors being optional events
+        links.filter(l => l.target == n).map(_.source).forall(optionals.contains)) ::: sources // nodes with all parents being optional events
     }
 
     /**
@@ -166,8 +168,8 @@ package graph {
      */
     def findMiddle() = nodes.filter(n => links.exists(l => l.target == n || l.source == n))
 
-    def isOptional(c:Cluster) = optionals.contains(c)
-    
+    def isOptional(c: Cluster) = optionals.contains(c)
+
     // this alias is used in XStreamable
     override def alias() = "plot-graph"
 
@@ -221,9 +223,9 @@ package graph {
         //println("distance from " + source.name + " to " + target.name + " = " + longest)
         -1
       }
-    
-    def mutuallyExclusive(one:Cluster, two:Cluster):Boolean =
-      mutualExcls.exists(me => (( me.c1 == one && me.c2 == two) || (me.c2 == one && me.c1 == two))) 
+
+    def mutuallyExclusive(one: Cluster, two: Cluster): Boolean =
+      mutualExcls.exists(me => ((me.c1 == one && me.c2 == two) || (me.c2 == one && me.c1 == two)))
 
     /**
      * find the diameter between the two nodes based on the graph
@@ -351,7 +353,7 @@ package graph {
      * returns the direct predecessors of a graph node
      *
      */
-    def predecessorsOf(c: Cluster): List[Cluster] =
+    def parentsOf(c: Cluster): List[Cluster] =
       {
         if (!nodes.contains(c))
           throw new GraphException("The graph does not contain the node specified: " + c.name)
@@ -375,7 +377,7 @@ package graph {
 
     /**
      * remove nodes from the graph and any links involving these nodes
-     * ATTENTION: if you want to remove mutual excluded nodes from the graph, you must add skipped links!
+     * ATTENTION: if you want to remove mutual excluded nodes from the graph, you must add skipped links first!
      */
     def removeNodes(excluded: List[Cluster]): Graph =
       {
@@ -398,19 +400,38 @@ package graph {
         var newLinks = links
 
         for (e <- skipped) {
-          val predecessors = newLinks.filter(l => l.target == e).map(_.source)
-          val successors = newLinks.filter(l => l.source == e).map(_.target)
-          for (p <- predecessors; s <- successors) {
-            //println("add between " + p.name + " " + s.name)
+          // only add a regular link when both links are regular
+          // otherwise, add a temporal link   
+          // Albert Jun 10 2014
+          val regularPredecessors = newLinks.filter(l => l.target == e && l.kind == "R").map(_.source)
+          val regularSuccessors = newLinks.filter(l => l.source == e && l.kind == "R").map(_.target)
+
+          val temporalPredecessors = newLinks.filter(l => l.target == e && l.kind == "T").map(_.source)
+          val temporalSuccessors = newLinks.filter(l => l.source == e && l.kind == "T").map(_.target)
+
+          for (p <- regularPredecessors; s <- regularSuccessors) {
             newLinks = new Link(p, s) :: newLinks
+            //println("added skip precedence link from " + p.name + " to " + s.name)
+          }
+          for (p <- temporalPredecessors; s <- regularSuccessors) {
+            newLinks = new Link(p, s, "T") :: newLinks
+            //println("added skip temporal link from " + p.name + " to " + s.name)
+          }
+          for (p <- regularPredecessors; s <- temporalSuccessors) {
+            newLinks = new Link(p, s, "T") :: newLinks
+            //println("added skip temporal link from " + p.name + " to " + s.name)
+          }
+          for (p <- temporalPredecessors; s <- temporalSuccessors) {
+            newLinks = new Link(p, s, "T") :: newLinks
+            //println("added skip temporal link from " + p.name + " to " + s.name)
           }
         }
         new Graph(nodes, newLinks.distinct, this.mutualExcls, optionals, conditionals)
       }
 
     /**
-     * First detects if a skip link is needed. Adds it if it is needed.
-     * In fact, a skip link is not needed iff the nodes being skipped is optional or conditional. We could simply check that.
+     * First detects if a skip link is needed. Adds it to the graph if it is needed.
+     * A skip link is not needed iff the nodes being skipped is optional or conditional. We could simply check that.
      * However, for the sake of safety, we do the extra detection.
      *
      */
@@ -422,48 +443,55 @@ package graph {
 
         for (e <- skipped) {
 
-          val predecessors = newLinks.filter(l => l.target == e).map(_.source)
-          val successors = newLinks.filter(l => l.source == e).map(_.target)
+          // only add a regular link when both links are regular
+          // otherwise, add a temporal link   
+          // Albert Jun 10 2014
+          val regularPredecessors = newLinks.filter(l => l.target == e && l.kind == "R").map(_.source)
+          val regularSuccessors = newLinks.filter(l => l.source == e && l.kind == "R").map(_.target)
 
-          //          if (e.name == "C7") {
-          //            println("*****lalalala wc5")
-          //            removedGraph.draw("removed-graph")
-          //          }
+          val temporalPredecessors = newLinks.filter(l => l.target == e && l.kind == "T").map(_.source)
+          val temporalSuccessors = newLinks.filter(l => l.source == e && l.kind == "T").map(_.target)
 
-          for (p <- predecessors; s <- successors) {
+          for (p <- regularPredecessors; s <- regularSuccessors) {
+            if (removedGraph.shortestDistance(p, s) == -1) { // add link only when there is no path from p to s. This is a new update in 2014.
+              newLinks = new Link(p, s) :: newLinks
+            }
+          }
+          for (p <- temporalPredecessors; s <- regularSuccessors) {
             if (removedGraph.shortestDistance(p, s) == -1) {
-              newLinks = new Link(p, s) :: newLinks // only add this link when p cannot reach s without going thru some skipped nodes
-              //println("detected and added " + p.name + " " + s.name)
+              newLinks = new Link(p, s, "T") :: newLinks
+            }
+          }
+          for (p <- regularPredecessors; s <- temporalSuccessors) {
+            if (removedGraph.shortestDistance(p, s) == -1) {
+              newLinks = new Link(p, s, "T") :: newLinks
+            }
+          }
+          for (p <- temporalPredecessors; s <- temporalSuccessors) {
+            if (removedGraph.shortestDistance(p, s) == -1) {
+              newLinks = new Link(p, s, "T") :: newLinks
             }
           }
         }
-        
-        val g = new Graph(nodes, newLinks, this.mutualExcls, optionals, conditionals)
-        
-        newLinks = Nil
-        // add May 20 night
-        for(op <- optionals)
-        {
-        	val parents = g.predecessorsOf(op)
-        	val kids = g.successorsOf(op)
-        	for(p <- parents; k <- kids)
-        	{
-        	  val l = new Link(p, k)
-        	  if (!g.links.contains(l))
-        	  {
-        	    newLinks = l :: newLinks
-        	  }
-        	}
-        }
-        
-        new Graph(g.nodes, g.links ::: newLinks, g.mutualExcls, g.optionals, g.conditionals)
-      }
-    
-    
 
-    //    def skipLinks(skipped: List[Cluster]): List[Link] = {
-    //
-    //    }
+        val g = new Graph(nodes, newLinks, this.mutualExcls, optionals, conditionals)
+
+        g.addSkipLinks(optionals)
+        //        newLinks = Nil
+        //        // add May 20 night
+        //        for (op <- optionals) {
+        //          val parents = g.predecessorsOf(op)
+        //          val kids = g.successorsOf(op)
+        //          for (p <- parents; k <- kids) {
+        //            val l = new Link(p, k)
+        //            if (!g.links.contains(l)) {
+        //              newLinks = l :: newLinks
+        //            }
+        //          }
+        //        }
+        //
+        //        new Graph(g.nodes, g.links ::: newLinks, g.mutualExcls, g.optionals, g.conditionals)
+      }
 
     /**
      * generates a new graph by (1) detecting the optional and conditional events in the graph,
@@ -512,8 +540,8 @@ package graph {
 
                 optionals.contains(sorted.head) && conditionals.contains(sorted.last)
               }
-          } && // May 16 2014: In addition, the path cannot depend on our source      
-            path.forall(p => !links.exists(l => l.source == sourceC && l.target == p))
+          } //&& // May 16 2014: In addition, the path cannot depend on our source      
+        //path.forall(p => !links.exists(l => l.source == sourceC && l.target == p)) June 23 2014: commented this condition helps to solve problems?
 
         // a breadth-first search
         var longest = -1
@@ -592,10 +620,10 @@ package graph {
       // skip drawing when indicated by the Global object
       if (edu.gatech.eilab.scheherazade.main.Global.graphDrawing == false) return
 
-      if(fn.contains(" ")) {
+      if (fn.contains(" ")) {
         throw new IOException("Filename " + fn + " contains space, which will disrupt the graph drawing program.")
       }
-      
+
       val filename = fn + ".txt"
       val file = new File(filename)
       println(file.getCanonicalPath())
@@ -611,8 +639,9 @@ package graph {
         writer.println("\"" + node.name + "\" [shape=box, fillcolor=\"#E6E6E6\", style=filled]")
       }
 
-      //writer.println(causalLinks.map { l => "\"" + l.source.name + "\" -- \"" + l.target.name + "\" [style = \"dashed\"]" }.mkString("\n"))
-      writer.println(links.map { l => "\"" + l.source.name + "\" -> \"" + l.target.name + "\"" }.mkString("\n"))
+      val (regularLinks, tLinks) = links.partition(link => link.kind == "R")
+      writer.println(tLinks.map { l => "\"" + l.source.name + "\" -> \"" + l.target.name + "\" [style=dotted]" }.mkString("\n"))
+      writer.println(regularLinks.map { l => "\"" + l.source.name + "\" -> \"" + l.target.name + "\"" }.mkString("\n"))
 
       writer.println(mutualExcls.map { m => "\"" + m.c1.name + "\" -> \"" + m.c2.name + "\" [style=dashed, dir=none]" }.mkString(";\n"))
 

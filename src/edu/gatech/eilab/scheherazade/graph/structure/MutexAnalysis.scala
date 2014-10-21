@@ -6,6 +6,7 @@ import scala.collection.mutable.HashMap
 import scala.collection.mutable.ListBuffer
 import scala.collection.mutable.HashMap
 
+// this is obsolete code
 object MutexAnalysis {
 
   def main(args: Array[String]) {
@@ -31,7 +32,7 @@ object MutexAnalysis {
       do {
         newFound = ListBuffer[Cluster]()
         for (e <- remainder) {
-          val pred = graph.predecessorsOf(e)
+          val pred = graph.parentsOf(e)
           if ((!pred.isEmpty) &&
             pred.forall(all.contains))
             newFound += e
@@ -63,7 +64,7 @@ object MutexAnalysis {
       val toposort = graph.topoSort
 
       for (e <- toposort) {
-        val pred = graph.predecessorsOf(e)
+        val pred = graph.parentsOf(e)
         if ((!pred.isEmpty) && pred.forall(deleted contains)) {
 
           if ((!deleted.contains(e)) && (!dont.contains(e))) { // dont prevents a cluster from being deleted
@@ -118,7 +119,7 @@ object MutexAnalysis {
     var newFound: List[Cluster] = Nil
 
     for (e <- toposort) {
-      val pred = graph.predecessorsOf(e)
+      val pred = graph.parentsOf(e)
       if ((!pred.isEmpty) && pred.forall(deleted contains)) {
 
         if (!deleted.contains(e)) {
@@ -192,7 +193,7 @@ object MutexAnalysis {
     // delete nodes by transitive closure
     val toposort = graph.topoSort
     for (e <- toposort) {
-      val pred = graph.predecessorsOf(e)
+      val pred = graph.parentsOf(e)
 
       if ((!pred.isEmpty) && pred.forall(deleted contains) && !deleted.contains(e)) {
         deleted = e :: deleted
@@ -227,7 +228,7 @@ object MutexAnalysis {
     for (e <- toposort) {
       //      println("processing : " + e)
       // needs to get causes from parents.
-      val pred = graph.predecessorsOf(e)
+      val pred = graph.parentsOf(e)
 
       // if all predecessors can be deleted
 
@@ -305,7 +306,7 @@ object MutexAnalysis {
     // delete nodes by transitive closure
     val toposort = graph.topoSort
     for (e <- toposort) {
-      val pred = graph.predecessorsOf(e)
+      val pred = graph.parentsOf(e)
 
       if ((!pred.isEmpty) && pred.forall(deleted contains) && !deleted.contains(e)) {
         deleted = e :: deleted
@@ -339,7 +340,7 @@ object MutexAnalysis {
     for (e <- toposort) {
       //      println("processing : " + e)
       // needs to get causes from parents.
-      val pred = graph.predecessorsOf(e)
+      val pred = graph.parentsOf(e)
 
       // only if all predecessors can be deleted, should we pass on deletion causes, this is added to handle sample graph 18
       // only if the node may be deleted, this is for another special case.
@@ -787,11 +788,11 @@ object MutexAnalysis {
      */
     def detectAndAddSkipLinksOnly(graph:Graph, skipped: List[Cluster]): Graph =
       {
-        val compactGraph = graph.compact
+        //val compactGraph = graph.compact
         val removedGraph = graph.removeNodes(skipped) // a graph where the skipped nodes are directly removed without adding skipping links
         //removedGraph.draw("removedgraph")
-        //var newLinks = graph.links
-        var newLinks = compactGraph.links
+        var newLinks = graph.links
+        //var newLinks = compactGraph.links
         
         for (e <- skipped) {
 
@@ -806,7 +807,11 @@ object MutexAnalysis {
           for (p <- predecessors; s <- successors) {
             if (removedGraph.shortestDistance(p, s) == -1) {
               newLinks = new Link(p, s) :: newLinks // only add this link when p cannot reach s without going thru some skipped nodes
-              //println("detected and added " + p.name + " " + s.name)
+              println("detected and added " + p.name + " " + s.name)
+            }
+            else
+            {
+              println("we don't add link from " + p.name + " to " + s.name)
             }
           }
         }

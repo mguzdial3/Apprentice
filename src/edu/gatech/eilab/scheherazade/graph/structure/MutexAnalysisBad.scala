@@ -5,6 +5,8 @@ import edu.gatech.eilab.scheherazade.data._
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.ListBuffer
 import scala.collection.mutable.HashMap
+
+// This is bad, apparently. 
 object MutexAnalysisBad {
 
   def main(args: Array[String]) {
@@ -33,7 +35,7 @@ object MutexAnalysisBad {
       do {
         newFound = ListBuffer[Cluster]()
         for (e <- remainder) {
-          val pred = graph.predecessorsOf(e)
+          val pred = graph.parentsOf(e)
           if ((!pred.isEmpty) &&
             pred.forall(all contains))
             newFound += e
@@ -63,7 +65,7 @@ object MutexAnalysisBad {
       val toposort = graph.topoSort
 
       for (e <- toposort) {
-        val pred = graph.predecessorsOf(e)
+        val pred = graph.parentsOf(e)
         if ((!pred.isEmpty) && pred.forall(deleted contains)) {
 
           if ((!deleted.contains(e)) && (!dont.contains(e))) { // dont prevents a cluster from being deleted
@@ -123,7 +125,7 @@ object MutexAnalysisBad {
     val topoOrder = graph.topoSort
 
     for (e <- topoOrder) {
-      val pred = graph.predecessorsOf(e)
+      val pred = graph.parentsOf(e)
       if ((!pred.isEmpty) && pred.forall(deleted contains) && !deleted.contains(e)) {
         deleted = e :: deleted
       }
@@ -138,7 +140,7 @@ object MutexAnalysisBad {
       var furtherProp = true // whether we want to propagate further
       var resultsToSave = List[Set[Cluster]]()
 
-      val pred = graph.predecessorsOf(e)
+      val pred = graph.parentsOf(e)
 
       println("causes contains " + e.name + " " + causesMap.contains(e))
       // only if all predecessors can be deleted; added to handle Sample Graph 18

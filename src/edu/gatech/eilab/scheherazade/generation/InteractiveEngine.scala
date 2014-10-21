@@ -6,6 +6,8 @@ import data._
 import graph._
 import io._
 import java.io._
+import graph.passage._
+
 
 package generation {
 
@@ -20,8 +22,8 @@ package generation {
     def loadData(dataset: String) {
       dataset match {
         case "movie" =>
-          desc = readDescriptions("../data/new_movie/textDescriptions.csv")
-          reader = new ConfigReader("../configNewMvBest.txt")
+          desc = readDescriptions("./data/new_movie/textDescriptions.csv")
+          reader = new ConfigReader("./configNewMvBest.txt")
         case "robbery" =>
           desc = readDescriptions("./data/robbery/textDescriptions.csv")
           reader = new ConfigReader("configRobBest.txt")
@@ -30,10 +32,10 @@ package generation {
           System.exit(1)
       }
     }
-    
+
     def main(args: Array[String]) {
-      
-      loadData("movie")
+
+      loadData("robbery")
 
       var (stories, clusters) = reader.initDataFiltered()
 
@@ -43,19 +45,20 @@ package generation {
       val insideClusters = clusters.filterNot(c => c.members.size < minimumSize)
       val insideStories = reader.filterUnused(stories, insideClusters)
 
-//      println(insideClusters.map(_.name).mkString("\n"))
-//      System.exit(10)
+      //      println(insideClusters.map(_.name).mkString("\n"))
+      //      System.exit(10)
       val gen = new GraphGenerator(insideStories, insideClusters)
-      var graph: Graph = gen.generate(para)("mutualExcl")._1
+      var graph: Graph = gen.generateQIP(para)("mutualExcl")._1
 
       graph.draw("abcdefg.png")
-      var walk = Walk(graph)
+      var walk: AbstractPassage = Passage.init(graph)
 
       execute(walk, desc)
     }
 
-    def execute(walk: Walk, desc: List[TextDescription]) {
+    def execute(walk: AbstractPassage, desc: List[TextDescription]) {
       var playAgain = true
+      println("\n\n")
       do {
         var stroll = walk
         var step: Cluster = null
@@ -99,14 +102,17 @@ package generation {
          */
 
       } while (playAgain)
-      println("Thank you for playing the game! \n Copyright 2012-2013 Entertainment Intelligence Lab, Georgia Tech.")
+      println("Thank you for playing the game! \n Copyright 2012-2014 Entertainment Intelligence Lab, Georgia Tech.")
     }
 
     def makeChoice(choices: List[Cluster], desc: List[TextDescription], actor: String): Cluster = {
 
       val descripts = choices.map { c =>
         val o = desc.find(_.name == c.name)
-        if (o.isEmpty) throw new RuntimeException(c.name + " is missing from the descriptions")
+        if (o.isEmpty) {
+          throw new RuntimeException(c.name + " is missing from the descriptions")
+          //(c, c.name)
+        }
         val d = o.get
         (c, d)
       }
@@ -196,7 +202,7 @@ package generation {
     def readDescriptions(filename: String): List[TextDescription] = {
       val lines = CSVProcessor.readCSV(filename)
       val answer = for (row <- lines) yield {
-        
+
         new TextDescription(row(0), row(1), row(2), row(3), row(4))
       }
       answer.toList.tail

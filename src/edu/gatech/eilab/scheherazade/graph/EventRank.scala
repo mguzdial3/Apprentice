@@ -12,7 +12,7 @@ import breeze.linalg._
  *  @author Albert Li
  *  @date Jun 24 2013
  */
-object PageRank {
+object EventRank {
 
   def main(args: Array[String]) {
 
@@ -118,7 +118,7 @@ object PageRank {
         }
         
         for (j <- list) {
-          matrix(j, i) = -0.5 * total(i) / cnt 
+          matrix(j, i) = -0.3 * total(i) / cnt 
           // distribute some negative power, equal to the rest of the outgoing power, 
           // to all nodes in the exclusion list
         }
@@ -275,7 +275,8 @@ object PageRank {
       val insideStories = reader.filterUnused(stories, insideClusters)
 
       val gen = new GraphGenerator(insideStories, insideClusters)
-      var graph: Graph = gen.oldGenerate(para)("mutualExcl")._1
+      //var graph: Graph = gen.oldGenerate(para)("mutualExcl")._1
+      var graph: Graph = gen.generateQIP(para)("mutualExcl")._1
 
       graph
     }

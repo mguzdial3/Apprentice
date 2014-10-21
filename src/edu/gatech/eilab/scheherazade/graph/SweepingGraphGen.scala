@@ -32,7 +32,7 @@ package graph {
      *  The results are summarized in the summary.csv file
      */
     def generateGraphs() {
-      val reader = new ConfigReader("configAffairs.txt")
+      val reader = new ConfigReader("configGas.txt")
       val (stories, clusters) = reader.initData()
       //val (stories, clusters) = reader.initDataFiltered()
 
@@ -69,7 +69,7 @@ package graph {
         i += 1
 
         val gen = new GraphGenerator(insideStories, insideClusters)
-        val hashmap: scala.collection.mutable.HashMap[String, (Graph, Double)] = gen.generate(para)
+        val hashmap: scala.collection.mutable.HashMap[String, (Graph, Double)] = gen.generateQIP(para)
 
         var beforeErr = 0.0
         var afterErr = 0.0

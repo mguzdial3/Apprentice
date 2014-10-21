@@ -4,9 +4,10 @@ import edu.gatech.eilab.scheherazade.graph._
 import edu.gatech.eilab.scheherazade.data._
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.ListBuffer
+import edu.gatech.eilab.scheherazade.graph.structure.experiments._
 
-// this is the real thing. June 2014
-object MutexAnalysisNew {
+// This is an update in Oct 2014
+object MutexAnalysisNewOCT {
 
   def main(args: Array[String]) {
     val before = SampleGraph.sample10
@@ -14,13 +15,16 @@ object MutexAnalysisNew {
     val background = graph.nodes(6)
     val queryCluster = graph.nodes(7)
     graph.draw("special-test")
-    val r = causeForDeletionNew(graph, List(background))
-    println("causes =" + r._1.mkString("\n"))
-    cleanNodesNew(graph, List(background))
-
-    //val test = List(Set(new Cluster("c1", Nil), new Cluster("c2", Nil), new Cluster("c3", Nil)), Set(new Cluster("c3", Nil)), Set(new Cluster("c4", Nil)))
-
+    val answer = CfRComputer.processGraph(graph)
+    val cfr = answer._1 
+    val raceConditions = answer._2
+    println("CfR = " + CfRComputer.formatMap(cfr))
+    println("race conditions = " + raceConditions)
+    //cleanNodesNew(graph, cfr, List(background))
+    
+    // should detect race conditions here. 
   }
+
 
   /**
    * if all direct predecessors of an event is in the event list, add that event to the event list
@@ -427,9 +431,7 @@ object MutexAnalysisNew {
           val ca = CfR(succ)
           ca.exists { clause =>
             clause.exists(a => kept.contains(a) &&
-              clause.exists(b => !kept.contains(b) && 
-                  (!graph.ordered(b, a) || graph.shortestDistance(b, a) != -1)))
-                  // either b//a or b->a
+              clause.exists(b => !kept.contains(b) && graph.ordered(b, a)))
           }
         }
       }*/
@@ -643,17 +645,17 @@ object MutexAnalysisNew {
 
       newLinks = Nil
       // added May 20 night
-//      for (op <- graph.optionals) {
-//        val parents = g.predecessorsOf(op)
-//        val kids = g.successorsOf(op)
-//        for (p <- parents; k <- kids) {          
-//          val l = new Link(p, k)
-//          if (!g.links.contains(l)) {
-//            newLinks = l :: newLinks
-//            println("position 1, added link " + l )
-//          }
-//        }
-//      }
+      //      for (op <- graph.optionals) {
+      //        val parents = g.predecessorsOf(op)
+      //        val kids = g.successorsOf(op)
+      //        for (p <- parents; k <- kids) {          
+      //          val l = new Link(p, k)
+      //          if (!g.links.contains(l)) {
+      //            newLinks = l :: newLinks
+      //            println("position 1, added link " + l )
+      //          }
+      //        }
+      //      }
 
       new Graph(g.nodes, g.links ::: newLinks, g.mutualExcls, g.optionals, g.conditionals)
     }
@@ -780,7 +782,6 @@ object MutexAnalysisNew {
   //      }
   //    }
 
-  
   /**
    * removes clusters that are mutually exclusive with a given list of clusters
    * The main entrance of mutex analysis

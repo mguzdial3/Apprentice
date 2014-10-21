@@ -12,7 +12,7 @@ import java.io._
  *
  */
 package generation {
-  object StoryGenOnDisk {
+  object StoryGenRenewed {
 
     var node2Num: Map[Cluster, Int] = null
     var num2Node: Map[Int, Cluster] = null
@@ -32,8 +32,8 @@ package generation {
       val insideStories = reader.filterUnused(stories, insideClusters)
 
       val gen = new GraphGenerator(insideStories, insideClusters)
-      var graph: Graph = gen.generate(para)("mutualExcl")._1
-      graph.draw("ondisk")
+      var graph: Graph = gen.generateQIP(para)("mutualExcl")._1
+      graph.draw("base-graph")
       Thread.sleep(1000)
 
       val me = graph.mutualExcls
@@ -58,9 +58,14 @@ package generation {
       // remove from the graph nodes without predecessors that are not sources
       //graph = eGraph.removeIrregularSourceEnds()
 
-      graph = graph.graphWithOptionalsAndSkips
-      sources = graph.nodes.filter(n => (!sources.contains(n)) &&
-        graph.links.filter(l => l.target == n).map(_.source).forall(graph.optionals contains)) ::: sources
+      graph = graph.graphWithOptionalsAndSkips // add links that skip over optionals
+      
+      sources = graph.nodes.filter {
+        n =>
+          (!sources.contains(n)) &&
+            graph.links.filter(l => l.target == n).map(_.source).forall(graph.optionals.contains)
+      } ::: sources 
+      // after adding the skip links, the sources also include nodes whose parents are all optionals.  
 
       println(sources.map(_.name).mkString("sources :", "\n", ""))
       println(graph.optionals.map(_.name).mkString("optionals :", "\n", ""))
@@ -267,8 +272,9 @@ package generation {
       //println(excl.map(_.name).mkString("closure mutex: ", ", ", ""))
       excluded = excl filterNot (exclList.contains)
       val expired = selfGraph.links.filter(l => l.target == step).map(_.source).filterNot(newHistory.contains) // preventing deleting history
-      val newGraph = selfGraph.detectAndAddSkipLinks(excluded).removeNodes(excluded ::: expired)
+      var newGraph = selfGraph.detectAndAddSkipLinks(excluded).removeNodes(excluded ::: expired)
 
+      newGraph = new Graph(newGraph.nodes, newGraph.links.distinct, newGraph.mutualExcls, newGraph.optionals, newGraph.conditionals)
       var newFringe = WalkOnDisk.maxFringe(newHistory, newGraph, newGraph.optionals)
       // delete those already executed
       newFringe = newFringe filterNot (newHistory contains)
@@ -384,7 +390,7 @@ package generation {
         // if all of its parents are either included in the history or optionals, it is on the fringe
         val parents = optionals ::: history
         var possible = graph.nodes.filter { node =>
-          graph.predecessorsOf(node).forall(parents.contains)
+          graph.parentsOf(node).forall(parents.contains)
         }
         possible
       }
