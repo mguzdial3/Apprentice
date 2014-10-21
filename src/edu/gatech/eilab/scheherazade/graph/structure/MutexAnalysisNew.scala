@@ -426,7 +426,9 @@ object MutexAnalysisNew {
           val ca = CfR(succ)
           ca.exists { clause =>
             clause.exists(a => kept.contains(a) &&
-              clause.exists(b => !kept.contains(b) && graph.ordered(b, a)))
+              clause.exists(b => !kept.contains(b) && 
+                  (!graph.ordered(b, a) || graph.shortestDistance(b, a) != -1)))
+                  // either b//a or b->a
           }
         }
       }
