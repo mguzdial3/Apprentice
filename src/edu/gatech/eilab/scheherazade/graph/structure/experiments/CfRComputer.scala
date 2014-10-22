@@ -47,28 +47,35 @@ object CfRComputer {
    * Note: This function modifies the content of the map object.
    *
    */
-  def propFromParent(graph: Graph, map: HashMap[Cluster, List[List[Cluster]]], order: List[Cluster]): (HashMap[Cluster, List[List[Cluster]]], List[(List[Cluster], List[Cluster])]) =
+  def propFromParent(graph: Graph, map: HashMap[Cluster, List[List[Cluster]]], order: List[Cluster]): (HashMap[Cluster, List[List[Cluster]]], List[RaceCondition]) =
     {
 
-      var raceConditions = List[(List[Cluster], List[Cluster])]()
+      var raceConditions = List[RaceCondition]()
+      val potentialCfR = HashMap[Cluster, List[List[Cluster]]]()
       for (c <- order if graph.parentsOf(c) != Nil) {
-        println("processing " + c.name)
+        println("propagating for vertex " + c.name)
         val parents = graph.parentsOf(c)
 
         val allPossibleAssignment = assignParents(c, parents, graph, map)
-        println(c)
+        //println(c)
         println(allPossibleAssignment)
         var list = map.getOrElse(c, List[List[Cluster]]())
         var newCfR = List[List[Cluster]]()
         for (assignment <- allPossibleAssignment) {
           // filtering bad solutions and collect correct solutions
           val answer = collectFeasible(assignment, graph, map)
-          println("answer =" + answer)
+          //println("answer =" + answer)
+
+          val cfrAnswer = answer._1.filterNot(list => list.contains(c)) // a CfR cannot include the event itself
           if (answer._1 != Nil) {
-            newCfR = answer._1 ::: newCfR
+            newCfR = cfrAnswer ::: newCfR
           }
           if (answer._2 != Nil) {
             raceConditions = answer._2 ::: raceConditions
+
+            val potentialList = answer._2.map(i => i.a ::: i.b)
+            println("potentialList = " + potentialList) //TODO: finish the recognition of potential lists
+            potentialCfR.update(c, potentialList)
           }
         }
 
@@ -82,12 +89,19 @@ object CfRComputer {
 
   def assignParents(c: Cluster, parents: List[Cluster], graph: Graph, map: HashMap[Cluster, List[List[Cluster]]]): List[(ListBuffer[Cluster], ListBuffer[Cluster], ListBuffer[Cluster])] =
     {
-
+	  println(parents)
       val tuple = (ListBuffer[Cluster](), ListBuffer[Cluster](), ListBuffer[Cluster]())
       var curList = ListBuffer[(ListBuffer[Cluster], ListBuffer[Cluster], ListBuffer[Cluster])]()
       curList += tuple
 
       for (p <- parents) {
+    	  
+        /**temp code starts**/
+        if (c.name == "j") {
+          println("doing parent " + p.name)
+        }
+        /**temp code ends**/
+
         if (isCaseOne(p, graph, map)) {
           for (tuple <- curList) {
             tuple._1 += p
@@ -163,7 +177,7 @@ object CfRComputer {
 
       }
 
-      println("update " + p + " with  " + intersection)
+      //println("update " + p + " with  " + intersection)
       group2cfr.update(p, intersection)
 
       return true
@@ -174,7 +188,7 @@ object CfRComputer {
       graph.parentsOf(c) != Nil && map.contains(c) && map(c).exists(_.size == 1)
     }
 
-  def collectFeasible(grouping: (ListBuffer[Cluster], ListBuffer[Cluster], ListBuffer[Cluster]), graph: Graph, hashmap: HashMap[Cluster, List[List[Cluster]]]): (List[List[Cluster]], List[(List[Cluster], List[Cluster])]) =
+  def collectFeasible(grouping: (ListBuffer[Cluster], ListBuffer[Cluster], ListBuffer[Cluster]), graph: Graph, hashmap: HashMap[Cluster, List[List[Cluster]]]): (List[List[Cluster]], List[RaceCondition]) =
     {
 
       // check for empty list
@@ -188,7 +202,7 @@ object CfRComputer {
       val g3 = grouping._3
       if (g3 != Nil) {
         val c4g3 = g3.map(hashmap(_).filter(_.size == 1)) // cfr with only one node
-        println("cfrs in group 3. Do you see one cfr shared by all vertices? " + c4g3)
+        //println("cfrs in group 3. Do you see one cfr shared by all vertices? " + c4g3)
         if (c4g3 != Nil) { // checking if there is one CfR that is shared by all vertices
           var intersection = c4g3.head
           for (n <- c4g3.tail) {
@@ -206,7 +220,7 @@ object CfRComputer {
       var group2Collection: List[List[Cluster]] = Nil
       for (p <- g2) {
         val cfr = group2cfr(p) // need to compute a set product
-        println("cfr for " + p + "is " + cfr)
+        //println("cfr for " + p + "is " + cfr)
         if (group2Collection == Nil) {
           group2Collection = cfr
         } else {
@@ -243,17 +257,17 @@ object CfRComputer {
         val pairs = for (x <- results; y <- group2Collection) yield (x, y)
 
         var good = List[List[Cluster]]()
-        var raceConditions = List[(List[Cluster], List[Cluster])]()
+        var raceConditions = List[RaceCondition]()
         for (p <- pairs) {
           val after = p._1.head
           val before = p._2
           val passTest = before.forall(x => graph.shortestDistance(x, after) > 0)
-          println("check ordering: " + passTest)
+          //println("check ordering: " + passTest)
           if (passTest) {
             good = (p._1 ::: p._2) :: good
           } else {
             // if we don't pass this test, there is a race condition we must note
-            raceConditions = (p._1, p._2) :: raceConditions
+            raceConditions = new RaceCondition(p._1, p._2) :: raceConditions
           }
         }
 
@@ -281,15 +295,17 @@ object CfRComputer {
 
   def main(args: Array[String]) {
     init()
-    val graph = CfRSample.graph6().graphWithOptionalsAndSkips
+    val graph = CfRSample.graph7().graphWithOptionalsAndSkips
     graph.draw("aaaa")
     var map = immediateMutex(graph)
-    println(formatMap(map))
+    //println(formatMap(map))
     val order = graph.topoSort
+    println("topological sort = " + order.map(_.name).mkString)
     val answer = propFromParent(graph, map, order)
     map = answer._1
     val raceConditions = answer._2
-    println(formatMap(map))
+    //println(formatMap(map))
+    //println(raceConditions)
     //    testSimplification()
   }
 
@@ -304,16 +320,19 @@ object CfRComputer {
     val l3 = List(b, c)
 
     val list = List(l1, l2, l3)
-    println(simplify(list))
+    //println(simplify(list))
   }
 
-  def processGraph(graph: Graph) =
+  def processGraph(graph: Graph): (HashMap[Cluster, List[List[Cluster]]], List[RaceCondition]) =
     {
       init()
       var map = immediateMutex(graph.graphWithOptionalsAndSkips)
       val order = graph.topoSort
+      println("topological sort = " + order.map(_.name).mkString)
       val answer = propFromParent(graph, map, order)
-      answer
+
+      val raceCond = RaceConditionsType101(graph, order, answer._1)
+      (answer._1, (raceCond ::: answer._2).distinct)
     }
 
   def formatMap(map: HashMap[Cluster, List[List[Cluster]]]): String =
@@ -331,4 +350,106 @@ object CfRComputer {
       str.toString
     }
 
+  /**
+   * detect Type-I (1) race conditions
+   * Attention: modifies the hashmap
+   */
+  def RaceConditionsType101(graph: Graph, order: List[Cluster], cfr: HashMap[Cluster, List[List[Cluster]]]): List[RaceCondition] = {
+    var raceConditions = List[RaceCondition]()
+
+    for (c <- order if cfr.contains(c) && cfr(c) != Nil) // only need to check existing cfr
+    {
+      val directMutex = cfr(c).filter(x => x.size == 1 && graph.mutuallyExclusive(x.head, c))
+      val childCfR = cfr(c).filterNot(directMutex.contains)
+
+      println("prcessing " + c.name)
+      var removed = List[List[Cluster]]()
+
+      for (p <- graph.parentsOf(c) if cfr.contains(p) && cfr(p) != Nil) {
+        var parentsCfR = cfr(p)
+        parentsCfR = parentsCfR.filter { pcfr =>
+          !childCfR.exists(ccfr => pcfr.forall(ccfr.contains))
+        }
+
+        for (ccfr <- childCfR; pcfr <- parentsCfR) {
+          if (preventsCfR(graph, pcfr, ccfr)) {
+            removed = ccfr :: removed
+            println("newly removed: " + ccfr)
+          } else if (parallelCfR(graph, pcfr, ccfr)) {
+            raceConditions = new RaceCondition(pcfr, ccfr) :: raceConditions
+            println("new race discovered: " + pcfr.mkString("(", ",", ")") + ccfr.mkString("(", ",", ")"))
+          }
+        }
+
+      }
+
+      cfr.update(c, childCfR.filterNot(removed.contains) ::: directMutex)
+    }
+    println("101 race conditoins = " + raceConditions)
+    raceConditions
+  }
+
+  /**
+   * Tests if one list of clusters A totally precedes the other list of clusters B so that A prevents B from working as a CfR.
+   *  First, we only consider the non-overlapping parts of both lists. If the two lists are identical, we return false.
+   *  After that, if every vertex in the remaining part of list A is ordered before the remaining part of list B,
+   *  we return true. Otherwise, return false
+   */
+  def preventsCfR(graph: Graph, A: List[Cluster], B: List[Cluster]): Boolean =
+    {
+      val remainA = A.filterNot(B.contains)
+      val remainB = B.filterNot(A.contains)
+      val common = A.filter(B.contains)
+      if (remainA == Nil || remainB == Nil) {
+        // if remainA is Nil, A is part of the CfR for B.
+        // if remainB is Nil, A cannot happen without B happen, which means the node will be removed. So B is a real CfR.
+        return false
+      } else {
+        // neither remainA or remainB is Nil
+        // each element of A precedes all elements of B and is not optional. 
+        // If it is optional, it may not execute, which allows B to work as a CfR
+        remainA.forall(x => remainB.forall(y => graph.shortestDistance(x, y) != -1) && !graph.isOptional(x))
+      }
+    }
+
+  /**
+   * Tests if one list of clusters A is parallel to the other list of clusters B so that A and B become a race condition.
+   *  First, we only consider the non-overlapping parts of both lists. If the two lists are identical, we return false.
+   *  After that, if every vertex in the remaining part of list A is ordered before the remaining part of list B,
+   *  we return true. Otherwise, return false
+   */
+  def parallelCfR(graph: Graph, A: List[Cluster], B: List[Cluster]): Boolean =
+    {
+      val remainA = A.filterNot(B.contains)
+      val remainB = B.filterNot(A.contains)
+      val common = A.filter(B.contains)
+      if (remainA == Nil || remainB == Nil) {
+        // if remainA is Nil, A is part of the CfR for B.
+        // if remainB is Nil, A cannot happen without B happen, which means the node will be removed. So B is a real CfR.
+        return false
+      } else {
+        // neither remainA or remainB is Nil
+        // not true that all elements in B precedes every element of A
+        !remainB.forall(x => remainA.forall(y => graph.shortestDistance(x, y) != -1)) //&&
+        // at least some elements of A precedes elements of B or are parallel. I THIS THIS IS INCLUDED IN THE PREV CONDITION
+        // remainA.exists(x => remainB.forall(y => graph.shortestDistance(x, y) != -1))
+      }
+    }
+
+  /**
+   * finds a bottom layer for a list of partially ordered vertices in a graph
+   *
+   */
+  def bottomLayer(graph: Graph, clusters: List[Cluster]): List[Cluster] =
+    {
+      var temp = clusters
+      for (c <- temp) {
+        if (clusters.exists(x => graph.shortestDistance(c, x) != -1)) {
+          // the path c -> ... -> x exists
+          temp = temp.filterNot(_ == c)
+        }
+      }
+
+      temp
+    }
 }
