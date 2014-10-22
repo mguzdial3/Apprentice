@@ -56,9 +56,13 @@ class CfRUnitTests extends FunSuite {
 
   test("Sample Graph 7") {
     val graph = CfRSample.graph7
-    val result = CfRComputer.processGraph(graph)._1
-    val f = result(new Cluster("i", Nil))
+    val answer = CfRComputer.processGraph(graph)
+    val cfr = answer._1 
+    val f = cfr(new Cluster("i", Nil))
     assert(f.size == 1 && containsCause(f, List(new Cluster("d", Nil), new Cluster("l", Nil), new Cluster("h", Nil))))
+    val raceCond = answer._2 
+    println(raceCond)
+    assert(raceCond.contains(new RaceCondition(List(new Cluster("d", Nil), new Cluster("e", Nil)), List(new Cluster("h", Nil)))))
   }
 
   test("Sample Graph 8") {
@@ -91,16 +95,37 @@ class CfRUnitTests extends FunSuite {
     assert(d.size == 2 && d.contains(List(new Cluster("g", Nil))) && d.contains(List(new Cluster("f", Nil))))
     val e = map(new Cluster("e", Nil))
     assert(e.size == 1 && e.contains(List(new Cluster("g", Nil))))
-    val raceCond = answer._2       
+    val raceCond = answer._2
     assert(raceCond.size == 1 && raceCond.contains(new RaceCondition(List(new Cluster("f", Nil)), List(new Cluster("g", Nil)))))
   }
-  
-    test("Sample Graph 13") {
+
+  test("Sample Graph 12") {
+    val graph = CfRSample.graph12
+    graph.draw("aaaa")
+    val answer = CfRComputer.processGraph(graph)
+    val map = answer._1
+    assert(map(new Cluster("i", Nil)) == Nil)
+    val raceCond = answer._2
+    assert(raceCond == Nil)
+    //println("races = " + raceCond)
+  }
+
+  test("Sample Graph 13") {
     val graph = CfRSample.graph13
     graph.draw("aaaa")
     val answer = CfRComputer.processGraph(graph)
     val map = answer._1
-    println("cfr = " +CfRComputer.formatMap(map))
+    println("cfr = " + CfRComputer.formatMap(map))
+    val raceCond = answer._2
+    println("races = " + raceCond)
+  }
+  
+    test("Sample Graph 14") {
+    val graph = CfRSample.graph14
+    graph.draw("aaaa")
+    val answer = CfRComputer.processGraph(graph)
+    val map = answer._1
+    println("cfr = " + CfRComputer.formatMap(map))
     val raceCond = answer._2
     println("races = " + raceCond)
   }

@@ -188,6 +188,10 @@ object CfRComputer {
       graph.parentsOf(c) != Nil && map.contains(c) && map(c).exists(_.size == 1)
     }
 
+  /** collects the CfR from a possible parent assignment
+   *  returns two things: a list of CfRs, and a list of race conditions
+   *     
+   */
   def collectFeasible(grouping: (ListBuffer[Cluster], ListBuffer[Cluster], ListBuffer[Cluster]), graph: Graph, hashmap: HashMap[Cluster, List[List[Cluster]]]): (List[List[Cluster]], List[RaceCondition]) =
     {
 
@@ -258,16 +262,24 @@ object CfRComputer {
 
         var good = List[List[Cluster]]()
         var raceConditions = List[RaceCondition]()
+        var potentialCfRs = List[List[Cluster]]()
         for (p <- pairs) {
           val after = p._1.head
           val before = p._2
-          val passTest = before.forall(x => graph.shortestDistance(x, after) > 0)
+          val validCfR = before.forall(x => graph.shortestDistance(x, after) > 0) // $after$ is ordered after every other vertex. This is a valid CfR
+          val impossibleCfR = before.exists(x => graph.shortestDistance(after, x) > 0) 
+          // $after$ is ordered before every other vertex. no orderings would make it a CfR. Thus, this is impossible.
+          
           //println("check ordering: " + passTest)
-          if (passTest) {
+          if (validCfR) {
             good = (p._1 ::: p._2) :: good
-          } else {
-            // if we don't pass this test, there is a race condition we must note
+          } else if (!impossibleCfR) {            
+            // if not impossible, then some orderings can delete the vertex, while other orderings will keep the vertex. Therefore it is a race condition.
             raceConditions = new RaceCondition(p._1, p._2) :: raceConditions
+          }
+          else
+          {
+            //println(" Haha! impossible CfR detected: " + after.name + ", " + before.map(_.name).mkString(";")) 
           }
         }
 
