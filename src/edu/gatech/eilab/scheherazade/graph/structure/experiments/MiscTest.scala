@@ -13,20 +13,20 @@ class MiscTest extends FunSuite {
     val c = new Cluster("c", Nil)
     val d = new Cluster("d", Nil)
 
-    val cond1 = new RaceCondition(List(a, b), List(c, d))
-    val cond2 = new RaceCondition(List(c, d), List(a, b))
+    val cond1 = new RaceCondition(a, List(a, b), List(c, d))
+    val cond2 = new RaceCondition(a, List(c, d), List(a, b))
     println(cond1)
     println(cond2)
     assert(cond1 == cond2)
 
-    val cond3 = new RaceCondition(List(c, a), List(d, b))
+    val cond3 = new RaceCondition(a, List(c, a), List(d, b))
 
     assert(cond1 != cond3)
 
-    val cond4 = new RaceCondition(List(a), List(c))
-    val cond5 = new RaceCondition(List(c), List(a))
+    val cond4 = new RaceCondition(a, List(a), List(c))
+    val cond5 = new RaceCondition(a, List(c), List(a))
     
-    val cond6 = new RaceCondition(List(new Cluster("c", Nil)), List(new Cluster("a", Nil)))
+    val cond6 = new RaceCondition(a, List(new Cluster("c", Nil)), List(new Cluster("a", Nil)))
     
     assert(cond4 == cond5)
     assert(cond4 == cond6)

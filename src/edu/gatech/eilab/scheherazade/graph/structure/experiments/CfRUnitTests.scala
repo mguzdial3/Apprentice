@@ -12,8 +12,8 @@ class CfRUnitTests extends FunSuite {
     val result = answer._1
     val f = result(new Cluster("f", Nil))
     assert(f.size == 1 && f.contains(List(new Cluster("d", Nil))))
-    val raceCond = answer._2
-    assert(raceCond.size == 1 && raceCond.contains(new RaceCondition(List(new Cluster("d", Nil)), List(new Cluster("e", Nil)))))
+    val raceCond = answer._2    
+    assert(raceCond.size == 1 && raceCond.contains(new RaceCondition(new Cluster("f", Nil), List(new Cluster("d", Nil)), List(new Cluster("e", Nil)))))
     println("race conditions = " + raceCond)
   }
 
@@ -61,8 +61,8 @@ class CfRUnitTests extends FunSuite {
     val f = cfr(new Cluster("i", Nil))
     assert(f.size == 1 && containsCause(f, List(new Cluster("d", Nil), new Cluster("l", Nil), new Cluster("h", Nil))))
     val raceCond = answer._2 
-    println(raceCond)
-    assert(raceCond.contains(new RaceCondition(List(new Cluster("d", Nil), new Cluster("e", Nil)), List(new Cluster("h", Nil)))))
+    println(raceCond)    
+    assert(raceCond.contains(new RaceCondition((new Cluster("i", Nil)), List(new Cluster("d", Nil), new Cluster("e", Nil)), List(new Cluster("h", Nil)))))
   }
 
   test("Sample Graph 8") {
@@ -96,7 +96,8 @@ class CfRUnitTests extends FunSuite {
     val e = map(new Cluster("e", Nil))
     assert(e.size == 1 && e.contains(List(new Cluster("g", Nil))))
     val raceCond = answer._2
-    assert(raceCond.size == 1 && raceCond.contains(new RaceCondition(List(new Cluster("f", Nil)), List(new Cluster("g", Nil)))))
+    println(raceCond)
+    assert(raceCond.size == 1 && raceCond.contains(new RaceCondition(new Cluster("e", Nil), List(new Cluster("f", Nil)), List(new Cluster("g", Nil)))))
   }
 
   test("Sample Graph 12") {

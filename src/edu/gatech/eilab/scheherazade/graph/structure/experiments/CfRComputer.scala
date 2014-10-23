@@ -43,6 +43,41 @@ object CfRComputer {
     }
 
   /**
+   * another heuristic for propogating from parents
+   *  modifies the map object
+   */
+  def propFromParent2(graph: Graph, map: HashMap[Cluster, List[List[Cluster]]], order: List[Cluster]):HashMap[Cluster, List[List[Cluster]]] =
+    {
+      for (c <- order if graph.parentsOf(c) != Nil) {
+        println("propagating 2 for vertex " + c.name)
+        var parents = graph.parentsOf(c)
+
+        if (map.contains(parents.head)) {
+          var activeCfRs = map(parents.head)
+          parents = parents.tail
+          while (parents != Nil && activeCfRs != Nil) {
+            val nextCfRs = map(parents.head)
+            parents = parents.tail
+            activeCfRs = activeCfRs.filter(x => nextCfRs.exists(y => x.forall(y.contains) || y.forall(x.contains))) // find cfrs that can also delete other parents
+          }
+
+          if (activeCfRs != Nil) {
+            if (map.contains(c)) {
+              val existing = map(c)
+              map.update(c, activeCfRs ::: existing)
+            }
+            else
+            {
+              map.update(c, activeCfRs)
+            }
+          }
+        }
+      }
+
+      map
+    }
+
+  /**
    * Propagates causes for removal from parents to children.
    * Note: This function modifies the content of the map object.
    *
@@ -51,7 +86,7 @@ object CfRComputer {
     {
 
       var raceConditions = List[RaceCondition]()
-      val potentialCfR = HashMap[Cluster, List[List[Cluster]]]()
+      //val potentialCfR = HashMap[Cluster, List[List[Cluster]]]()
       for (c <- order if graph.parentsOf(c) != Nil) {
         println("propagating for vertex " + c.name)
         val parents = graph.parentsOf(c)
@@ -63,7 +98,7 @@ object CfRComputer {
         var newCfR = List[List[Cluster]]()
         for (assignment <- allPossibleAssignment) {
           // filtering bad solutions and collect correct solutions
-          val answer = collectFeasible(assignment, graph, map)
+          val answer = collectFeasible(c, assignment, graph, map)
           //println("answer =" + answer)
 
           val cfrAnswer = answer._1.filterNot(list => list.contains(c)) // a CfR cannot include the event itself
@@ -73,9 +108,9 @@ object CfRComputer {
           if (answer._2 != Nil) {
             raceConditions = answer._2 ::: raceConditions
 
-            val potentialList = answer._2.map(i => i.a ::: i.b)
-            println("potentialList = " + potentialList) //TODO: finish the recognition of potential lists
-            potentialCfR.update(c, potentialList)
+            //val potentialList = answer._2.map(i => i.a ::: i.b)
+            //println("potentialList = " + potentialList) //TODO: finish the recognition of potential lists
+            //potentialCfR.update(c, potentialList)
           }
         }
 
@@ -89,13 +124,13 @@ object CfRComputer {
 
   def assignParents(c: Cluster, parents: List[Cluster], graph: Graph, map: HashMap[Cluster, List[List[Cluster]]]): List[(ListBuffer[Cluster], ListBuffer[Cluster], ListBuffer[Cluster])] =
     {
-	  println(parents)
+      println(parents)
       val tuple = (ListBuffer[Cluster](), ListBuffer[Cluster](), ListBuffer[Cluster]())
       var curList = ListBuffer[(ListBuffer[Cluster], ListBuffer[Cluster], ListBuffer[Cluster])]()
       curList += tuple
 
       for (p <- parents) {
-    	  
+
         /**temp code starts**/
         if (c.name == "j") {
           println("doing parent " + p.name)
@@ -188,11 +223,12 @@ object CfRComputer {
       graph.parentsOf(c) != Nil && map.contains(c) && map(c).exists(_.size == 1)
     }
 
-  /** collects the CfR from a possible parent assignment
+  /**
+   * collects the CfR from a possible parent assignment
    *  returns two things: a list of CfRs, and a list of race conditions
-   *     
+   *  @param vertexInProc: the vertex child being processed. Grouping: the parent assignment to three different groups.
    */
-  def collectFeasible(grouping: (ListBuffer[Cluster], ListBuffer[Cluster], ListBuffer[Cluster]), graph: Graph, hashmap: HashMap[Cluster, List[List[Cluster]]]): (List[List[Cluster]], List[RaceCondition]) =
+  def collectFeasible(vertexInProc: Cluster, grouping: (ListBuffer[Cluster], ListBuffer[Cluster], ListBuffer[Cluster]), graph: Graph, hashmap: HashMap[Cluster, List[List[Cluster]]]): (List[List[Cluster]], List[RaceCondition]) =
     {
 
       // check for empty list
@@ -267,18 +303,16 @@ object CfRComputer {
           val after = p._1.head
           val before = p._2
           val validCfR = before.forall(x => graph.shortestDistance(x, after) > 0) // $after$ is ordered after every other vertex. This is a valid CfR
-          val impossibleCfR = before.exists(x => graph.shortestDistance(after, x) > 0) 
+          val impossibleCfR = before.exists(x => graph.shortestDistance(after, x) > 0)
           // $after$ is ordered before every other vertex. no orderings would make it a CfR. Thus, this is impossible.
-          
+
           //println("check ordering: " + passTest)
           if (validCfR) {
             good = (p._1 ::: p._2) :: good
-          } else if (!impossibleCfR) {            
+          } else if (!impossibleCfR) {
             // if not impossible, then some orderings can delete the vertex, while other orderings will keep the vertex. Therefore it is a race condition.
-            raceConditions = new RaceCondition(p._1, p._2) :: raceConditions
-          }
-          else
-          {
+            raceConditions = new RaceCondition(vertexInProc, p._1, p._2) :: raceConditions
+          } else {
             //println(" Haha! impossible CfR detected: " + after.name + ", " + before.map(_.name).mkString(";")) 
           }
         }
@@ -343,7 +377,23 @@ object CfRComputer {
       println("topological sort = " + order.map(_.name).mkString)
       val answer = propFromParent(graph, map, order)
 
-      val raceCond = RaceConditionsType101(graph, order, answer._1)
+      // potential CfR comes from incorrectly ordered cfr for parents. If they are correctly ordered, they can be a CfR for this node.
+      val potentialCfR = HashMap[Cluster, List[List[Cluster]]]()
+
+      for (item <- answer._2) {
+        if (potentialCfR.contains(item.focus)) {
+          val elem = item.a ::: item.b
+          val list = elem :: potentialCfR(item.focus)
+          potentialCfR.update(item.focus, list)
+        } else {
+          val list = List(item.a ::: item.b)
+          potentialCfR.update(item.focus, list)
+        }
+      }
+      // potential CfR ends
+
+      val raceCond = RaceConditionsType101(graph, order, answer._1, potentialCfR)
+
       (answer._1, (raceCond ::: answer._2).distinct)
     }
 
@@ -366,7 +416,7 @@ object CfRComputer {
    * detect Type-I (1) race conditions
    * Attention: modifies the hashmap
    */
-  def RaceConditionsType101(graph: Graph, order: List[Cluster], cfr: HashMap[Cluster, List[List[Cluster]]]): List[RaceCondition] = {
+  def RaceConditionsType101(graph: Graph, order: List[Cluster], cfr: HashMap[Cluster, List[List[Cluster]]], potentialCfR: HashMap[Cluster, List[List[Cluster]]]): List[RaceCondition] = {
     var raceConditions = List[RaceCondition]()
 
     for (c <- order if cfr.contains(c) && cfr(c) != Nil) // only need to check existing cfr
@@ -377,8 +427,15 @@ object CfRComputer {
       println("prcessing " + c.name)
       var removed = List[List[Cluster]]()
 
-      for (p <- graph.parentsOf(c) if cfr.contains(p) && cfr(p) != Nil) {
-        var parentsCfR = cfr(p)
+      for (p <- graph.parentsOf(c)) {
+        var parentsCfR = List[List[Cluster]]()
+        if (cfr.contains(p)) {
+          parentsCfR = cfr(p)
+        }
+        if (potentialCfR.contains(p)) {
+          parentsCfR = potentialCfR(p) ::: parentsCfR
+        }
+
         parentsCfR = parentsCfR.filter { pcfr =>
           !childCfR.exists(ccfr => pcfr.forall(ccfr.contains))
         }
@@ -388,7 +445,7 @@ object CfRComputer {
             removed = ccfr :: removed
             println("newly removed: " + ccfr)
           } else if (parallelCfR(graph, pcfr, ccfr)) {
-            raceConditions = new RaceCondition(pcfr, ccfr) :: raceConditions
+            raceConditions = new RaceCondition(c, pcfr, ccfr) :: raceConditions
             println("new race discovered: " + pcfr.mkString("(", ",", ")") + ccfr.mkString("(", ",", ")"))
           }
         }
@@ -397,7 +454,7 @@ object CfRComputer {
 
       cfr.update(c, childCfR.filterNot(removed.contains) ::: directMutex)
     }
-    println("101 race conditoins = " + raceConditions)
+    println("101 race conditions = " + raceConditions)
     raceConditions
   }
 
