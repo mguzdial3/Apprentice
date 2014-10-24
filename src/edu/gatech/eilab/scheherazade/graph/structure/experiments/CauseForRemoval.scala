@@ -12,17 +12,27 @@ import edu.gatech.eilab.scheherazade.graph._
  *
  *  group3 could be null, when no such vertex is required.
  */
-final class CauseForRemoval(val group3: Cluster, val other: List[Cluster]) {
+final class CauseForRemoval(val group3: Cluster, val other: List[Cluster], val raceCondition: Boolean = false) {
+
+  def allVertices: List[Cluster] =
+    {
+      if (group3 != null) {
+        group3 :: other
+      } else {
+        other
+      }
+    }
 
   override def equals(o: Any): Boolean =
     o match {
-      case cfr: CauseForRemoval =>
-        this.group3 == cfr.group3 && this.other.filterNot(cfr.other.contains) == Nil && cfr.other.filterNot(this.other.contains) == Nil
+      case that: CauseForRemoval =>
+        this.group3 == that.group3 && this.other.filterNot(that.other.contains) == Nil && that.other.filterNot(this.other.contains) == Nil &&
+        this.raceCondition == that.raceCondition
       case _ => false
     }
 
   override def hashCode() =
-    (group3.hashCode * 97 + other.hashCode * 109) % 61
+    (group3.hashCode * 97 + other.hashCode * 109 + {if (raceCondition) 1 else 0} ) % 61
 
   override def toString() =
     {
@@ -35,6 +45,10 @@ final class CauseForRemoval(val group3: Cluster, val other: List[Cluster]) {
       }
       buf.append("|")
       buf.append(other.map(_.name).mkString(","))
+      if (raceCondition)
+      {
+        buf.append("|R")
+      }
       buf.append("]")
       buf.toString
     }
@@ -70,7 +84,7 @@ final class CauseForRemoval(val group3: Cluster, val other: List[Cluster]) {
    *  1: potentially race condition
    *  2: impossible to work together as a cfr.
    */
-  def isCompatible(graph: Graph, that: CauseForRemoval): Int = {
+  def compatibleWith(graph: Graph, that: CauseForRemoval): Int = {
     val group3IsGood = this.group3 == null || that.group3 == null || this.group3 == that.group3
 
     if (!group3IsGood) return CauseForRemoval.IMPOSSIBLE
@@ -97,6 +111,26 @@ final class CauseForRemoval(val group3: Cluster, val other: List[Cluster]) {
     return CauseForRemoval.COMPATIBLE
 
   }
+
+  def mergeWith(that: CauseForRemoval): CauseForRemoval =
+    {
+      val realGroup3 = {
+        if (this.group3 == null) that.group3
+        else this.group3
+      }
+
+      new CauseForRemoval(realGroup3, (this.other ::: that.other).distinct)
+    }
+
+  def mergeRaceCondition(that: CauseForRemoval): CauseForRemoval =
+    {
+      val realGroup3 = {
+        if (this.group3 == null) that.group3
+        else this.group3
+      }
+
+      new CauseForRemoval(realGroup3, this.other ::: that.other, true)
+    }
 
 }
 
