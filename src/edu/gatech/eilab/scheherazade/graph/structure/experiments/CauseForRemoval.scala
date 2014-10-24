@@ -131,6 +131,18 @@ final class CauseForRemoval(val group3: Cluster, val other: List[Cluster], val r
 
       new CauseForRemoval(realGroup3, this.other ::: that.other, true)
     }
+  
+  /** this is a strict super set of that. 
+   *  this must not be equal to that
+   */
+  def strictSuperSetOf(that:CauseForRemoval):Boolean = 
+  {
+    if (this == that) return false
+    val group3Check = (this.group3 == that.group3) || (that.group3 == null)
+    if (!group3Check) return false
+    val otherCheck = that.other == Nil || that.other.forall(this.other.contains)
+    otherCheck
+  }
 
 }
 

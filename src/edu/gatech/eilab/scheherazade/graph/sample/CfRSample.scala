@@ -406,6 +406,7 @@ object CfRSample {
   
   /**
    *  This is a complex race condition graph. 
+   *  Race condition between h and g, f
    */
   def graph13() = {
     val a = new Cluster("a", Nil)

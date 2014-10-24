@@ -81,8 +81,9 @@ object CfRComputer2 {
               }
             }
           }
-
-          cfrMap.update(c, newCfrList)
+          
+          var finalList = newCfrList.filterNot(x => newCfrList.exists(y => x != y && x.strictSuperSetOf(y)))
+          cfrMap.update(c, finalList)
         }
       }
 
@@ -95,9 +96,9 @@ object CfRComputer2 {
    */
   def mergeParentsCfR(focus: Cluster, parentList: List[Cluster], cfrMap: HashMap[Cluster, List[CauseForRemoval]], graph: Graph): (List[CauseForRemoval], List[RaceCondition]) =
     {
-      if (focus.name == "i") {
-        println("processing i")
-      }
+//      if (focus.name == "i") {
+//        println("processing i")
+//      }
       
       var parents = parentList
       var cfrList = List[CauseForRemoval]()
@@ -152,6 +153,8 @@ object CfRComputer2 {
     {
       for (x <- set1; y <- set2) yield (x ::: y).distinct
     }
+  
+  //TODO: missing the race conditions caused by two group 3 vertices.
 
   def simplify(cfrList: List[List[Cluster]]): List[List[Cluster]] =
     {
