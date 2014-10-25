@@ -112,8 +112,7 @@ class CfRUnitTests2 extends FunSuite {
     val raceCond = answer._2
     println(raceCond)
     assert(raceCond.size == 2 && raceCond.contains(new RaceCondition(new Cluster("e", Nil), List(new Cluster("f", Nil)), List(new Cluster("g", Nil)))) &&
-        raceCond.contains(new RaceCondition(new Cluster("h", Nil), List(new Cluster("d", Nil)), List(new Cluster("b", Nil))))
-        )
+      raceCond.contains(new RaceCondition(new Cluster("h", Nil), List(new Cluster("d", Nil)), List(new Cluster("b", Nil)))))
   }
 
   test("Sample Graph 12") {
@@ -190,7 +189,7 @@ class CfRUnitTests2 extends FunSuite {
     val icfr = map(i)
     assert(icfr.size == 1 && icfr.contains(new CauseForRemoval(new Cluster("e", Nil), List(new Cluster("d", Nil)))))
     assert(raceCond.size == 2 && raceCond.contains(new RaceCondition(new Cluster("i", Nil), List(new Cluster("h", Nil)), List(new Cluster("e", Nil)))) &&
-        raceCond.contains(new RaceCondition(new Cluster("i", Nil), List(new Cluster("h", Nil)), List(new Cluster("d", Nil), new Cluster("e", Nil)))))
+      raceCond.contains(new RaceCondition(new Cluster("i", Nil), List(new Cluster("h", Nil)), List(new Cluster("d", Nil), new Cluster("e", Nil)))))
   }
 
   test("Sample Graph 18") {
@@ -212,6 +211,26 @@ class CfRUnitTests2 extends FunSuite {
     val raceCond = answer._2
     val condPrec = answer._3
     assert(raceCond.contains(new RaceCondition(new Cluster("e", Nil), List(new Cluster("c", Nil)), List(new Cluster("d", Nil)))))
+  }
+
+  test("Sample Graph 20") {
+    val graph = CfRSample.graph20
+    val answer = CfRComputer2.processGraph(graph)
+    val map = answer._1
+    val raceCond = answer._2
+    val condPrec = answer._3
+    println(condPrec)
+  }
+
+  test("Sample Graph 21") {
+    val graph = CfRSample.graph21
+    val answer = CfRComputer2.processGraph(graph)
+    val map = answer._1
+    val raceCond = answer._2
+    val condPrec = answer._3
+    assert(condPrec.size == 3 && condPrec.contains(new ConditionalPrec(List(new Cluster("c", Nil), new Cluster("d", Nil)), new Cluster("f", Nil)))
+      && condPrec.contains(new ConditionalPrec(List(new Cluster("d", Nil)), new Cluster("e", Nil)))
+      && condPrec.contains(new ConditionalPrec(List(new Cluster("c", Nil)), new Cluster("e", Nil))))
   }
 
   def containsCause(allCauses: List[List[Cluster]], oneCause: List[Cluster]): Boolean =

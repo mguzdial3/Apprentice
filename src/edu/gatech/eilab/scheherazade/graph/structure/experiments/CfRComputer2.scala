@@ -162,10 +162,9 @@ object CfRComputer2 {
       var allTemporals = List[ConditionalPrec]()
       var allRaces = List[RaceCondition]()
       for (c <- order) {
-//        if (c.name == "e")
-//        {
-//        	println(c.name)
-//        }
+        if (c.name == "f") {
+          println(c.name)
+        }
         var counter = 0
         val mutexList = mutexMap.getOrElse(c, Nil)
         val cCfRList = cfrMap.getOrElse(c, Nil)
@@ -221,6 +220,9 @@ object CfRComputer2 {
           }
 
         }
+        println(c.name)
+        println(allTemporals)
+        println(allRaces)
       }
 
       (allTemporals.distinct, allRaces.distinct)
@@ -320,10 +322,10 @@ object CfRComputer2 {
       val answer = processCfR(graph, order, mutexMap)
       val cfrMap = answer._1
       val moreRace = findRacesForCatB(graph, cfrMap, order, mutexMap)
-      
+
       val (condPrec, race2) = findTemporalLinks(graph, cfrMap, order, mutexMap)
       val raceConditions = race2 ::: answer._2 ::: moreRace
-      
+
       (cfrMap, raceConditions, condPrec)
     }
 

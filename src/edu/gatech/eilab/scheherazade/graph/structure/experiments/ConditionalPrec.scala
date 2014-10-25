@@ -31,7 +31,7 @@ class ConditionalPrec(val before: List[Cluster], val after: Cluster) {
   override def toString() =
     {
       val buf = new StringBuffer()
-      buf.append("[Prec")
+      buf.append("[Prec: ")
       buf.append(before.map(_.name).mkString(","))
       buf.append(" < ")
       buf.append(after.name)

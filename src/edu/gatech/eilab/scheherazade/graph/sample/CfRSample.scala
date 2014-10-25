@@ -666,26 +666,80 @@ object CfRSample {
 
     new Graph(nodes, links, mutex)
   }
-  
-    /**
+
+  /**
    *  This is a simple case for Conditional Precedences
    */
   def graph20() = {
     val a = new Cluster("a", Nil)
     val b = new Cluster("b", Nil)
-    val c = new Cluster("c", Nil)    
+    val c = new Cluster("c", Nil)
     val e = new Cluster("e", Nil)
 
     val nodes = List(a, b, c, e)
 
     val links = List(
       new Link(a, b),
-      new Link(a, c),      
+      new Link(a, c),
       new Link(b, e),
       new Link(a, e))
 
-    val mutex = List(      
+    val mutex = List(
       new MutualExcl(b, c))
+
+    new Graph(nodes, links, mutex)
+  }
+
+  /**
+   *  This is a simple case for Conditional Precedences
+   */
+  def graph21() = {
+    val a = new Cluster("a", Nil)
+    val b = new Cluster("b", Nil)
+    val c = new Cluster("c", Nil)
+    val e = new Cluster("e", Nil)
+    val d = new Cluster("d", Nil)
+    val f = new Cluster("f", Nil)
+    val g = new Cluster("g", Nil)
+
+    val nodes = List(a, b, c, d, e, f, g)
+
+    val links = List(
+      new Link(a, e),
+      new Link(b, e),
+      new Link(e, f),
+      new Link(g, f))
+
+    val mutex = List(
+      new MutualExcl(a, c),
+      new MutualExcl(b, d))
+
+    new Graph(nodes, links, mutex)
+  }
+
+  /**
+   *  This is Figure 23(D) 23(E) TO BE COMPLETED!!
+   */
+  def graph22() = {
+    val a = new Cluster("a", Nil)
+    val b = new Cluster("b", Nil)
+    val c = new Cluster("c", Nil)
+    val e = new Cluster("e", Nil)
+    val d = new Cluster("d", Nil)
+    val f = new Cluster("f", Nil)
+    val g = new Cluster("g", Nil)
+
+    val nodes = List(a, b, c, d, e, f, g)
+
+    val links = List(
+      new Link(a, e),
+      new Link(b, e),
+      new Link(e, f),
+      new Link(g, f))
+
+    val mutex = List(
+      new MutualExcl(a, c),
+      new MutualExcl(b, d))
 
     new Graph(nodes, links, mutex)
   }
