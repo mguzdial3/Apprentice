@@ -46,11 +46,10 @@ object CfRComputer2 {
       map
     }
 
-  def processCfR(graph: Graph, order: List[Cluster]): (HashMap[Cluster, List[CauseForRemoval]], List[RaceCondition]) =
+  def processCfR(graph: Graph, order: List[Cluster], mutexMap: HashMap[Cluster, List[Cluster]]): (HashMap[Cluster, List[CauseForRemoval]], List[RaceCondition]) =
     {
       val cfrMap = HashMap[Cluster, List[CauseForRemoval]]()
       var allRaceList = List[RaceCondition]()
-      val mutexMap = immediateMutex(graph)
 
       for (c <- order) {
         val parents = graph.parentsOf(c)
@@ -81,7 +80,7 @@ object CfRComputer2 {
               }
             }
           }
-          
+
           var finalList = newCfrList.filterNot(x => newCfrList.exists(y => x != y && x.strictSuperSetOf(y)))
           cfrMap.update(c, finalList)
         }
@@ -96,10 +95,10 @@ object CfRComputer2 {
    */
   def mergeParentsCfR(focus: Cluster, parentList: List[Cluster], cfrMap: HashMap[Cluster, List[CauseForRemoval]], graph: Graph): (List[CauseForRemoval], List[RaceCondition]) =
     {
-//      if (focus.name == "i") {
-//        println("processing i")
-//      }
-      
+      //      if (focus.name == "i") {
+      //        println("processing i")
+      //      }
+
       var parents = parentList
       var cfrList = List[CauseForRemoval]()
       var raceList = List[RaceCondition]()
@@ -109,7 +108,7 @@ object CfRComputer2 {
         parents = parents.tail
         while (parents != Nil && activeCfRs != Nil) {
           var newActiveCfRs = List[CauseForRemoval]()
-          val nextCfRs = cfrMap(parents.head)
+          val nextCfRs = cfrMap.getOrElse(parents.head, Nil)
           parents = parents.tail
 
           for (currentCfR <- activeCfRs) {
@@ -153,8 +152,117 @@ object CfRComputer2 {
     {
       for (x <- set1; y <- set2) yield (x ::: y).distinct
     }
-  
-  //TODO: missing the race conditions caused by two group 3 vertices.
+
+  /**
+   * find the temporal links we need to add to the graph
+   *
+   */
+  def findTemporalLinks(graph: Graph, cfrMap: HashMap[Cluster, List[CauseForRemoval]], order: List[Cluster], mutexMap: HashMap[Cluster, List[Cluster]]): (List[ConditionalPrec], List[RaceCondition]) =
+    {
+      var allTemporals = List[ConditionalPrec]()
+      var allRaces = List[RaceCondition]()
+      for (c <- order) {
+//        if (c.name == "e")
+//        {
+//        	println(c.name)
+//        }
+        var counter = 0
+        val mutexList = mutexMap.getOrElse(c, Nil)
+        val cCfRList = cfrMap.getOrElse(c, Nil)
+
+        val parents = graph.parentsOf(c)
+        for (p <- parents if cfrMap.contains(p)) // a parent that can be removed
+        {
+          var temporals = List[ConditionalPrec]()
+          var potentials = List[ConditionalPrec]()
+
+          val cfrList = cfrMap(p)
+          for (cfr <- cfrList) {
+            val notDeleteC = !cCfRList.exists(x => x == cfr || cfr.strictSuperSetOf(x))
+            // No vertex in the CfR is ordered wrt C. It is also not ordered after p. 
+            // If it is not ordered before    
+            val parallelCheck = cfr.allVertices.forall(x => !graph.ordered(x, c)) && cfr.allVertices.forall(x => graph.shortestDistance(p, x) == -1)
+            if (notDeleteC && parallelCheck) {
+              temporals = new ConditionalPrec(cfr.allVertices, c) :: temporals
+            }
+            // even if it is preceding c, it could be optional
+            val canSkip = cfr.allVertices.exists(x => graph.shortestDistance(x, c) != -1 && graph.optionals.contains(x)) &&
+              cfr.allVertices.forall(x => graph.shortestDistance(c, x) == -1)
+            if (notDeleteC && canSkip) {
+              potentials = new ConditionalPrec(cfr.allVertices, c) :: potentials
+            }
+          }
+
+          if (temporals.size == 0) {
+            // no race condition possible
+          } else if (temporals.size == 1 && potentials.size == 0) {
+            allTemporals = temporals ::: allTemporals
+          } else if (temporals.size == 1 && potentials.size > 0) {
+            // race conditions
+            val tList = temporals.head.before
+            for (potent <- potentials) {
+              val pList = potent.before
+              allRaces = new RaceCondition(c, tList, pList) :: allRaces
+            }
+          } else if (temporals.size > 1) {
+            // race conditions between all temporals and between temporals and potentials
+            val temporalsCopy = temporals
+            for (t1 <- temporals; t2 <- temporalsCopy if t1 != t2) {
+              val list1 = t1.before
+              val list2 = t2.before
+              allRaces = new RaceCondition(c, list1, list2) :: allRaces
+            }
+
+            for (t1 <- potentials; t2 <- temporals) {
+              val list1 = t1.before
+              val list2 = t2.before
+              allRaces = new RaceCondition(c, list1, list2) :: allRaces
+            }
+          }
+
+        }
+      }
+
+      (allTemporals.distinct, allRaces.distinct)
+    }
+
+  //TODO: missing the race conditions caused by two group 3 (Category B) vertices
+
+  /**
+   * to create a race condition, we need two CfRs that are in conflict with each other
+   *  (1) They must both have a Cat-B vertex.
+   *  (2) The Cat-B vertex is not the same
+   *  (3) One deletes the focus vertex by deleting all parents but not the vertex itself, and one deletes some but not all parents.
+   *
+   */
+  def findRacesForCatB(graph: Graph, cfrMap: HashMap[Cluster, List[CauseForRemoval]], order: List[Cluster], mutexMap: HashMap[Cluster, List[Cluster]]): List[RaceCondition] =
+    {
+      var allRaceConditions = List[RaceCondition]()
+      for (c <- order if graph.parentsOf(c) != Nil && cfrMap.contains(c)) // it has some parents and it may be removed from the graph
+      {
+        val mutexList = mutexMap.getOrElse(c, Nil)
+        val selfCfRs = cfrMap(c)
+        // first, the CfR does not remove c directly. That is, it works by removing all of its parents. 
+        // second, the CfR has to contain a Cat-B vertex.  
+        val potentialConflictCfRs = selfCfRs.filter(cfr => cfr.group3 != null && cfr.allVertices.forall(v => !mutexList.contains(v)))
+        val parents = graph.parentsOf(c)
+        for (p <- parents) {
+          for (parentCfR <- cfrMap.getOrElse(p, Nil)) {
+            if (parentCfR.group3 != null && // parentCfR has a group 3 
+              parentCfR.allVertices.forall(v => !mutexList.contains(v)) && // parentCfR does not remove c directly               
+              (!selfCfRs.exists(cfr => cfr != parentCfR && parentCfR.strictSuperSetOf(cfr)))) // it does not delete all parents
+              {
+              val opponents = potentialConflictCfRs.filter(cfr => (parentCfR != cfr) && (!cfr.strictSuperSetOf(parentCfR)) && (cfr.group3 != parentCfR.group3))
+              val raceConds = opponents.map(oppo =>
+                new RaceCondition(c, oppo.allVertices, parentCfR.allVertices))
+              allRaceConditions = raceConds ::: allRaceConditions
+            }
+          }
+        }
+      }
+
+      allRaceConditions
+    }
 
   def simplify(cfrList: List[List[Cluster]]): List[List[Cluster]] =
     {
@@ -177,10 +285,12 @@ object CfRComputer2 {
     //println(formatMap(map))
     val order = graph.topoSort
 
-    val answer = processCfR(graph, order)
-    val map = answer._1
-    val raceConditions = answer._2
-    println(formatMap(map))
+    val mutexMap = immediateMutex(graph)
+    val answer = processCfR(graph, order, mutexMap)
+    val cfrMap = answer._1
+    val moreRace = findRacesForCatB(graph, cfrMap, order, mutexMap)
+    val raceConditions = answer._2 ::: moreRace
+    println(formatMap(cfrMap))
     println(raceConditions)
     //    testSimplification()
   }
@@ -199,18 +309,22 @@ object CfRComputer2 {
     //println(simplify(list))
   }
 
-  def processGraph(graph: Graph): (HashMap[Cluster, List[CauseForRemoval]], List[RaceCondition]) =
+  def processGraph(graph: Graph): (HashMap[Cluster, List[CauseForRemoval]], List[RaceCondition], List[ConditionalPrec]) =
     {
       init()
       val g = graph.graphWithOptionalsAndSkips
       //println(formatMap(map))
       val order = g.topoSort
 
-      val answer = processCfR(g, order)
-      val map = answer._1
-      val raceConditions = answer._2
-
-      answer
+      val mutexMap = immediateMutex(graph)
+      val answer = processCfR(graph, order, mutexMap)
+      val cfrMap = answer._1
+      val moreRace = findRacesForCatB(graph, cfrMap, order, mutexMap)
+      
+      val (condPrec, race2) = findTemporalLinks(graph, cfrMap, order, mutexMap)
+      val raceConditions = race2 ::: answer._2 ::: moreRace
+      
+      (cfrMap, raceConditions, condPrec)
     }
 
   def formatMap(map: HashMap[Cluster, List[CauseForRemoval]]): String =

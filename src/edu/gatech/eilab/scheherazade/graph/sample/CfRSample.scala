@@ -369,8 +369,8 @@ object CfRSample {
 
     new Graph(nodes, links, mutex)
   }
-  
- /**
+
+  /**
    * This is another modification to Figure 18(d)
    *
    */
@@ -403,9 +403,9 @@ object CfRSample {
 
     new Graph(nodes, links, mutex)
   }
-  
+
   /**
-   *  This is a complex race condition graph. 
+   *  This is a complex race condition graph.
    *  Race condition between h and g, f
    */
   def graph13() = {
@@ -436,23 +436,21 @@ object CfRSample {
       //new Link(i, j),
       new Link(i, k),
       new Link(k, m),
-      new Link(j, m)      
-      )
+      new Link(j, m))
 
     val mutex = List(
       new MutualExcl(a, f),
       new MutualExcl(g, b),
       new MutualExcl(e, h),
       new MutualExcl(l, j),
-      new MutualExcl(l, k)
-      )
+      new MutualExcl(l, k))
 
     new Graph(nodes, links, mutex)
   }
-  
-   /**
+
+  /**
    * This is another modification to Figure 18(d)
-   *
+   * We allow vertex h to delete k, another parent of j. CfR for j = {{h, e, d}}
    */
   def graph14() = {
     val a = new Cluster("a", Nil)
@@ -467,7 +465,7 @@ object CfRSample {
     val j = new Cluster("j", Nil)
     val k = new Cluster("k", Nil)
     val l = new Cluster("l", Nil)
-    
+
     val nodes = List(a, b, c, d, e, f, g, h, i, j, k, l)
 
     val links = List(
@@ -480,14 +478,214 @@ object CfRSample {
       new Link(e, h),
       new Link(l, k),
       new Link(k, j),
-      new Link(i, j)
-      )
+      new Link(i, j))
 
     val mutex = List(
       new MutualExcl(a, d),
       new MutualExcl(b, e),
       new MutualExcl(g, h),
       new MutualExcl(h, k))
+
+    new Graph(nodes, links, mutex)
+  }
+
+  /**
+   * This is modification to graph 14. We add another vertex m, that deletes k. h no longer deletes k.
+   * j should have no CfRs.
+   *
+   */
+  def graph15() = {
+    val a = new Cluster("a", Nil)
+    val b = new Cluster("b", Nil)
+    val c = new Cluster("c", Nil)
+    val d = new Cluster("d", Nil)
+    val e = new Cluster("e", Nil)
+    val f = new Cluster("f", Nil)
+    val g = new Cluster("g", Nil)
+    val h = new Cluster("h", Nil)
+    val i = new Cluster("i", Nil)
+    val j = new Cluster("j", Nil)
+    val k = new Cluster("k", Nil)
+    val l = new Cluster("l", Nil)
+    val m = new Cluster("m", Nil)
+
+    val nodes = List(a, b, c, d, e, f, g, h, i, j, k, l, m)
+
+    val links = List(
+      new Link(a, i),
+      new Link(b, f),
+      new Link(c, g),
+      new Link(f, i),
+      new Link(g, i),
+      new Link(d, h),
+      new Link(e, h),
+      new Link(l, k),
+      new Link(k, j),
+      new Link(i, j))
+
+    val mutex = List(
+      new MutualExcl(a, d),
+      new MutualExcl(b, e),
+      new MutualExcl(g, h),
+      new MutualExcl(m, k))
+
+    new Graph(nodes, links, mutex)
+  }
+
+  /**
+   * This is modification to graph 14. Race condition for j: m and h,d,e
+   *
+   */
+  def graph16() = {
+    val a = new Cluster("a", Nil)
+    val b = new Cluster("b", Nil)
+    val c = new Cluster("c", Nil)
+    val d = new Cluster("d", Nil)
+    val e = new Cluster("e", Nil)
+    val f = new Cluster("f", Nil)
+    val g = new Cluster("g", Nil)
+    val h = new Cluster("h", Nil)
+    val i = new Cluster("i", Nil)
+    val j = new Cluster("j", Nil)
+    val k = new Cluster("k", Nil)
+    val l = new Cluster("l", Nil)
+    val m = new Cluster("m", Nil)
+
+    val nodes = List(a, b, c, d, e, f, g, h, i, j, k, l, m)
+
+    val links = List(
+      new Link(a, i),
+      new Link(b, f),
+      new Link(c, g),
+      new Link(f, i),
+      new Link(g, i),
+      new Link(d, h),
+      new Link(e, h),
+      new Link(l, k),
+      new Link(k, j),
+      new Link(i, j))
+
+    val mutex = List(
+      new MutualExcl(a, d),
+      new MutualExcl(b, e),
+      new MutualExcl(g, h),
+      new MutualExcl(m, k),
+      new MutualExcl(m, i))
+
+    new Graph(nodes, links, mutex)
+  }
+
+  /**
+   * Race condition for j: m and h,d,e
+   *
+   */
+  def graph17() = {
+    val a = new Cluster("a", Nil)
+    val b = new Cluster("b", Nil)
+    val c = new Cluster("c", Nil)
+    val d = new Cluster("d", Nil)
+    val e = new Cluster("e", Nil)
+    val f = new Cluster("f", Nil)
+    val g = new Cluster("g", Nil)
+    val h = new Cluster("h", Nil)
+    val i = new Cluster("i", Nil)
+
+    val nodes = List(a, b, c, d, e, f, g, h, i)
+
+    val links = List(
+      new Link(a, f),
+      new Link(b, g),
+      new Link(f, i),
+      new Link(g, i),
+      new Link(c, i),
+      new Link(d, e))
+
+    val mutex = List(
+      new MutualExcl(c, d),
+      new MutualExcl(f, e),
+      new MutualExcl(g, h),
+      new MutualExcl(e, g))
+
+    new Graph(nodes, links, mutex)
+  }
+
+  /**
+   *  CfR: d -> { [CfR b|] }, g -> { [CfR nil|h] }, i -> {  }, c -> { [CfR nil|b] },
+   */
+  def graph18() = {
+    val a = new Cluster("a", Nil)
+    val b = new Cluster("b", Nil)
+    val c = new Cluster("c", Nil)
+    val d = new Cluster("d", Nil)
+    val e = new Cluster("e", Nil)
+    val f = new Cluster("f", Nil)
+    val g = new Cluster("g", Nil)
+    val h = new Cluster("h", Nil)
+    val i = new Cluster("i", Nil)
+
+    val nodes = List(a, b, c, d, e, f, g, h, i)
+
+    val links = List(
+      new Link(a, c),
+      new Link(c, d),
+      new Link(e, d),
+      new Link(d, i),
+      new Link(h, i),
+      new Link(f, h))
+
+    val mutex = List(
+      new MutualExcl(a, b),
+      new MutualExcl(b, d),
+      new MutualExcl(g, h))
+
+    new Graph(nodes, links, mutex)
+  }
+
+  /**
+   *  This is Figure 23(a)
+   */
+  def graph19() = {
+    val a = new Cluster("a", Nil)
+    val b = new Cluster("b", Nil)
+    val c = new Cluster("c", Nil)
+    val d = new Cluster("d", Nil)
+    val e = new Cluster("e", Nil)
+
+    val nodes = List(a, b, c, d, e)
+
+    val links = List(
+      new Link(a, b),
+      new Link(a, c),
+      new Link(a, d),
+      new Link(b, e),
+      new Link(a, e))
+
+    val mutex = List(
+      new MutualExcl(b, d),
+      new MutualExcl(b, c))
+
+    new Graph(nodes, links, mutex)
+  }
+  
+    /**
+   *  This is a simple case for Conditional Precedences
+   */
+  def graph20() = {
+    val a = new Cluster("a", Nil)
+    val b = new Cluster("b", Nil)
+    val c = new Cluster("c", Nil)    
+    val e = new Cluster("e", Nil)
+
+    val nodes = List(a, b, c, e)
+
+    val links = List(
+      new Link(a, b),
+      new Link(a, c),      
+      new Link(b, e),
+      new Link(a, e))
+
+    val mutex = List(      
+      new MutualExcl(b, c))
 
     new Graph(nodes, links, mutex)
   }

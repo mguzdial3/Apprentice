@@ -19,7 +19,7 @@ class CfRUnitTests2 extends FunSuite {
     val f = result(new Cluster("f", Nil))
     assert(f.size == 1 && f.contains(new CauseForRemoval(new Cluster("d", Nil), Nil)))
     val raceCond = answer._2
-    //assert(raceCond.size == 1 && raceCond.contains(new RaceCondition(new Cluster("f", Nil), List(new Cluster("d", Nil)), List(new Cluster("e", Nil)))))
+    assert(raceCond.size == 1 && raceCond.contains(new RaceCondition(new Cluster("f", Nil), List(new Cluster("d", Nil)), List(new Cluster("e", Nil)))))
     println("race conditions = " + raceCond)
   }
 
@@ -59,8 +59,7 @@ class CfRUnitTests2 extends FunSuite {
     val i = result(new Cluster("i", Nil))
     println(i)
     assert(i.size == 2 && i.contains(new CauseForRemoval(new Cluster("h", Nil), List(new Cluster("d", Nil), new Cluster("e", Nil)))) &&
-        i.contains(new CauseForRemoval(new Cluster("h", Nil), List(new Cluster("d", Nil), new Cluster("l", Nil))))
-        )
+      i.contains(new CauseForRemoval(new Cluster("h", Nil), List(new Cluster("d", Nil), new Cluster("l", Nil)))))
   }
 
   test("Sample Graph 7") {
@@ -78,11 +77,11 @@ class CfRUnitTests2 extends FunSuite {
     val cfr1 = new CauseForRemoval(new Cluster("a", Nil), List(new Cluster("b", Nil)))
     val cfr2 = new CauseForRemoval(new Cluster("a", Nil), Nil)
     assert(cfr1.strictSuperSetOf(cfr2))
-    
+
     val graph = CfRSample.graph8
     val result = CfRComputer2.processGraph(graph)._1
     val f = result(new Cluster("g", Nil))
-    
+
     assert(f.size == 1 && f.contains(new CauseForRemoval(new Cluster("d", Nil), Nil)))
   }
 
@@ -102,6 +101,7 @@ class CfRUnitTests2 extends FunSuite {
 
   test("Sample Graph 11") {
     val graph = CfRSample.graph11
+    //graph.draw("aaaa")
     val answer = CfRComputer2.processGraph(graph)
     val map = answer._1
     println(CfRComputer2.formatMap(map))
@@ -111,24 +111,26 @@ class CfRUnitTests2 extends FunSuite {
     assert(e.size == 1 && e.contains(new CauseForRemoval(new Cluster("g", Nil), Nil)))
     val raceCond = answer._2
     println(raceCond)
-    //assert(raceCond.size == 1 && raceCond.contains(new RaceCondition(new Cluster("e", Nil), List(new Cluster("f", Nil)), List(new Cluster("g", Nil)))))
+    assert(raceCond.size == 2 && raceCond.contains(new RaceCondition(new Cluster("e", Nil), List(new Cluster("f", Nil)), List(new Cluster("g", Nil)))) &&
+        raceCond.contains(new RaceCondition(new Cluster("h", Nil), List(new Cluster("d", Nil)), List(new Cluster("b", Nil))))
+        )
   }
 
   test("Sample Graph 12") {
     val graph = CfRSample.graph12
-    graph.draw("aaaa")
+    //graph.draw("aaaa")
     val answer = CfRComputer2.processGraph(graph)
     val map = answer._1
     //println(map)
     assert(map(new Cluster("i", Nil)) == Nil)
     val raceCond = answer._2
     assert(raceCond == Nil)
-    //println("races = " + raceCond)
+    println("races = " + raceCond)
   }
 
   test("Sample Graph 13") {
     val graph = CfRSample.graph13
-    graph.draw("aaaa")
+    //graph.draw("aaaa")
     val answer = CfRComputer2.processGraph(graph)
     val map = answer._1
     println("cfr = " + CfRComputer2.formatMap(map))
@@ -139,15 +141,77 @@ class CfRUnitTests2 extends FunSuite {
 
   test("Sample Graph 14") {
     val graph = CfRSample.graph14
-    graph.draw("aaaa")
+    //graph.draw("aaaa")
     val answer = CfRComputer2.processGraph(graph)
     val map = answer._1
     println("cfr = " + CfRComputer2.formatMap(map))
     val j = new Cluster("j", Nil)
     val jcfr = map(j)
-    assert(jcfr.size == 1 && jcfr.contains(new CauseForRemoval(new Cluster("h", Nil), List(new Cluster("d", Nil), new Cluster("e", Nil)) )))
+    assert(jcfr.size == 1 && jcfr.contains(new CauseForRemoval(new Cluster("h", Nil), List(new Cluster("d", Nil), new Cluster("e", Nil)))))
     val raceCond = answer._2
-    println("races = " + raceCond)
+    assert(raceCond == Nil)
+  }
+
+  test("Sample Graph 15") {
+    val graph = CfRSample.graph15
+    //graph.draw("aaaa")
+    val answer = CfRComputer2.processGraph(graph)
+    val map = answer._1
+    println("cfr = " + CfRComputer2.formatMap(map))
+    val j = new Cluster("j", Nil)
+    val jcfr = map(j)
+    assert(jcfr.size == 0)
+    val raceCond = answer._2
+    assert(raceCond == Nil)
+  }
+
+  test("Sample Graph 16") {
+    val graph = CfRSample.graph16
+    //graph.draw("aaaa")
+    val answer = CfRComputer2.processGraph(graph)
+    val map = answer._1
+    println("cfr = " + CfRComputer2.formatMap(map))
+    val j = new Cluster("j", Nil)
+    val jcfr = map(j)
+    assert(jcfr.size == 1 && jcfr.contains(new CauseForRemoval(new Cluster("m", Nil), Nil)))
+    val raceCond = answer._2
+    assert(raceCond.size == 1 && raceCond.contains(new RaceCondition(new Cluster("j", Nil), List(new Cluster("m", Nil)), List(new Cluster("h", Nil), new Cluster("e", Nil), new Cluster("d", Nil)))))
+  }
+
+  test("Sample Graph 17") {
+    val graph = CfRSample.graph17
+    //graph.draw("aaaa")
+    val answer = CfRComputer2.processGraph(graph)
+    val map = answer._1
+    val raceCond = answer._2
+    println("cfr = " + CfRComputer2.formatMap(map))
+    println(raceCond)
+    val i = new Cluster("i", Nil)
+    val icfr = map(i)
+    assert(icfr.size == 1 && icfr.contains(new CauseForRemoval(new Cluster("e", Nil), List(new Cluster("d", Nil)))))
+    assert(raceCond.size == 2 && raceCond.contains(new RaceCondition(new Cluster("i", Nil), List(new Cluster("h", Nil)), List(new Cluster("e", Nil)))) &&
+        raceCond.contains(new RaceCondition(new Cluster("i", Nil), List(new Cluster("h", Nil)), List(new Cluster("d", Nil), new Cluster("e", Nil)))))
+  }
+
+  test("Sample Graph 18") {
+    val graph = CfRSample.graph18
+    val answer = CfRComputer2.processGraph(graph)
+    val map = answer._1
+    val raceCond = answer._2
+    val i = new Cluster("i", Nil)
+    assert(map(new Cluster("i", Nil)).isEmpty)
+    assert(map(new Cluster("d", Nil)).contains(new CauseForRemoval(new Cluster("b", Nil), Nil)))
+    assert(map(new Cluster("c", Nil)).contains(new CauseForRemoval(null, List(new Cluster("b", Nil)))))
+    assert(raceCond.isEmpty)
+  }
+
+  test("Sample Graph 19") {
+    val graph = CfRSample.graph19
+    val answer = CfRComputer2.processGraph(graph)
+    val map = answer._1
+    val raceCond = answer._2
+    val condPrec = answer._3
+    assert(raceCond.contains(new RaceCondition(new Cluster("e", Nil), List(new Cluster("c", Nil)), List(new Cluster("d", Nil)))))
   }
 
   def containsCause(allCauses: List[List[Cluster]], oneCause: List[Cluster]): Boolean =
