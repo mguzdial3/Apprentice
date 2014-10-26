@@ -1,37 +1,25 @@
-package edu.gatech.eilab.scheherazade.graph.structure.experiments
+package edu.gatech.eilab.scheherazade.graph.structure.test
 
 import org.scalatest.FunSuite
-import edu.gatech.eilab.scheherazade.data._
 import edu.gatech.eilab.scheherazade.graph._
 import edu.gatech.eilab.scheherazade.main.Global
 import edu.gatech.eilab.scheherazade.graph.structure._
-import edu.gatech.eilab.scheherazade.generation._
 
-class SampleGraphTests extends FunSuite {
+class UnitTests extends FunSuite {
 
   test("Mutual Exclusion Analysis on Sample Graph 6") {
     Global.graphDrawing = false
-    val graph = SampleGraph.sample6
+    val before = SampleGraph.sample6
+    val graph = AnalysisMain.regularize(before)
     val background = graph.nodes(7)
     val queryCluster = graph.nodes(3)
-//    testGraph(graph, List(background), queryCluster)
+    val (cGraph, sGraph) = AnalysisMain.simplifyGraph(graph, List(background))
+    val (originalTotal, originalGood, originalQuery) = AnalysisMain.countStories(graph, List(background), List(queryCluster))
+    //println("original total = " + originalTotal + ", good = " + originalGood + " query = " + originalQuery + " ratio = " + originalQuery.toDouble / originalGood)
+    val (cleanTotal, cleanGood, cleanQuery) = AnalysisMain.countStories(cGraph, List(background), List(queryCluster))
+    //println("cleaned total = " + cleanTotal + ", good = " + cleanGood + " query = " + cleanQuery + " ratio = " + cleanQuery.toDouble / cleanGood)
+    assert(originalQuery.toDouble / originalGood == cleanQuery.toDouble / cleanGood)
   }
-
-//  def testGraph(graph: Graph, bgList: List[Cluster], q: Cluster) {
-//    val oldSeqs = ExhaustiveSeqGen.generate(graph)
-//    println("oldseqs = " + oldSeqs)
-//    val oldValid = oldSeqs.filter(seq => seq.contains(q))
-//    val oldRatio = oldValid.size * 1.0 / oldSeqs.size
-//    println("# old seqs " + oldSeqs.size + " ratio = " + oldRatio)
-//
-//    val newGraph = Main.performAnalysis(graph, bgList, q)
-//    val newSeqs = ExhaustiveSeqGen.generate(graph)
-//    //println("newseqs = " + oldSeqs) 
-//    val newValid = newSeqs.filter(seq => seq.contains(q))
-//    val newRatio = newValid.size * 1.0 / newSeqs.size
-//    println("# new seqs " + newSeqs.size + " ratio = " + newRatio)
-//    assert(oldRatio == newRatio)
-//  }
 
   test("Mutual Exclusion Analysis on Sample Graph 7") {
     val before = SampleGraph.sample7
