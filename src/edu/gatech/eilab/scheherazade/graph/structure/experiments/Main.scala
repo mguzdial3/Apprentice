@@ -11,35 +11,72 @@ import java.io._
 object Main {
 
   def main(args: Array[String]) {
-    val graph = SampleGraph.sample30
-    testGraph(graph)
+    val totalRuns = 1000
+
+    var i = 1
+    var noMistake = true
+    var total = 0
+    var used = 0
+    var wrong = 0
+    while (i < totalRuns && noMistake) {
+
+      i += 1
+      val graph = SampleGraph.randomDAG(10, 30, 4)
+      val (background, queryCluster) = generateQuery(graph)
+      val (oldTotal, oldValid, newTotal, newValid, correct) = testGraph(graph, background, queryCluster)
+      if (correct)
+      {
+        total += oldTotal
+        used += newTotal
+      }
+      else
+      {
+        wrong += 1
+      }
+    }
+    
+    println("wrong " + wrong)
+    println("all ratio " + (used * 1.0 / total) )
   }
 
-  def testGraph(graph: Graph) {
-    val (bgList, queryVertex) = generateQuery(graph)
+  def testGraph(graph: Graph, bgList: List[Cluster], q: Cluster) = {
     val oldSeqs = ExhaustiveSeqGen.generate(graph)
-    println("oldseqs = " + oldSeqs) 
-    val oldValid = oldSeqs.filter(seq => seq.contains(queryVertex))
+
+    val oldValid = oldSeqs.filter(seq => seq.contains(q))
     val oldRatio = oldValid.size * 1.0 / oldSeqs.size
     println("# old seqs " + oldSeqs.size + " ratio = " + oldRatio)
 
-    val newGraph = performAnalysis(graph, bgList, queryVertex)
-    val newSeqs = ExhaustiveSeqGen.generate(graph)
-    println("newseqs = " + oldSeqs) 
-    val newValid = newSeqs.filter(seq => seq.contains(queryVertex))
+    val (newGraph, newSeqs) = Main.performAnalysis(graph, bgList, q)
+    val newValid = newSeqs.filter(seq => seq.contains(q))
     val newRatio = newValid.size * 1.0 / newSeqs.size
-
     println("# new seqs " + newSeqs.size + " ratio = " + newRatio)
-    if (oldRatio == newRatio) {
-      println("Good")
-    } else {
-      println("!!!!!INCORRECT!!!!!")
+
+    (oldSeqs.size, oldValid, newSeqs.size, newValid, oldRatio == newRatio)
+//    if (newRatio != oldRatio) {
+//
+//      graph.graphWithOptionalsAndSkips.draw("mutex-old")
+//      newGraph.draw("mutex-new")
+//      val missing = oldSeqs.filterNot(newSeqs.contains)
+//      val extra = newSeqs.filterNot(oldSeqs.contains)
+//      println("missing seqs:")
+//      printSeqs(missing)
+//      println("extra seqs")
+//      printSeqs(extra)
+//    }
+  }
+
+  def printSeqs(seqs: List[List[Cluster]]) {
+    for (seq <- seqs) {
+      println(seq.map(_.name).mkString(" "))
     }
   }
 
-  def performAnalysis(graph: Graph, backgrounds: List[Cluster], qVertex: Cluster): List[List[Cluster]] = {
+  def performAnalysis(graph: Graph, backgrounds: List[Cluster], qVertex: Cluster): (Graph, List[List[Cluster]]) = {
 
     val (cfrMap, raceConds, condPrec) = CfRComputer2.processGraph(graph)
+    println(cfrMap)
+    println(raceConds)
+    println(condPrec)
     val order = graph.topoSort
 
     // I don;t know if we need to delete the vertices in a particular order
@@ -50,41 +87,38 @@ object Main {
 
     val linksToAdd = condPrec.filter(_.before.size == 1)
     val conditionsToTest = condPrec.filter(_.before.size > 1)
-    val newGraph = makeNewGraph(graph, removals.filterNot(noRemovals.contains), linksToAdd)
-    
-    val newSeqs = ExhaustiveSeqGen.generate(graph).filter(s => meetsCondition(s, conditionsToTest))
-    newSeqs
+    val rList = removals.filterNot(noRemovals.contains)
+    val newGraph = makeNewGraph(graph, rList, linksToAdd)
+
+    println("removed " + rList.size + rList)
+    val newSeqs = ExhaustiveSeqGen.generate(newGraph).filter(s => meetsCondition(s, conditionsToTest))
+    (newGraph, newSeqs)
   }
-  
-  def meetsCondition(seq:List[Cluster], conditionsToTest:List[ConditionalPrec]):Boolean =
-  {
-    for(condition <- conditionsToTest)
+
+  def meetsCondition(seq: List[Cluster], conditionsToTest: List[ConditionalPrec]): Boolean =
     {
-      val all = condition.before.size
-      var count = 0
-      var tooEarly = false
-      for (c <- seq)
-      {
-        // go through the seq once and figure it out
-        if (condition.before.contains(c))
-        {
-          count += 1
+      for (condition <- conditionsToTest) {
+        val all = condition.before.size
+        var count = 0
+        var tooEarly = false
+        for (c <- seq) {
+          // go through the seq once and figure it out
+          if (condition.before.contains(c)) {
+            count += 1
+          } else if (condition.after == c && count < all) {
+            tooEarly = true
+          }
         }
-        else if (condition.after == c && count < all)
-        {
-          tooEarly = true
+        if (count == all && tooEarly) {
+          return false
         }
       }
-      if (count == all && tooEarly)
-      {
-        return false
-      }
+      true
     }
-    true
-  }
 
   private def makeNewGraph(graph: Graph, removals: List[Cluster], linksToAdd: List[ConditionalPrec]): Graph =
     {
+
       val graph1 = graph.graphWithOptionalsAndSkips.addSkipLinks(removals).removeNodes(removals)
       val temporalLinks = linksToAdd.map {
         condprec => new Link(condprec.before.head, condprec.after, "T")

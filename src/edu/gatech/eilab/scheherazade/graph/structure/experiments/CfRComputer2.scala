@@ -220,9 +220,9 @@ object CfRComputer2 {
           }
 
         }
-        println(c.name)
-        println(allTemporals)
-        println(allRaces)
+//        println(c.name)
+//        println(allTemporals)
+//        println(allRaces)
       }
 
       (allTemporals.distinct, allRaces.distinct)
