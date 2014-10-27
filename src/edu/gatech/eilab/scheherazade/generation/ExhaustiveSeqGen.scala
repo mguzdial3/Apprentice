@@ -70,11 +70,11 @@ package generation {
       {
         val me = newGraph.mutualExcls
         val g = oldGraph.graphWithOptionalsAndSkips
-        println(g.findEnds)
+//        println(g.findEnds)
         val ends = g.findEnds().filter(newGraph.nodes.contains)
-        println("old ends: " + ends.map(_.name).mkString(" "))
+//        println("old ends: " + ends.map(_.name).mkString(" "))
         var sources = g.findSources().filter(newGraph.nodes.contains)
-        println("old sources: " + sources.map(_.name).mkString(" "))
+//        println("old sources: " + sources.map(_.name).mkString(" "))
         new Passage(newGraph, sources, ends, me, newGraph.optionals, sources)
       }
 

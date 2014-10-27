@@ -11,7 +11,7 @@ import java.io._
 object Main {
 
   def main(args: Array[String]) {
-    val totalRuns = 1000
+    val totalRuns = 10000
 
     var i = 1
     var noMistake = true
@@ -29,11 +29,40 @@ object Main {
         used += newTotal
       } else {
         wrong += 1
+//        printTestCase(graph, background, queryCluster)
+//        System.exit(1)
       }
     }
 
     println("wrong " + wrong)
     println("all ratio " + (used * 1.0 / total))
+  }
+
+  def printTestCase(graph: Graph, bgList: List[Cluster], q: Cluster) {
+    for (c <- graph.nodes) {
+      println("val " + c.name.toLowerCase() + " = new Cluster (\"" + c.name + "\", Nil)")
+    }
+    println("val nodes = List(" + graph.nodes.map(_.name.toLowerCase()).mkString("", ",", ")"))
+
+    println("val links = List(")
+    for (l <- graph.links) {
+      println("new Link(" + l.source.name.toLowerCase() + ", " + l.target.name.toLowerCase() + "),")
+    }
+    println(")")
+
+    println("val mutex = List(")
+    for (mx <- graph.mutualExcls) {
+      println("new MutualExcl(" + mx.c1.name.toLowerCase() + ", " + mx.c2.name.toLowerCase() + "),")
+    }
+    println(")")
+
+    println("new Graph(nodes, links, mutex)")
+
+    println()
+    println()
+    println("val background = graph.nodes(" + graph.nodes.indexOf(bgList.head) + ")")
+    println("val queryCluster = graph.nodes(" + graph.nodes.indexOf(q) + ")")
+    println("testGraph(graph, List(background), queryCluster)")
   }
 
   def testGraph(graph: Graph, bgList: List[Cluster], q: Cluster) = {
@@ -79,14 +108,20 @@ object Main {
     println(condPrec)
     println(cfList)
 
+    var realCond = condPrec.filter(c => c.before.forall(backgrounds.contains))
+
     // I don;t know if we need to delete the vertices in a particular order
     val removals = cfrMap.filter(pair => pair._2.exists(cfr => cfr.allVertices.forall(backgrounds.contains)))
       .map(x => x._1).toList.distinct
     val race = raceConds.filter(rc => rc.a.exists(backgrounds.contains) || rc.b.exists(backgrounds.contains))
     val noRemovals = race.map(_.focus)
 
-    val linksToAdd = condPrec.filter(_.before.size == 1)
-    val conditionsToTest = condPrec.filter(_.before.size > 1)
+    //val linksToAdd = condPrec.filter(_.before.size == 1)
+    //val conditionsToTest = condPrec.filter(_.before.size > 1)
+
+    val linksToAdd = realCond.filter(_.before.size == 1)
+    val conditionsToTest = realCond.filter(_.before.size > 1)
+
     val rList = removals.filterNot(noRemovals.contains)
     val newGraph = makeNewGraph(graph, rList, linksToAdd)
     //newGraph.draw("analysis-new")

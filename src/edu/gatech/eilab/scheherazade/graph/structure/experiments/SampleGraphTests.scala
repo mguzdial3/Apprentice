@@ -20,6 +20,7 @@ class SampleGraphTests extends FunSuite {
 
   def testGraph(graph: Graph, bgList: List[Cluster], q: Cluster) {
     //edu.gatech.eilab.scheherazade.graph.passage.Passage.debug = true
+    //val oldSeqs = ExhaustiveSeqGen.interactiveGenerate(graph)
     val oldSeqs = ExhaustiveSeqGen.generate(graph)
 
     val oldValid = oldSeqs.filter(seq => bgList.forall(seq.contains))
@@ -221,9 +222,8 @@ class SampleGraphTests extends FunSuite {
     testGraph(graph, List(background), queryCluster)
   }
 
-
   test("Mutual Exclusion Analysis on Sample Graph 28") { // putting recursiveDeleted at the right place, i.e. the last step
-    val graph = SampleGraph.sample28    
+    val graph = SampleGraph.sample28
     val background = graph.nodes(7)
     val queryCluster = graph.nodes(5)
     testGraph(graph, List(background), queryCluster)
@@ -237,12 +237,12 @@ class SampleGraphTests extends FunSuite {
     testGraph(graph, List(background), queryCluster)
   }
   //
-    test("Mutual Exclusion Analysis on Sample Graph 30") {
-      val graph = SampleGraph.sample30      
-      val background = graph.nodes(2)
-      val queryCluster = graph.nodes(4)
-      testGraph(graph, List(background), queryCluster)
-    }
+  test("Mutual Exclusion Analysis on Sample Graph 30") {
+    val graph = SampleGraph.sample30
+    val background = graph.nodes(2)
+    val queryCluster = graph.nodes(4)
+    testGraph(graph, List(background), queryCluster)
+  }
   //
   test("Mutual Exclusion Analysis on Sample Graph 31") {
     // This test shows we cannot add new links for skipping optional events after mutual analysis deletes events
@@ -251,4 +251,19 @@ class SampleGraphTests extends FunSuite {
     val queryCluster = graph.nodes(3)
     testGraph(graph, List(background), queryCluster)
   }
+
+  test("Mutual Exclusion Analysis on Sample Graph 32") {
+    val graph = SampleGraph.sample32
+    val background = graph.nodes(2)
+    val queryCluster = graph.nodes(0)
+    testGraph(graph, List(background), queryCluster)
+  }
+
+  test("Mutual Exclusion Analysis on Sample Graph 33") {
+    val graph = SampleGraph.sample33
+    val background = graph.nodes(7)
+    val queryCluster = graph.nodes(2)
+    testGraph(graph, List(background), queryCluster)
+  }
+
 }

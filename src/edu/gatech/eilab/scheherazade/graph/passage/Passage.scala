@@ -37,23 +37,23 @@ package graph.passage {
 //          println("C8")
 //        }
         // direct mutex
-        var newlyExcluded = computeExcluded(List(step), mutex).filter(graph.nodes contains)
+        var newlyExcluded = computeExcluded(List(step), mutex).filter(graph.nodes.contains)
 
         var allExcluded = newlyExcluded ::: excluded
         //println("all excluded = " + allExcluded.map(_.name).mkString(" "))
         // recursive mutex
-        allExcluded = findTransitiveClosure(graph, allExcluded)
+        allExcluded = findTransitiveClosure(graph, allExcluded, newHistory)
 
         // update newly excluded. These are used later
-        newlyExcluded = allExcluded filterNot (excluded contains)
+        newlyExcluded = allExcluded filterNot (excluded.contains)
 
         // nodes cannot execute any more due to temporal constraints
         val expired = graph.links.filter(l => l.target == step).map(_.source)
 
         // first add links for skipped nodes and then remove these nodes
         // Oct 27 2014: cannot remove history
-        newlyExcluded = newlyExcluded.filterNot(history.contains) 
-        val newGraph = graph.addSkipLinks(newlyExcluded).removeNodes((newlyExcluded ::: expired).filterNot(history.contains))
+        newlyExcluded = newlyExcluded.filterNot(newHistory.contains) 
+        val newGraph = graph.addSkipLinks(newlyExcluded).removeNodes((newlyExcluded ::: expired).filterNot(newHistory.contains))
 
         var newFringe = maxFringe(newGraph, newHistory)
         // delete those already executed
@@ -108,11 +108,11 @@ package graph.passage {
      * if all direct predecessors of an event is in the event list, add that event to the event list
      * continue adding events until no such event exists
      */
-    protected def findTransitiveClosure(graph: Graph, removedEvents: List[Cluster]): List[Cluster] =
+    protected def findTransitiveClosure(graph: Graph, removedEvents: List[Cluster], history:List[Cluster]): List[Cluster] =
       {
 //    	println("Transitive Closure")
         var removed = removedEvents        
-        var remainder = graph.topoSort filterNot (removedEvents contains)
+        var remainder = graph.topoSort filterNot (x => removedEvents.contains(x) || history.contains(x))
     	//var found = false
         //do {
           //found = false
