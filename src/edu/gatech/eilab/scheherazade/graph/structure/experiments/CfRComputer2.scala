@@ -162,9 +162,9 @@ object CfRComputer2 {
       var allTemporals = List[ConditionalPrec]()
       var allRaces = List[RaceCondition]()
       for (c <- order) {
-        //        if (c.name == "f") {
-        //          println(c.name)
-        //        }
+        if (c.name == "C7") {
+          println(c.name)
+        }
         var counter = 0
         val mutexList = mutexMap.getOrElse(c, Nil)
         val cCfRList = cfrMap.getOrElse(c, Nil)
@@ -172,6 +172,7 @@ object CfRComputer2 {
         val parents = graph.parentsOf(c)
         for (p <- parents if cfrMap.contains(p)) // a parent that can be removed
         {
+//          println(p)
           var temporals = List[ConditionalPrec]()
           var potentials = List[ConditionalPrec]()
 
@@ -185,7 +186,7 @@ object CfRComputer2 {
               temporals = new ConditionalPrec(cfr.allVertices, c) :: temporals
             }
             // even if it is preceding c, it could be optional
-            val canSkip = cfr.allVertices.exists(x => graph.shortestDistance(x, c) != -1 && graph.optionals.contains(x)) &&
+            val canSkip = cfr.allVertices.exists(x => graph.shortestDistance(x, c) != -1 && (graph.optionals.contains(x) || graph.conditionals.contains(x))) &&
               cfr.allVertices.forall(x => graph.shortestDistance(c, x) == -1)
             if (notDeleteC && canSkip) {
               potentials = new ConditionalPrec(cfr.allVertices, c) :: potentials
@@ -223,9 +224,9 @@ object CfRComputer2 {
           }
 
         }
-        //        println(c.name)
-        //        println(allTemporals)
-        //        println(allRaces)
+                println(c.name)
+                println(allTemporals)
+                println(allRaces)
       }
 
       (allTemporals.distinct, allRaces.distinct)
@@ -256,9 +257,19 @@ object CfRComputer2 {
               (!selfCfRs.exists(cfr => cfr != parentCfR && parentCfR.strictSuperSetOf(cfr)))) // it does not delete all parents
               {
               val opponents = potentialConflictCfRs.filter(cfr => (parentCfR != cfr) && (!cfr.strictSuperSetOf(parentCfR)) && (cfr.group3 != parentCfR.group3))
+              
+//              for (oppo)
+//              if (graph.shortestDistance(parentCfR.group3, )
+//              {
+//                // if parentCfR is ordered always before selfCfRs, the selfCfR is not a cfr any more
+//                
+//              }
+//              else
+//              {
               val raceConds = opponents.map(oppo =>
                 new RaceCondition(c, oppo.allVertices, parentCfR.allVertices))
               allRaceConditions = raceConds ::: allRaceConditions
+//              }
             }
           }
         }
