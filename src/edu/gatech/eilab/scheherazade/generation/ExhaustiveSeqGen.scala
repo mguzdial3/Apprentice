@@ -69,14 +69,16 @@ package generation {
     def initOld(oldGraph: Graph, newGraph: Graph): Passage =
       {
         val me = newGraph.mutualExcls
-        val ends = oldGraph.findEnds().filter(newGraph.nodes.contains)
-        //        println("old ends: " + ends.map(_.name).mkString(" "))
-        var sources = oldGraph.graphWithOptionalsAndSkips.findSources().filter(newGraph.nodes.contains)
-        //        println("old sources: " + sources.map(_.name).mkString(" "))
+        val g = oldGraph.graphWithOptionalsAndSkips
+        println(g.findEnds)
+        val ends = g.findEnds().filter(newGraph.nodes.contains)
+        println("old ends: " + ends.map(_.name).mkString(" "))
+        var sources = g.findSources().filter(newGraph.nodes.contains)
+        println("old sources: " + sources.map(_.name).mkString(" "))
         new Passage(newGraph, sources, ends, me, newGraph.optionals, sources)
       }
 
-    def interactiveGenerateFromOld(graph: Graph, oldGraph:Graph): List[List[Cluster]] =
+    def interactiveGenerateFromOld(graph: Graph, oldGraph: Graph): List[List[Cluster]] =
       {
         var allSeq = List[List[Cluster]]()
         var firstWalk: AbstractPassage = initOld(oldGraph, graph)

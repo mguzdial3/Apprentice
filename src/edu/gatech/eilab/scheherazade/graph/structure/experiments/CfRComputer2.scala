@@ -381,7 +381,10 @@ object CfRComputer2 {
                 mx.c2
               else mx.c1
             }
-          fcList = new ForcedCooccurence(c, late) :: fcList
+          if (!graph.optionals.contains(c) && !graph.optionals.contains(early) && !graph.conditionals.contains(c) && !graph.conditionals.contains(early))
+          {
+            fcList = new ForcedCooccurence(c, late) :: fcList
+          }
         }
     }
 

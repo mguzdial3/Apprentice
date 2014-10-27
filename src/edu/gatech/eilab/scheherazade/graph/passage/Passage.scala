@@ -30,8 +30,12 @@ package graph.passage {
 
         // add the step to history. Note history is in reverse order
         val newHistory = step :: history
-//        println("place 1: ")
-//        println(graph.links.foreach())
+        
+//        if (next.name == "C8")
+//        {
+//          graph.draw("currentGraph")
+//          println("C8")
+//        }
         // direct mutex
         var newlyExcluded = computeExcluded(List(step), mutex).filter(graph.nodes contains)
 
@@ -47,7 +51,9 @@ package graph.passage {
         val expired = graph.links.filter(l => l.target == step).map(_.source)
 
         // first add links for skipped nodes and then remove these nodes
-        val newGraph = graph.addSkipLinks(newlyExcluded).removeNodes(newlyExcluded ::: expired)
+        // Oct 27 2014: cannot remove history
+        newlyExcluded = newlyExcluded.filterNot(history.contains) 
+        val newGraph = graph.addSkipLinks(newlyExcluded).removeNodes((newlyExcluded ::: expired).filterNot(history.contains))
 
         var newFringe = maxFringe(newGraph, newHistory)
         // delete those already executed

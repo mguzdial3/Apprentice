@@ -19,6 +19,7 @@ class SampleGraphTests extends FunSuite {
   }
 
   def testGraph(graph: Graph, bgList: List[Cluster], q: Cluster) {
+    //edu.gatech.eilab.scheherazade.graph.passage.Passage.debug = true
     val oldSeqs = ExhaustiveSeqGen.generate(graph)
 
     val oldValid = oldSeqs.filter(seq => bgList.forall(seq.contains))
