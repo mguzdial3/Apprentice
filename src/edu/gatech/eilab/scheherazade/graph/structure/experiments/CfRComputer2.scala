@@ -81,7 +81,7 @@ object CfRComputer2 {
             }
           }
 
-          var finalList = newCfrList.filterNot(x => newCfrList.exists(y => x != y && x.strictSuperSetOf(y)))
+          var finalList = newCfrList.filterNot(x => newCfrList.exists(y => x != y && x.strictSuperSetOf(y))).distinct
           cfrMap.update(c, finalList)
         }
       }
@@ -162,9 +162,9 @@ object CfRComputer2 {
       var allTemporals = List[ConditionalPrec]()
       var allRaces = List[RaceCondition]()
       for (c <- order) {
-//        if (c.name == "f") {
-//          println(c.name)
-//        }
+        //        if (c.name == "f") {
+        //          println(c.name)
+        //        }
         var counter = 0
         val mutexList = mutexMap.getOrElse(c, Nil)
         val cCfRList = cfrMap.getOrElse(c, Nil)
@@ -223,15 +223,13 @@ object CfRComputer2 {
           }
 
         }
-//        println(c.name)
-//        println(allTemporals)
-//        println(allRaces)
+        //        println(c.name)
+        //        println(allTemporals)
+        //        println(allRaces)
       }
 
       (allTemporals.distinct, allRaces.distinct)
     }
-
-  //TODO: missing the race conditions caused by two group 3 (Category B) vertices
 
   /**
    * to create a race condition, we need two CfRs that are in conflict with each other
@@ -314,12 +312,12 @@ object CfRComputer2 {
     //println(simplify(list))
   }
 
-  def processGraph(graph: Graph): (HashMap[Cluster, List[CauseForRemoval]], List[RaceCondition], List[ConditionalPrec]) =
+  def processGraph(graph: Graph): (HashMap[Cluster, List[CauseForRemoval]], List[RaceCondition], List[ConditionalPrec], List[ForcedCooccurence]) =
     {
       init()
       val g = graph.graphWithOptionalsAndSkips
-//      g.draw("real-graph")
-      
+      //      g.draw("real-graph")
+
       val order = g.topoSort
 
       val mutexMap = immediateMutex(g)
@@ -330,7 +328,8 @@ object CfRComputer2 {
       val (condPrec, race2) = findTemporalLinks(g, cfrMap, order, mutexMap)
       val raceConditions = race2 ::: answer._2 ::: moreRace
 
-      (cfrMap, raceConditions, condPrec)
+      val cfList = findForcedCooccurence(g)
+      (cfrMap, raceConditions, condPrec, cfList)
     }
 
   def formatMap(map: HashMap[Cluster, List[CauseForRemoval]]): String =
@@ -347,5 +346,46 @@ object CfRComputer2 {
 
       str.toString
     }
+
+  def findForcedCooccurence(graph: Graph): List[ForcedCooccurence] = {
+    // just used the code that find optional events
+    var fcList = List[ForcedCooccurence]()
+
+    // condition 1: c1 and c2 share a mutual exclusion but there is also a path from c1 to c2 on the graph
+    val candidates = graph.mutualExcls.filter(m => graph.ordered(m.c1, m.c2)).map(m => (m.c1, m.c2))
+
+    // condition 2: c1 is not mutually exclusive to another (direct or indirect) predecessor of c2
+    candidates.foreach {
+      case (c1, c2) =>
+        var early: Cluster = null
+        var late: Cluster = null
+        if (graph.shortestDistance(c1, c2) != -1) {
+          early = c1
+          late = c2
+        } else {
+          early = c2
+          late = c1
+        }
+
+        // tests if the early node is mutual exclusive to another node, which has a clear path to the late node            
+        // passing the test will prevent the recognition of the optionality.
+        val prevented = graph.mutualExcls.find(m =>
+          (m.c1 == early && m.c2 != late && graph.shortestDistance(m.c2, early) == -1 && graph.hasClearPath(m.c2, late)) ||
+            (m.c2 == early && m.c1 != late && graph.shortestDistance(m.c1, early) == -1 && graph.hasClearPath(m.c1, late)))
+
+        if (prevented.isDefined) {
+          val mx = prevented.get
+          val c =
+            {
+              if (mx.c1 == early)
+                mx.c2
+              else mx.c1
+            }
+          fcList = new ForcedCooccurence(c, late) :: fcList
+        }
+    }
+
+    fcList
+  }
 
 }

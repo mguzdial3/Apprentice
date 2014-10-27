@@ -70,16 +70,50 @@ package generation {
       {
         val me = newGraph.mutualExcls
         val ends = oldGraph.findEnds().filter(newGraph.nodes.contains)
-        println("old ends: " + ends.map(_.name).mkString(" "))
+        //        println("old ends: " + ends.map(_.name).mkString(" "))
         var sources = oldGraph.graphWithOptionalsAndSkips.findSources().filter(newGraph.nodes.contains)
-        println("old sources: " + sources.map(_.name).mkString(" "))
+        //        println("old sources: " + sources.map(_.name).mkString(" "))
         new Passage(newGraph, sources, ends, me, newGraph.optionals, sources)
+      }
+
+    def interactiveGenerateFromOld(graph: Graph, oldGraph:Graph): List[List[Cluster]] =
+      {
+        var allSeq = List[List[Cluster]]()
+        var firstWalk: AbstractPassage = initOld(oldGraph, graph)
+        var queue = Queue[(AbstractPassage, List[Cluster])]()
+        queue.enqueue((firstWalk, List[Cluster]()))
+        while (!queue.isEmpty) {
+          val top = queue.dequeue
+          val walk = top._1
+          val history = top._2
+          if (walk.hasMoreSteps) {
+            val fringe = walk.fringe
+
+            var answer = ""
+            do {
+              println("Fringe: ")
+              println(fringe.map(_.name).mkString)
+              answer = readLine().trim
+            } while (!fringe.exists(_.name == answer))
+
+            val step = fringe.find(_.name == answer).get
+
+            val newWalk = walk.forward(step)
+            val newHistory = step :: history
+            queue.enqueue((newWalk, newHistory))
+
+          } else {
+            allSeq = history.reverse :: allSeq
+          }
+        }
+
+        allSeq
       }
 
     def interactiveGenerate(graph: Graph): List[List[Cluster]] =
       {
         var allSeq = List[List[Cluster]]()
-        var firstWalk: AbstractPassage = Passage.initNoIdenti(graph)
+        var firstWalk: AbstractPassage = Passage.init(graph)
         var queue = Queue[(AbstractPassage, List[Cluster])]()
         queue.enqueue((firstWalk, List[Cluster]()))
         while (!queue.isEmpty) {

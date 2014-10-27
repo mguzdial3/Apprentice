@@ -32,7 +32,7 @@ final class CauseForRemoval(val group3: Cluster, val other: List[Cluster], val r
     }
 
   override def hashCode() =
-    (group3.hashCode * 97 + other.hashCode * 109 + {if (raceCondition) 1 else 0} ) % 61
+    ({if (group3 == null) 0 else group3.hashCode} * 97 + other.hashCode * 109 + {if (raceCondition) 1 else 0} ) % 61
 
   override def toString() =
     {

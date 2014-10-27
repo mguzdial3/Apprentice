@@ -72,11 +72,12 @@ object Main {
   def performAnalysis(graph: Graph, backgrounds: List[Cluster], qVertex: Cluster): (Graph, List[List[Cluster]]) = {
 
     val realGraph = regularize(graph)
-    
-    val (cfrMap, raceConds, condPrec) = CfRComputer2.processGraph(realGraph)
-        println(cfrMap)
-        println(raceConds)
-        println(condPrec)    
+
+    val (cfrMap, raceConds, condPrec, cfList) = CfRComputer2.processGraph(realGraph)
+    println(cfrMap)
+    println(raceConds)
+    println(condPrec)
+    println(cfList)
 
     // I don;t know if we need to delete the vertices in a particular order
     val removals = cfrMap.filter(pair => pair._2.exists(cfr => cfr.allVertices.forall(backgrounds.contains)))
@@ -88,15 +89,23 @@ object Main {
     val conditionsToTest = condPrec.filter(_.before.size > 1)
     val rList = removals.filterNot(noRemovals.contains)
     val newGraph = makeNewGraph(graph, rList, linksToAdd)
-//    newGraph.draw("analysis-new")
+    //newGraph.draw("analysis-new")
     //println("links " ) ; newGraph.links.foreach(l => println(l))
     //println("removed " + rList.size + rList)
     //edu.gatech.eilab.scheherazade.graph.passage.Passage.debug = true
-    val newSeqs = ExhaustiveSeqGen.generateFromOld(newGraph,graph).filter(s => meetsCondition(s, conditionsToTest))
+    val newSeqs = ExhaustiveSeqGen.generateFromOld(newGraph, graph).filter(s => meetsCondition(s, conditionsToTest) && meetsFC(s, cfList))
     (newGraph, newSeqs)
   }
-  
 
+  def meetsFC(seq: List[Cluster], fcList: List[ForcedCooccurence]): Boolean =
+    {
+      for (fc <- fcList) {
+        if (seq.contains(fc.dependant) && !seq.contains(fc.precursor)) {
+          return false
+        }
+      }
+      return true
+    }
 
   def regularize(graph: Graph): Graph =
     {
