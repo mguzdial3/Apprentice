@@ -21,21 +21,27 @@ class SampleGraphTests extends FunSuite {
   def testGraph(graph: Graph, bgList: List[Cluster], q: Cluster) {
     val oldSeqs = ExhaustiveSeqGen.generate(graph)
 
-    val oldValid = oldSeqs.filter(seq => seq.contains(q))
-    val oldRatio = oldValid.size * 1.0 / oldSeqs.size
+    val oldValid = oldSeqs.filter(seq => bgList.forall(seq.contains))
+    val oldQueried = oldValid.filter(seq => seq.contains(q))
+    val oldRatio = oldQueried.size * 1.0 / oldValid.size
     println("# old seqs " + oldSeqs.size + " ratio = " + oldRatio)
 
     val (newGraph, newSeqs) = Main.performAnalysis(graph, bgList, q)
-    val newValid = newSeqs.filter(seq => seq.contains(q))
-    val newRatio = newValid.size * 1.0 / newSeqs.size
+    val newValid = newSeqs.filter(seq => bgList.forall(seq.contains))
+    val newQueried = newValid.filter(seq => seq.contains(q))
+    val newRatio = newQueried.size * 1.0 / newValid.size
     println("# new seqs " + newSeqs.size + " ratio = " + newRatio)
 
     if (newRatio != oldRatio) {
-      
+
       graph.graphWithOptionalsAndSkips.draw("mutex-old")
       newGraph.draw("mutex-new")
-      val missing = oldSeqs.filterNot(newSeqs.contains)
-      val extra = newSeqs.filterNot(oldSeqs.contains)
+      
+      println("background = " + bgList.map(_.name).mkString(" "))
+      println("query = " + q.name)
+      
+      val missing = oldValid.filterNot(newValid.contains)
+      val extra = newValid.filterNot(oldValid.contains)
       println("missing seqs:")
       printSeqs(missing)
       println("extra seqs")
@@ -51,127 +57,76 @@ class SampleGraphTests extends FunSuite {
     }
   }
 
-  //  test("Mutual Exclusion Analysis on Sample Graph 7") {
-  //    val before = SampleGraph.sample7
-  //    val graph = AnalysisMain.regularize(before)
-  //    val background = graph.nodes(9)
-  //    val queryCluster = graph.nodes(4)
-  //    val (cGraph, sGraph) = AnalysisMain.simplifyGraph(graph, List(background))
-  //    val (originalTotal, originalGood, originalQuery) = AnalysisMain.countStories(graph, List(background), List(queryCluster))
-  //    //println("original total = " + originalTotal + ", good = " + originalGood + " query = " + originalQuery + " ratio = " + originalQuery.toDouble / originalGood)
-  //    val (cleanTotal, cleanGood, cleanQuery) = AnalysisMain.countStories(cGraph, List(background), List(queryCluster))
-  //    //println("cleaned total = " + cleanTotal + ", good = " + cleanGood + " query = " + cleanQuery + " ratio = " + cleanQuery.toDouble / cleanGood)
-  //    assert(originalQuery.toDouble / originalGood == cleanQuery.toDouble / cleanGood)
-  //  }
-  //
-  //  test("Mutual Exclusion Analysis on Sample Graph 8") {
-  //    val before = SampleGraph.sample8
-  //    val graph = AnalysisMain.regularize(before)
-  //    val background = graph.nodes(3)
-  //    val queryCluster = graph.nodes(10)
-  //    val (cGraph, sGraph) = AnalysisMain.simplifyGraph(graph, List(background))
-  //    val (originalTotal, originalGood, originalQuery) = AnalysisMain.countStories(graph, List(background), List(queryCluster))
-  //    //println("original total = " + originalTotal + ", good = " + originalGood + " query = " + originalQuery + " ratio = " + originalQuery.toDouble / originalGood)
-  //    val (cleanTotal, cleanGood, cleanQuery) = AnalysisMain.countStories(cGraph, List(background), List(queryCluster))
-  //    //println("cleaned total = " + cleanTotal + ", good = " + cleanGood + " query = " + cleanQuery + " ratio = " + cleanQuery.toDouble / cleanGood)
-  //    assert(originalQuery.toDouble / originalGood == cleanQuery.toDouble / cleanGood)
-  //  }
-  //
-  //  test("Mutual Exclusion Analysis on Sample Graph 9") {
-  //    val before = SampleGraph.sample9
-  //    val graph = AnalysisMain.regularize(before)
-  //    val background = graph.nodes(2)
-  //    val queryCluster = graph.nodes(3)
-  //    val (cGraph, sGraph) = AnalysisMain.simplifyGraph(graph, List(background))
-  //    val (originalTotal, originalGood, originalQuery) = AnalysisMain.countStories(graph, List(background), List(queryCluster))
-  //    //println("original total = " + originalTotal + ", good = " + originalGood + " query = " + originalQuery + " ratio = " + originalQuery.toDouble / originalGood)
-  //    val (cleanTotal, cleanGood, cleanQuery) = AnalysisMain.countStories(cGraph, List(background), List(queryCluster))
-  //    //println("cleaned total = " + cleanTotal + ", good = " + cleanGood + " query = " + cleanQuery + " ratio = " + cleanQuery.toDouble / cleanGood)
-  //    assert(originalQuery.toDouble / originalGood == cleanQuery.toDouble / cleanGood)
-  //  }
-  //
-  //  test("Mutual Exclusion Analysis on Sample Graph 11") {
-  //    val before = SampleGraph.sample11
-  //    val graph = AnalysisMain.regularize(before)
-  //    val background = graph.nodes(3)
-  //    val queryCluster = graph.nodes(7)
-  //
-  //    val (cGraph, sGraph) = AnalysisMain.simplifyGraph(graph, List(background))
-  //    val (originalTotal, originalGood, originalQuery) = AnalysisMain.countStories(graph, List(background), List(queryCluster))
-  //    //println("original total = " + originalTotal + ", good = " + originalGood + " query = " + originalQuery + " ratio = " + originalQuery.toDouble / originalGood)
-  //    val (cleanTotal, cleanGood, cleanQuery) = AnalysisMain.countStories(cGraph, List(background), List(queryCluster))
-  //    //println("cleaned total = " + cleanTotal + ", good = " + cleanGood + " query = " + cleanQuery + " ratio = " + cleanQuery.toDouble / cleanGood)
-  //    assert(originalQuery.toDouble / originalGood == cleanQuery.toDouble / cleanGood)
-  //  }
-  //
-  //  test("Mutual Exclusion Analysis on Sample Graph 10") {
-  //    val before = SampleGraph.sample10
-  //    val graph = AnalysisMain.regularize(before)
-  //    val background = graph.nodes(6)
-  //    val queryCluster = graph.nodes(7)
-  //
-  //    val (cGraph, sGraph) = AnalysisMain.simplifyGraph(graph, List(background))
-  //    val (originalTotal, originalGood, originalQuery) = AnalysisMain.countStories(graph, List(background), List(queryCluster))
-  //    val (cleanTotal, cleanGood, cleanQuery) = AnalysisMain.countStories(cGraph, List(background), List(queryCluster))
-  //    assert(originalQuery.toDouble / originalGood == cleanQuery.toDouble / cleanGood)
-  //  }
-  //
-  //  test("Mutual Exclusion Analysis on Sample Graph 12-1") {
-  //    val before = SampleGraph.sample12
-  //    val graph = AnalysisMain.regularize(before)
-  //    graph.draw("sample12")
-  //    val background = graph.nodes(4)
-  //    val queryCluster = graph.nodes(12)
-  //
-  //    val (cGraph, sGraph) = AnalysisMain.simplifyGraph(graph, List(background))
-  //    val (originalTotal, originalGood, originalQuery) = AnalysisMain.countStories(graph, List(background), List(queryCluster))
-  //    //println("original total = " + originalTotal + ", good = " + originalGood + " query = " + originalQuery + " ratio = " + originalQuery.toDouble / originalGood)
-  //    val (cleanTotal, cleanGood, cleanQuery) = AnalysisMain.countStories(cGraph, List(background), List(queryCluster))
-  //    //println("cleaned total = " + cleanTotal + ", good = " + cleanGood + " query = " + cleanQuery + " ratio = " + cleanQuery.toDouble / cleanGood)
-  //    assert(originalQuery.toDouble / originalGood == cleanQuery.toDouble / cleanGood)
-  //  }
-  //
-  //  test("Mutual Exclusion Analysis on Sample Graph 12-2") {
-  //    val before = SampleGraph.sample12
-  //    val graph = AnalysisMain.regularize(before)
-  //    val background = graph.nodes(3)
-  //    val queryCluster = graph.nodes(7)
-  //
-  //    val (cGraph, sGraph) = AnalysisMain.simplifyGraph(graph, List(background))
-  //    val (originalTotal, originalGood, originalQuery) = AnalysisMain.countStories(graph, List(background), List(queryCluster))
-  //    //println("original total = " + originalTotal + ", good = " + originalGood + " query = " + originalQuery + " ratio = " + originalQuery.toDouble / originalGood)
-  //    val (cleanTotal, cleanGood, cleanQuery) = AnalysisMain.countStories(cGraph, List(background), List(queryCluster))
-  //    //println("cleaned total = " + cleanTotal + ", good = " + cleanGood + " query = " + cleanQuery + " ratio = " + cleanQuery.toDouble / cleanGood)
-  //    assert(originalQuery.toDouble / originalGood == cleanQuery.toDouble / cleanGood)
-  //  }
-  //
-  //  test("Mutual Exclusion Analysis on Sample Graph 13") {
-  //
-  //    val before = SampleGraph.sample13
-  //    val graph = AnalysisMain.regularize(before)
-  //    val background = graph.nodes(5)
-  //    val queryCluster = graph.nodes(11)
-  //    graph.draw("sample13")
-  //    val (cGraph, sGraph) = AnalysisMain.simplifyGraph(graph, List(background))
-  //    val (originalTotal, originalGood, originalQuery) = AnalysisMain.countStories(graph, List(background), List(queryCluster))
-  //    //println("original total = " + originalTotal + ", good = " + originalGood + " query = " + originalQuery + " ratio = " + originalQuery.toDouble / originalGood)
-  //    val (cleanTotal, cleanGood, cleanQuery) = AnalysisMain.countStories(cGraph, List(background), List(queryCluster))
-  //    //println("cleaned total = " + cleanTotal + ", good = " + cleanGood + " query = " + cleanQuery + " ratio = " + cleanQuery.toDouble / cleanGood)
-  //    assert(originalQuery.toDouble / originalGood == cleanQuery.toDouble / cleanGood)
-  //  }
-  //
-  //  test("Mutual Exclusion Analysis on Sample Graph 14") {
-  //    val before = SampleGraph.sample14
-  //    val graph = AnalysisMain.regularize(before)
-  //    val background = graph.nodes(11)
-  //    val queryCluster = graph.nodes(6)
-  //    val (cGraph, sGraph) = AnalysisMain.simplifyGraph(graph, List(background))
-  //    val (originalTotal, originalGood, originalQuery) = AnalysisMain.countStories(graph, List(background), List(queryCluster))
-  //    //println("original total = " + originalTotal + ", good = " + originalGood + " query = " + originalQuery + " ratio = " + originalQuery.toDouble / originalGood)
-  //    val (cleanTotal, cleanGood, cleanQuery) = AnalysisMain.countStories(cGraph, List(background), List(queryCluster))
-  //    //println("cleaned total = " + cleanTotal + ", good = " + cleanGood + " query = " + cleanQuery + " ratio = " + cleanQuery.toDouble / cleanGood)
-  //    assert(originalQuery.toDouble / originalGood == cleanQuery.toDouble / cleanGood)
-  //  }
+  test("Mutual Exclusion Analysis on Sample Graph 7") {
+    val graph = SampleGraph.sample7
+    val background = graph.nodes(7)
+    val queryCluster = graph.nodes(2)    
+    testGraph(graph, List(background), queryCluster)
+  }
+
+    test("Mutual Exclusion Analysis on Sample Graph 8") {
+      val graph = SampleGraph.sample8
+      val background = graph.nodes(1)
+      val queryCluster = graph.nodes(8)
+      testGraph(graph, List(background), queryCluster)
+    }
+
+
+    test("Mutual Exclusion Analysis on Sample Graph 9") {
+      val graph = SampleGraph.sample9
+      val background = graph.nodes(0)
+      val queryCluster = graph.nodes(1)
+      testGraph(graph, List(background), queryCluster)
+    }
+
+    
+    test("Mutual Exclusion Analysis on Sample Graph 11") {
+      val graph = SampleGraph.sample11      
+      val background = graph.nodes(1)
+      val queryCluster = graph.nodes(5)
+      testGraph(graph, List(background), queryCluster)
+    }
+
+    test("Mutual Exclusion Analysis on Sample Graph 10") {
+      val graph = SampleGraph.sample10
+      val background = graph.nodes(4)
+      val queryCluster = graph.nodes(5)
+      testGraph(graph, List(background), queryCluster)
+    }
+
+    test("Mutual Exclusion Analysis on Sample Graph 12-1") {
+      val graph = SampleGraph.sample12
+      val background = graph.nodes(2)
+      val queryCluster = graph.nodes(10)
+      testGraph(graph, List(background), queryCluster)
+    }
+
+    test("Mutual Exclusion Analysis on Sample Graph 12-2") {
+      val graph = SampleGraph.sample12      
+      val background = graph.nodes(1)
+      val queryCluster = graph.nodes(5)
+      testGraph(graph, List(background), queryCluster)
+    }
+
+    test("Mutual Exclusion Analysis on Sample Graph 13") {
+      val graph = SampleGraph.sample13
+      val background = graph.nodes(3)
+      val queryCluster = graph.nodes(9)
+      testGraph(graph, List(background), queryCluster)
+    }
+
+  test("Mutual Exclusion Analysis on Sample Graph 14") {
+    val before = SampleGraph.sample14
+    val graph = AnalysisMain.regularize(before)
+    val background = graph.nodes(11)
+    val queryCluster = graph.nodes(6)
+    val (cGraph, sGraph) = AnalysisMain.simplifyGraph(graph, List(background))
+    val (originalTotal, originalGood, originalQuery) = AnalysisMain.countStories(graph, List(background), List(queryCluster))
+    //println("original total = " + originalTotal + ", good = " + originalGood + " query = " + originalQuery + " ratio = " + originalQuery.toDouble / originalGood)
+    val (cleanTotal, cleanGood, cleanQuery) = AnalysisMain.countStories(cGraph, List(background), List(queryCluster))
+    //println("cleaned total = " + cleanTotal + ", good = " + cleanGood + " query = " + cleanQuery + " ratio = " + cleanQuery.toDouble / cleanGood)
+    assert(originalQuery.toDouble / originalGood == cleanQuery.toDouble / cleanGood)
+  }
   //
   //  test("Mutual Exclusion Analysis on Sample Graph 15") {
   //    val before = SampleGraph.sample15

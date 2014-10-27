@@ -162,9 +162,9 @@ object CfRComputer2 {
       var allTemporals = List[ConditionalPrec]()
       var allRaces = List[RaceCondition]()
       for (c <- order) {
-        if (c.name == "f") {
-          println(c.name)
-        }
+//        if (c.name == "f") {
+//          println(c.name)
+//        }
         var counter = 0
         val mutexList = mutexMap.getOrElse(c, Nil)
         val cCfRList = cfrMap.getOrElse(c, Nil)
@@ -201,7 +201,8 @@ object CfRComputer2 {
             val tList = temporals.head.before
             for (potent <- potentials) {
               val pList = potent.before
-              allRaces = new RaceCondition(c, tList, pList) :: allRaces
+              //allRaces = new RaceCondition(c, tList, pList) :: new RaceCondition(p, tList, pList) :: allRaces
+              allRaces = new RaceCondition(p, tList, pList) :: allRaces
             }
           } else if (temporals.size > 1) {
             // race conditions between all temporals and between temporals and potentials
@@ -209,13 +210,15 @@ object CfRComputer2 {
             for (t1 <- temporals; t2 <- temporalsCopy if t1 != t2) {
               val list1 = t1.before
               val list2 = t2.before
-              allRaces = new RaceCondition(c, list1, list2) :: allRaces
+              //allRaces = new RaceCondition(c, list1, list2) :: new RaceCondition(p, list1, list2) :: allRaces
+              allRaces = new RaceCondition(p, list1, list2) :: allRaces
             }
 
             for (t1 <- potentials; t2 <- temporals) {
               val list1 = t1.before
               val list2 = t2.before
-              allRaces = new RaceCondition(c, list1, list2) :: allRaces
+              allRaces = new RaceCondition(p, list1, list2) :: allRaces
+              //allRaces = new RaceCondition(c, list1, list2) :: new RaceCondition(p, list1, list2) :: allRaces
             }
           }
 
@@ -282,7 +285,7 @@ object CfRComputer2 {
   def main(args: Array[String]) {
     init()
     val graph = CfRSample.graph7().graphWithOptionalsAndSkips
-    graph.draw("aaaa")
+    //graph.draw("aaaa")
 
     //println(formatMap(map))
     val order = graph.topoSort
@@ -315,15 +318,16 @@ object CfRComputer2 {
     {
       init()
       val g = graph.graphWithOptionalsAndSkips
-      //println(formatMap(map))
+//      g.draw("real-graph")
+      
       val order = g.topoSort
 
-      val mutexMap = immediateMutex(graph)
-      val answer = processCfR(graph, order, mutexMap)
+      val mutexMap = immediateMutex(g)
+      val answer = processCfR(g, order, mutexMap)
       val cfrMap = answer._1
-      val moreRace = findRacesForCatB(graph, cfrMap, order, mutexMap)
+      val moreRace = findRacesForCatB(g, cfrMap, order, mutexMap)
 
-      val (condPrec, race2) = findTemporalLinks(graph, cfrMap, order, mutexMap)
+      val (condPrec, race2) = findTemporalLinks(g, cfrMap, order, mutexMap)
       val raceConditions = race2 ::: answer._2 ::: moreRace
 
       (cfrMap, raceConditions, condPrec)

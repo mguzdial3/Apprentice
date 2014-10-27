@@ -11,6 +11,8 @@ package graph.passage {
     val optional: List[Cluster], history: List[Cluster], fringe: List[Cluster], excluded: List[Cluster]) extends AbstractPassage(
     id, graph, sources, ends, history, fringe, excluded) {
 
+    
+    
     def this(graph: Graph, sources: List[Cluster], ends: List[Cluster], mutex: List[MutualExcl], optional: List[Cluster], fringe: List[Cluster]) =
       this(0, graph, sources, ends, mutex, optional, List[Cluster](), fringe, List[Cluster]())
 
@@ -28,12 +30,13 @@ package graph.passage {
 
         // add the step to history. Note history is in reverse order
         val newHistory = step :: history
-
+//        println("place 1: ")
+//        println(graph.links.foreach())
         // direct mutex
         var newlyExcluded = computeExcluded(List(step), mutex).filter(graph.nodes contains)
 
         var allExcluded = newlyExcluded ::: excluded
-
+        //println("all excluded = " + allExcluded.map(_.name).mkString(" "))
         // recursive mutex
         allExcluded = findTransitiveClosure(graph, allExcluded)
 
@@ -99,25 +102,29 @@ package graph.passage {
      * if all direct predecessors of an event is in the event list, add that event to the event list
      * continue adding events until no such event exists
      */
-    protected def findTransitiveClosure(graph: Graph, events: List[Cluster]): List[Cluster] =
+    protected def findTransitiveClosure(graph: Graph, removedEvents: List[Cluster]): List[Cluster] =
       {
-
-        var all = ListBuffer[Cluster]() ++ events
-        var newFound: ListBuffer[Cluster] = null
-        var remainder = graph.nodes filterNot (all contains)
-        do {
-          newFound = ListBuffer[Cluster]()
+//    	println("Transitive Closure")
+        var removed = removedEvents        
+        var remainder = graph.topoSort filterNot (removedEvents contains)
+    	//var found = false
+        //do {
+          //found = false
           for (e <- remainder) {
+//            println("evaluate " + e.name)
+            
             val pred = graph.parentsOf(e)
-            if ((!pred.isEmpty) &&
-              pred.forall(all contains))
-              newFound += e
-          }
-          all ++= newFound
-          remainder = remainder filterNot (newFound contains)
-        } while (!newFound.isEmpty)
+//            println("parents of " + e.name + ": " + pred.map(_.name).mkString(" "))
+            if ((!pred.isEmpty) && pred.forall(removed contains))
+            {
+//              println("all parents deleted for " + e.name)
+              removed = e :: removed
+              //found = true
+            }
+          }                    
+        //} while (!found)
 
-        all.toList
+        removed
       }
 
     override def equals(o: Any): Boolean = o match {
@@ -150,7 +157,7 @@ package graph.passage {
       //println(ends.map(_.name).mkString("ends : ", "\n", ""))
 
 
-      val graphIndex = new GraphIndex(graph)
+      //val graphIndex = new GraphIndex(graph)
 
       // remove from the graph nodes without predecessors that are not sources
       //graph = eGraph.removeIrregularSourceEnds()
@@ -161,6 +168,26 @@ package graph.passage {
 //      println(sources.map(_.name).mkString("sources 2 : ", "\n", ""))
 
       new Passage(finalGraph, sources, ends, me, finalGraph.optionals, sources)
+    }
+    
+    def initNoIdenti(graph: Graph): Passage = {
+      val me = graph.mutualExcls
+
+      //println(sources.map(_.name).mkString("sources 1: ", "\n", ""))
+      val ends = graph.findEnds()
+      //println(ends.map(_.name).mkString("ends : ", "\n", ""))
+
+
+      //val graphIndex = new GraphIndex(graph)
+
+      // remove from the graph nodes without predecessors that are not sources
+      //graph = eGraph.removeIrregularSourceEnds()
+
+      var sources = graph.findSources()
+
+//      println(sources.map(_.name).mkString("sources 2 : ", "\n", ""))
+
+      new Passage(graph, sources, ends, me, graph.optionals, sources)
     }
   }
 }
