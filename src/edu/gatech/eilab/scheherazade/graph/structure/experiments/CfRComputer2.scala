@@ -162,9 +162,9 @@ object CfRComputer2 {
       var allTemporals = List[ConditionalPrec]()
       var allRaces = List[RaceCondition]()
       for (c <- order) {
-        if (c.name == "C7") {
-          println(c.name)
-        }
+//        if (c.name == "C7") {
+//          println(c.name)
+//        }
         var counter = 0
         val mutexList = mutexMap.getOrElse(c, Nil)
         val cCfRList = cfrMap.getOrElse(c, Nil)
@@ -224,9 +224,9 @@ object CfRComputer2 {
           }
 
         }
-                println(c.name)
-                println(allTemporals)
-                println(allRaces)
+//                println(c.name)
+//                println(allTemporals)
+//                println(allRaces)
       }
 
       (allTemporals.distinct, allRaces.distinct)
@@ -258,18 +258,20 @@ object CfRComputer2 {
               {
               val opponents = potentialConflictCfRs.filter(cfr => (parentCfR != cfr) && (!cfr.strictSuperSetOf(parentCfR)) && (cfr.group3 != parentCfR.group3))
               
-//              for (oppo)
-//              if (graph.shortestDistance(parentCfR.group3, )
-//              {
-//                // if parentCfR is ordered always before selfCfRs, the selfCfR is not a cfr any more
-//                
-//              }
-//              else
-//              {
+              for (oppo <- opponents)
+              {
+              if (graph.shortestDistance(parentCfR.group3, oppo.group3) > 0 && !graph.optionals.contains(parentCfR.group3) && !graph.conditionals.contains(parentCfR.group3))
+              {
+                // if parentCfR is ordered always before selfCfRs (and cannot be skipped), the selfCfR is not a cfr anymore
+                cfrMap.update(c, selfCfRs.filterNot(_ == oppo))
+              }
+              else
+              {
               val raceConds = opponents.map(oppo =>
                 new RaceCondition(c, oppo.allVertices, parentCfR.allVertices))
               allRaceConditions = raceConds ::: allRaceConditions
-//              }
+              }
+              }
             }
           }
         }
