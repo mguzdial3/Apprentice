@@ -273,4 +273,18 @@ class SampleGraphTests extends FunSuite {
     testGraph(graph, List(background), queryCluster)
   }
 
+  test("Mutual Exclusion Analysis on Sample Graph 35") {
+    val graph = SampleGraph.sample35
+    val background = graph.nodes(1)
+    val queryCluster = graph.nodes(7)
+    testGraph(graph, List(background), queryCluster)
+  }
+
+  test("Mutual Exclusion Analysis on Sample Graph 36") {
+    val graph = SampleGraph.sample36
+    val background = graph.nodes(8)
+    val queryCluster = graph.nodes(1)
+    testGraph(graph, List(background), queryCluster)
+  }
+
 }

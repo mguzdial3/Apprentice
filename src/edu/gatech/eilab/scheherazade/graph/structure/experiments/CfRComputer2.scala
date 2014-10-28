@@ -64,7 +64,7 @@ object CfRComputer2 {
             var cfrList = List[CauseForRemoval]()
             for (mx <- mutexList) {
               // optionals cannot be deleted.
-              if (!graph.optionals.contains(c)){// || !graph.conditionals.contains(mx)) {
+              if (!graph.optionals.contains(c)) { // || !graph.conditionals.contains(mx)) {
                 cfrList = new CauseForRemoval(null, List(mx)) :: cfrList
               }
             }
@@ -170,9 +170,9 @@ object CfRComputer2 {
       var allTemporals = List[ConditionalPrec]()
       var allRaces = List[RaceCondition]()
       for (c <- order) {
-        if (c.name == "C8") {
-          println(c.name)
-        }
+//        if (c.name == "C8") {
+//          println(c.name)
+//        }
         var counter = 0
         val mutexList = mutexMap.getOrElse(c, Nil)
         val cCfRList = cfrMap.getOrElse(c, Nil)
@@ -180,7 +180,7 @@ object CfRComputer2 {
         val parents = graph.parentsOf(c)
         for (p <- parents if cfrMap.contains(p)) // a parent that can be removed
         {
-          println(p)
+//          println(p)
           var temporals = List[ConditionalPrec]()
           var potentials = List[ConditionalPrec]()
 
@@ -232,9 +232,9 @@ object CfRComputer2 {
           }
 
         }
-                        println(c.name)
-                        println(allTemporals)
-                        println(allRaces)
+        //                        println(c.name)
+        //                        println(allTemporals)
+        //                        println(allRaces)
       }
 
       (allTemporals.distinct, allRaces.distinct)
@@ -252,8 +252,7 @@ object CfRComputer2 {
       var allRaceConditions = List[RaceCondition]()
       for (c <- order if graph.parentsOf(c) != Nil && cfrMap.contains(c)) // it has some parents and it may be removed from the graph
       {
-        if (c.name =="C8")
-        {
+        if (c.name == "C8") {
           println("C8")
         }
         val mutexList = mutexMap.getOrElse(c, Nil)

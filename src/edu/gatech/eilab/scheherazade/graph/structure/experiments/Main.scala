@@ -11,7 +11,7 @@ import java.io._
 object Main {
 
   def main(args: Array[String]) {
-    val totalRuns = 1000
+    val totalRuns = 10000
 
     var i = 1
     var noMistake = true
@@ -29,8 +29,8 @@ object Main {
         used += newTotal
       } else {
         wrong += 1
-//                printTestCase(graph, background, queryCluster)
-//                System.exit(1)
+//        printTestCase(graph, background, queryCluster)
+//        System.exit(1)
       }
     }
 
@@ -109,43 +109,47 @@ object Main {
     println(cfList)
 
     val cfrMap = cfrMap1 //HashMap[Cluster, List[CauseForRemoval]]()
-//    val g = graph.graphWithOptionalsAndSkips
-//    cfrMap1.foreach(pair => 
-//      if (!g.conditionals.contains(pair._1) && !g.optionals.contains(pair._1))
-//      {
-//        cfrMap.update(pair._1, pair._2)
-//      })
-//    println(cfrMap)
-      
-//    cfrMap1.foreach { pair =>
-//      if (graph.optionals.contains(pair._1) || graph.conditionals.contains(pair._1)) {
-//        val second = pair._2.filterNot(
-//          cfr => cfr.allVertices.exists(x => graph.shortestDistance(pair._1, x) > 0))
-//        cfrMap.update(pair._1, second)
-//      }
-//      else
-//      {
-//        cfrMap.update(pair._1, pair._2)
-//      }
-//    }
+    //    val g = graph.graphWithOptionalsAndSkips
+    //    cfrMap1.foreach(pair => 
+    //      if (!g.conditionals.contains(pair._1) && !g.optionals.contains(pair._1))
+    //      {
+    //        cfrMap.update(pair._1, pair._2)
+    //      })
+    //    println(cfrMap)
+
+    //    cfrMap1.foreach { pair =>
+    //      if (graph.optionals.contains(pair._1) || graph.conditionals.contains(pair._1)) {
+    //        val second = pair._2.filterNot(
+    //          cfr => cfr.allVertices.exists(x => graph.shortestDistance(pair._1, x) > 0))
+    //        cfrMap.update(pair._1, second)
+    //      }
+    //      else
+    //      {
+    //        cfrMap.update(pair._1, pair._2)
+    //      }
+    //    }
 
     // only use the conditions that are included in the background, i.e. those that are needed.
     var realCond = condPrec.filter(c => c.before.forall(backgrounds.contains))
 
     // I don;t know if we need to delete the vertices in a particular order
-    val removals = cfrMap.filter(pair => pair._2.exists(cfr => cfr.allVertices.forall(backgrounds.contains)))
+    var removals = cfrMap.filter(pair => pair._2.exists(cfr => cfr.allVertices.forall(backgrounds.contains)))
       .map(x => x._1).toList.distinct
     val race = raceConds.filter(rc => rc.a.exists(backgrounds.contains) || rc.b.exists(backgrounds.contains))
-    val noRemovals = race.map(_.focus)
+    var noRemovals = race.map(_.focus)
 
     //val linksToAdd = condPrec.filter(_.before.size == 1)
     //val conditionsToTest = condPrec.filter(_.before.size > 1)
+    val (realBg, rList) = findRemoved(cfrMap, raceConds, backgrounds)
 
-    val linksToAdd = realCond.filter(_.before.size == 1)
+    val linksToAdd = realCond.filter(x => x.before.size == 1)// && realBg.contains(x.before.head))
     val conditionsToTest = realCond.filter(_.before.size > 1)
 
-    val rList = removals.filterNot(noRemovals.contains)
-    val newGraph = makeNewGraph(graph, rList, linksToAdd)
+    //val rList = removals.filterNot(noRemovals.contains)
+    
+    //*** Must respect the ordering of deletion for CfRs
+
+    val newGraph = makeNewGraph(graph, rList, linksToAdd, Nil)
     //newGraph.draw("analysis-new")
     //println("links " ) ; newGraph.links.foreach(l => println(l))
     //println("removed " + rList.size + rList)
@@ -153,6 +157,31 @@ object Main {
     val newSeqs = ExhaustiveSeqGen.generateFromOld(newGraph, graph).filter(s => meetsCondition(s, conditionsToTest) && meetsFC(s, cfList))
     (newGraph, newSeqs)
   }
+
+  def findRemoved(cfrMap: HashMap[Cluster, List[CauseForRemoval]], raceConds: List[RaceCondition], backgrounds: List[Cluster]): (List[Cluster], List[Cluster]) =
+    {
+
+      var forbiddenBg = List[Cluster]()
+      for (entry <- cfrMap; cfr <- entry._2) {
+        if (cfr.other != Nil && cfr.group3 != null && backgrounds.contains(cfr.group3) && cfr.other.exists(o => !backgrounds.contains(o))) {
+          forbiddenBg = cfr.group3 :: forbiddenBg
+        }
+      }
+      //println("forbidden " + forbiddenBg)
+
+      val realBg = backgrounds.filterNot(forbiddenBg.contains)
+      //println("realBg = " + realBg)
+
+      var removals = cfrMap.filter(pair => pair._2.exists(cfr => cfr.allVertices.forall(realBg.contains)))
+        .map(x => x._1).toList.distinct
+
+      val race = raceConds.filter(rc => rc.a.exists(realBg.contains) || rc.b.exists(realBg.contains))
+      var noRemovals = race.map(_.focus)
+
+      val rList = removals.filterNot(noRemovals.contains)
+      //println("rList "+rList) 
+      (realBg, rList)
+    }
 
   def meetsFC(seq: List[Cluster], fcList: List[ForcedCooccurence]): Boolean =
     {
@@ -211,14 +240,14 @@ object Main {
       true
     }
 
-  private def makeNewGraph(graph: Graph, removals: List[Cluster], linksToAdd: List[ConditionalPrec]): Graph =
+  private def makeNewGraph(graph: Graph, removals: List[Cluster], linksToAdd: List[ConditionalPrec], linksToAvoid: List[Link]): Graph =
     {
 
       val graph1 = graph.graphWithOptionalsAndSkips.addSkipLinks(removals).removeNodes(removals)
       val temporalLinks = linksToAdd.map {
         condprec => new Link(condprec.before.head, condprec.after, "T")
       }
-      val newLinks = (temporalLinks ::: graph1.links).filterNot(l => removals.contains(l.source) || removals.contains(l.target))
+      val newLinks = (temporalLinks ::: graph1.links).filterNot(l => removals.contains(l.source) || removals.contains(l.target) || linksToAvoid.contains(l))
 
       new Graph(graph1.nodes, newLinks, graph1.mutualExcls, graph1.optionals, graph1.conditionals)
     }
