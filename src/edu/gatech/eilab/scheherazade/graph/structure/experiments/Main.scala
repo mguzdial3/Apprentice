@@ -11,7 +11,7 @@ import java.io._
 object Main {
 
   def main(args: Array[String]) {
-    val totalRuns = 10000
+    val totalRuns = 1000
 
     var i = 1
     var noMistake = true
@@ -29,8 +29,8 @@ object Main {
         used += newTotal
       } else {
         wrong += 1
-//        printTestCase(graph, background, queryCluster)
-//        System.exit(1)
+//                printTestCase(graph, background, queryCluster)
+//                System.exit(1)
       }
     }
 
@@ -100,14 +100,36 @@ object Main {
 
   def performAnalysis(graph: Graph, backgrounds: List[Cluster], qVertex: Cluster): (Graph, List[List[Cluster]]) = {
 
-    val realGraph = regularize(graph)
+    val realGraph = graph // regularize(graph)
 
-    val (cfrMap, raceConds, condPrec, cfList) = CfRComputer2.processGraph(realGraph)
-    println(cfrMap)
+    val (cfrMap1, raceConds, condPrec, cfList) = CfRComputer2.processGraph(realGraph)
+    println(cfrMap1)
     println(raceConds)
     println(condPrec)
     println(cfList)
 
+    val cfrMap = cfrMap1 //HashMap[Cluster, List[CauseForRemoval]]()
+//    val g = graph.graphWithOptionalsAndSkips
+//    cfrMap1.foreach(pair => 
+//      if (!g.conditionals.contains(pair._1) && !g.optionals.contains(pair._1))
+//      {
+//        cfrMap.update(pair._1, pair._2)
+//      })
+//    println(cfrMap)
+      
+//    cfrMap1.foreach { pair =>
+//      if (graph.optionals.contains(pair._1) || graph.conditionals.contains(pair._1)) {
+//        val second = pair._2.filterNot(
+//          cfr => cfr.allVertices.exists(x => graph.shortestDistance(pair._1, x) > 0))
+//        cfrMap.update(pair._1, second)
+//      }
+//      else
+//      {
+//        cfrMap.update(pair._1, pair._2)
+//      }
+//    }
+
+    // only use the conditions that are included in the background, i.e. those that are needed.
     var realCond = condPrec.filter(c => c.before.forall(backgrounds.contains))
 
     // I don;t know if we need to delete the vertices in a particular order

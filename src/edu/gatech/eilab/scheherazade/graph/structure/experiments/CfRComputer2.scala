@@ -52,13 +52,21 @@ object CfRComputer2 {
       var allRaceList = List[RaceCondition]()
 
       for (c <- order) {
-        val parents = graph.parentsOf(c)
+        //        if (c.name == "C4")
+        //        {
+        //        	println("C4")
+        //        }
+        val parents = graph.parentsOf(c) //.filterNot(_.name == "Start")
 
         if (parents == Nil) {
           if (mutexMap.contains(c)) {
             val mutexList = mutexMap(c)
-            val cfrList = mutexList.map {
-              mxVertex => new CauseForRemoval(null, List(mxVertex))
+            var cfrList = List[CauseForRemoval]()
+            for (mx <- mutexList) {
+              // optionals cannot be deleted.
+              if (!graph.optionals.contains(c)){// || !graph.conditionals.contains(mx)) {
+                cfrList = new CauseForRemoval(null, List(mx)) :: cfrList
+              }
             }
             cfrMap.update(c, cfrList)
           }
@@ -162,9 +170,9 @@ object CfRComputer2 {
       var allTemporals = List[ConditionalPrec]()
       var allRaces = List[RaceCondition]()
       for (c <- order) {
-//        if (c.name == "C7") {
-//          println(c.name)
-//        }
+        if (c.name == "C8") {
+          println(c.name)
+        }
         var counter = 0
         val mutexList = mutexMap.getOrElse(c, Nil)
         val cCfRList = cfrMap.getOrElse(c, Nil)
@@ -172,7 +180,7 @@ object CfRComputer2 {
         val parents = graph.parentsOf(c)
         for (p <- parents if cfrMap.contains(p)) // a parent that can be removed
         {
-//          println(p)
+          println(p)
           var temporals = List[ConditionalPrec]()
           var potentials = List[ConditionalPrec]()
 
@@ -224,9 +232,9 @@ object CfRComputer2 {
           }
 
         }
-//                println(c.name)
-//                println(allTemporals)
-//                println(allRaces)
+                        println(c.name)
+                        println(allTemporals)
+                        println(allRaces)
       }
 
       (allTemporals.distinct, allRaces.distinct)
@@ -244,6 +252,10 @@ object CfRComputer2 {
       var allRaceConditions = List[RaceCondition]()
       for (c <- order if graph.parentsOf(c) != Nil && cfrMap.contains(c)) // it has some parents and it may be removed from the graph
       {
+        if (c.name =="C8")
+        {
+          println("C8")
+        }
         val mutexList = mutexMap.getOrElse(c, Nil)
         val selfCfRs = cfrMap(c)
         // first, the CfR does not remove c directly. That is, it works by removing all of its parents. 
@@ -253,24 +265,21 @@ object CfRComputer2 {
         for (p <- parents) {
           for (parentCfR <- cfrMap.getOrElse(p, Nil)) {
             if (parentCfR.group3 != null && // parentCfR has a group 3 
-              parentCfR.allVertices.forall(v => !mutexList.contains(v)) && // parentCfR does not remove c directly               
-              (!selfCfRs.exists(cfr => cfr != parentCfR && parentCfR.strictSuperSetOf(cfr)))) // it does not delete all parents
+              parentCfR.allVertices.forall(v => !mutexList.contains(v)) && // parentCfR does not remove c directly
+              (!selfCfRs.exists(cfr => cfr == parentCfR || parentCfR.strictSuperSetOf(cfr)))) // it does not delete all parents
+              //(!selfCfRs.exists(cfr => cfr != parentCfR && parentCfR.strictSuperSetOf(cfr)))) // it does not delete all parents
               {
               val opponents = potentialConflictCfRs.filter(cfr => (parentCfR != cfr) && (!cfr.strictSuperSetOf(parentCfR)) && (cfr.group3 != parentCfR.group3))
-              
-              for (oppo <- opponents)
-              {
-              if (graph.shortestDistance(parentCfR.group3, oppo.group3) > 0 && !graph.optionals.contains(parentCfR.group3) && !graph.conditionals.contains(parentCfR.group3))
-              {
-                // if parentCfR is ordered always before selfCfRs (and cannot be skipped), the selfCfR is not a cfr anymore
-                cfrMap.update(c, selfCfRs.filterNot(_ == oppo))
-              }
-              else
-              {
-              val raceConds = opponents.map(oppo =>
-                new RaceCondition(c, oppo.allVertices, parentCfR.allVertices))
-              allRaceConditions = raceConds ::: allRaceConditions
-              }
+
+              for (oppo <- opponents) {
+                if (graph.shortestDistance(parentCfR.group3, oppo.group3) > 0 && !graph.optionals.contains(parentCfR.group3) && !graph.conditionals.contains(parentCfR.group3)) {
+                  // if parentCfR is ordered always before selfCfRs (and cannot be skipped), the selfCfR is not a cfr anymore
+                  cfrMap.update(c, selfCfRs.filterNot(_ == oppo))
+                } else {
+                  val raceConds = opponents.map(oppo =>
+                    new RaceCondition(c, oppo.allVertices, parentCfR.allVertices))
+                  allRaceConditions = raceConds ::: allRaceConditions
+                }
               }
             }
           }
@@ -337,7 +346,7 @@ object CfRComputer2 {
       val answer = processCfR(g, order, mutexMap)
       val cfrMap = answer._1
       val moreRace = findRacesForCatB(g, cfrMap, order, mutexMap)
-
+      println("more races: " + moreRace)
       val (condPrec, race2) = findTemporalLinks(g, cfrMap, order, mutexMap)
       val raceConditions = race2 ::: answer._2 ::: moreRace
 
@@ -394,8 +403,7 @@ object CfRComputer2 {
                 mx.c2
               else mx.c1
             }
-          if (!graph.optionals.contains(c) && !graph.optionals.contains(early) && !graph.conditionals.contains(c) && !graph.conditionals.contains(early))
-          {
+          if (!graph.optionals.contains(c) && !graph.optionals.contains(early) && !graph.conditionals.contains(c) && !graph.conditionals.contains(early)) {
             fcList = new ForcedCooccurence(c, late) :: fcList
           }
         }
