@@ -44,6 +44,18 @@ object Global {
       semanticFile = new File("CofSemantic.lzma")
       locationFile = new File("CofLocation.lzma")
       allFile = new File("CofSimilarity.lzma")
+    } else if (dataset == "Pharmacy") {
+      configFile = new File("configPharmacy.txt")
+      parseFile = new File("PharmacyParse.lzma")
+      semanticFile = new File("PharmacySemantic.lzma")
+      locationFile = new File("PharmacyLocation.lzma")
+      allFile = new File("PharmacySimilarity.lzma")
+    } else if (dataset == "Affairs") {
+      configFile = new File("configAffairs.txt")
+      parseFile = new File("AffairsParse.lzma")
+      semanticFile = new File("AffairsSemantic.lzma")
+      locationFile = new File("AffairsLocation.lzma")
+      allFile = new File("AffairsSimilarity.lzma")
     }
 
   }
