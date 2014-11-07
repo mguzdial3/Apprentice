@@ -62,7 +62,7 @@ package similarity {
       {
         val lemma1 = word1.lemma
         val lemma2 = word2.lemma
-        if (lemma1 == lemma2) return 1
+        if (lemma1 == lemma2) return 15
         else {
           var value = ruler.similarity(lemma1, lemma2)
           if (value < 0) value = 0
@@ -87,11 +87,11 @@ package similarity {
           val tail2 = dep2.dep.lemma
 
           // this part treats John and Sally as the same person. May not apply to all situations.
-          if (head1 == head2 && ((tail1 == "Sally" && tail2 == "John") || (tail2 == "Sally" && tail1 == "John")))
-            return 1
-          else if (tail1 == tail2 && ((head1 == "Sally" && head2 == "John") || (head2 == "Sally" && head1 == "John")))
-            return 1
-          else {
+//          if (head1 == head2 && ((tail1 == "Sally" && tail2 == "John") || (tail2 == "Sally" && tail1 == "John")))
+//            return 1
+//          else if (tail1 == tail2 && ((head1 == "Sally" && head2 == "John") || (head2 == "Sally" && head1 == "John")))
+//            return 1
+//          else {
 
             // part ends
             val govSim = wordSimilarity(dep1.gov, dep2.gov)
@@ -99,9 +99,9 @@ package similarity {
 
             var base =
               // part begins
-              if (((tail1 == "Sally" && tail2 == "John") || (tail2 == "Sally" && tail1 == "John")) && govSim < 0.01) 0
-              else if (((head1 == "Sally" && head2 == "John") || (head2 == "Sally" && head1 == "John")) && depSim < 0.01) 0
-              else
+//              if (((tail1 == "Sally" && tail2 == "John") || (tail2 == "Sally" && tail1 == "John")) && govSim < 0.01) 0
+//              else if (((head1 == "Sally" && head2 == "John") || (head2 == "Sally" && head1 == "John")) && depSim < 0.01) 0
+//              else
                 // part ends 
                 0.5 * depSim + 0.5 * govSim
 
@@ -126,7 +126,7 @@ package similarity {
             //          }
 
             base
-          }
+//          }
         }
       }
 
