@@ -21,10 +21,6 @@ object CSVProcessor2 {
 
     lines foreach {
       l =>
-        if (l.contains("cried at the hotel."))
-        {
-          System.exit(1)
-        }
         //println("line = " + l)
         //val line = l.trim
         val line = l.toCharArray()
@@ -85,8 +81,8 @@ object CSVProcessor2 {
    *
    */
   def main(args: Array[String]) {
-    val array = readCSV("./data/coffee/data.csv")
-    val writer = new PrintWriter(new BufferedOutputStream(new FileOutputStream("./data/coffee/coffeeStories.txt")))
+    val array = readCSV("""C:\Users\Albert\Desktop\Proposal\summary.csv""")
+    val writer = new PrintWriter(new BufferedOutputStream(new FileOutputStream("""C:\Users\Albert\Desktop\Proposal\stories.txt""")))
     for (story <- array) {
       for (line <- story) {
         val k = line.trim

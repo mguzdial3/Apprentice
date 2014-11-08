@@ -56,6 +56,18 @@ object Global {
       semanticFile = new File("AffairsSemantic.lzma")
       locationFile = new File("AffairsLocation.lzma")
       allFile = new File("AffairsSimilarity.lzma")
+    } else if (dataset == "Gas") {
+      configFile = new File("configGas.txt")
+      parseFile = new File("GasParse.lzma")
+      semanticFile = new File("GasSemantic.lzma")
+      locationFile = new File("GasLocation.lzma")
+      allFile = new File("GasSimilarity.lzma")
+    } else if (dataset == "Proposal") {
+      configFile = new File("configProposal.txt")
+      parseFile = new File("ProposalParse.lzma")
+      semanticFile = new File("ProposalSemantic.lzma")
+      locationFile = new File("ProposalLocation.lzma")
+      allFile = new File("ProposalSimilarity.lzma")
     }
 
   }

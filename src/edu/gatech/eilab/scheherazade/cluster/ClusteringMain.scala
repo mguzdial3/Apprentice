@@ -24,7 +24,7 @@ package cluster {
   object ClusteringMain {
 
     def main(args: Array[String]) {
-      clusterDataSet("Affairs")
+      clusterDataSet("Proposal")
 
     }
 

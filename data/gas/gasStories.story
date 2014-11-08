@@ -669,7 +669,7 @@
 624 John removed gas nozzle from the pump.
 625 John inserted gas nozzle into his gas tank.
 626 John squeezed the nozzle handle.
-627 John stood still for 3 minutes
+627 John stood still for 3 minutes.
 628 John released the nozzle handle.
 629 John removed gas nozzle from his gas tank.
 630 John replaced gas nozzle into pump.
@@ -692,7 +692,8 @@
 646 John waited patiently.
 647 John watched the numbers turn on the screen indicating how many gallons he was pumping.
 648 The pump automatically shut off.
-649 John pulled the pump nozzle out of his gas tank. John placed the pump nozzle back into place.
+649 John pulled the pump nozzle out of his gas tank. 
+840 John placed the pump nozzle back into place.
 650 John pressed a button at the pump.
 651 John took the receipt from the printer.
 652 John carefully put the lid back on his gas tank.
