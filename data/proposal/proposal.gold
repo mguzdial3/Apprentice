@@ -1,0 +1,320 @@
+@ John proposed
+8 John asked Sally to marry John.
+20 John asked Sally a question.
+32 John asked Sally to marry John.
+48 John asked Sally to marry him.
+63 John asked Sally to marry him.
+85 John asked Sally if Sally would marry John.
+105 John proposed to Sally.
+119 John asked Sally to marry him.
+129 John proposed marriage.
+159 John proposed marriage to Sally.
+177 John proposed marriage to Sally.
+192 John asked Sally to marry him.
+205 John proposed to Sally.
+217 John proposed to Sally.
+243 John asked Sally to marry John.
+257 John asked Sally for marriage.
+270 John asked Sally to marry him.
+282 John requested marriage.
+296 John asked Sally to marry him.
+308 John proposed to Sally.
+338 John proposed to Sally.
+350 John asked Sally to marry him.
+364 Sally agreed to marry John.
+374 John asked Sally to marry him.
+379 John asked Sally to get married.
+390 John asked Sally to marry John.
+411 John proposed to Sally.
+434 John asked Sally the big question.
+448 John proposed to Sally.
+460 John asked Sally to marry him.
+473 John asked Sally to marry him.
+418 John asked Sally to be John's bride.
+168 John asked Sally about marriage.
+###
+@ John wanted marriage
+25 John wanted to marry Sally.
+233 John wanted to marry Sally.
+377 John wanted to marry Sally.
+202 John wanted to marry Sally.
+377 John wanted to marry Sally.
+113 John was going to ask Sally to marry him.
+152 John decided to marry Sally.
+###
+@ Sally wanted marriage
+381 Sally wanted to marry John.
+###
+@ Sally agreed
+9 Through tears, Sally agreed.
+21 Sally said yes.
+33 Sally agreed.
+49 Sally cried out yes.
+66 Sally said that she would marry John.
+78 Sally accepted his proposal.
+89 Sally said Sally would marry John.
+130 Sally acceped marriage.
+121 Sally said yes.
+271 Sally said yes.
+284 Sally agreed.
+297 Sally said yes.
+309 Sally said yes.
+339 Sally said yes.
+352 Sally said yes.
+375 Sally said yes.
+393 Sally accept John's proposal.
+412 Sally emphatically said, "Yes!"
+420 Sally said yes.
+436 Sally confirmed the request.
+449 Sally accepted John's proposal.
+461 Sally agreed.
+475 Sally agreed to marry John.
+###
+@ Sally rejected John
+160 Sally rejected him in his proposal for marriage.
+171 Sally said no to John.
+178 Sally said no.
+195 Sally rejected John's proposal.
+206 Sally declined the proposal.
+218 Sally said no.
+245 Sally said no.
+259 Sally refused marriage.
+###
+@ John loved Sally
+12 John loved Sally.
+24 John loved Sally.
+201 John loved Sally.
+332 John loved Sally.
+376 John loved Sally very much.
+###
+@ Sally not loving John
+172 Sally did not love John.
+207 Sally did not love John.
+###
+@ John expressed love
+7 John confessed a deep love for Sally.
+230 John expressed love for Sally.
+280 John expressed love.
+370 John expressed love to Sally.
+459 John told Sally how much he loved her.
+###
+@ John took Sally to location
+1 John invited Sally to the lake.
+27 John took Sally to the park.
+263 John took Sally to the park.
+265 John took Sally to a private part of the park
+###
+@ John invite Sally for dinner
+71 John asked Sally to go out for dinner.
+288 John asked Sally out to dinner.
+328 One day, John asked Sally to a fancy restaurant.
+365 John asked Sally out to dinner.
+438 John asked Sally to dinner.
+###
+@ John took Sally to dinner
+13 John took Sally to dinner.
+354 John took Sally to dinner.
+403 John took Sally to the restaurant.
+441 John drove Sally to a restaurant.
+###
+@ went to dinner
+112 John and Sally went to dinner.
+290 John and Sally went to dinner.
+249 John and Sally went to a nice restaurant.
+42 Sally and John arrived at the restaurant.
+79 John and Sally entered the restaurant.
+133 John entered the restaurant.
+237 Sally entered the restaurant.
+415 John and Sally went to a restaurant.
+442 John and Sally arrived at the restaurant.
+###
+@ John ordered Champaine
+14 John ordered champagne.
+239 John ordered champagne.
+359 John ordered champagne at the restaurant.
+366 John ordered steak and champagne.
+454 John and Sally had champagne and dessert.
+###
+@ order dessert
+333 John ordered dessert for John and Sally.
+360 John and Sally ordered dessert.
+###
+@ had food
+73 John and Sally ate well.
+250 John and Sally ate their food.
+292 John and Sally ate.
+387 After the food arrived, John and Sally ate between bits of conversation.
+404 John and Sally ate dinner.
+453 John and Sally ate dinner together.
+445 John and Sally had a romantic dinner.
+454 John and Sally had champagne and dessert.
+175 John and Sally had dinner together.
+###
+@ find ring
+255 Sally found a diamond ring.
+324 Sally found a ring in her sandwich.
+363 Sally saw the ring in the glass.
+408 Sally saw the ring.
+###
+@ John kneeled
+16 John kneeled.
+29 John got down on one knee.
+61 John got on his knees.
+75 Over cake and ice cream John knelt down suddenly beside her chair.
+81 John got down on one knee in front of Sally.
+102 John kneeled in front of Sally.
+116 John knelt down.
+128 John kneeled.
+136 John knelt in front of Sally.
+158 During the walk, John got down on one knee.
+191 John got down on one knee.
+215 John knelt down.
+231 John got on one knee.
+242 John got down on one knee.
+256 John knelt on the floor.
+279 John got down on one knee.
+295 John got down on one knee.
+303 John got down on one knee.
+336 John got down on one knee.
+348 John kneeled on one knee.
+372 John got on his knees.
+410 John knelt on one knee in the middle of the restaurant.
+416 John knelt down.
+456 John got down on one knee.
+471 John knelt in the sand.
+###
+@ John stood up
+311 John stood up.
+423 John stood up.
+###
+@ Sally surprised
+18 Sally was surprised.
+###
+@ John bought a ring
+26 John bought an engagement ring.
+165 John bought a ring for Sally.
+203 John bought a ring.
+287 John purchased an engagement ring.
+378 John bought Sally a ring.
+396 John bought an engagement ring for his girlfriend, Sally.
+414 John bought a ring.
+###
+@ John gave ring to Sally
+30 John presented the ring to Sally.
+62 John handed Sally the engagement ring.
+84 John showed Sally the ring.
+176 At dinner John showed Sally an engagement ring.
+216 John handed Sally the ring.
+232 John held out a ring to Sally.
+268 After dinner, John gave Sally a teddy bear holding a ring.
+337 John opened a ring box.
+417 John showed Sally the ring.
+424 John gave Sally the ring.
+###
+@ John pulled out ring
+17 John took a small box from his pocket.
+47 John pulled a diamond ring from his pocket.
+76 John withdrew a ring.
+82 John took a small box out of John's jacket.
+103 John took a ring box out of his pocket.
+118 John pulled out a diamond ring.
+281 John pulled out a ring box.
+306 John took out a ring.
+373 John pulled out a ring.
+389 John took out a ring from his pants.
+447 John pulled a ring out of his pocket after dinner.
+457 John took a box out of his pocket.
+470 John pulled a box from his pocket.
+###
+@ put ring on
+34 Sally put on the ring.
+67 John slid the ring on Sally's finger.
+91 John put the ring on Sally's finger.
+110 John put the ring on Sally's left third finger.
+142 John slipped the ring on Sally's finger.
+273 John put the ring on Sally's finger.
+285 John put a ring on Sally's finger.
+310 John put the ring on Sally's finger.
+382 Sally put the ring on.
+425 Sally put the ring on Sally's finger.
+476 John put the ring on Sally's finger.
+###
+@ hug
+10 John and Sally embraced.
+35 John and Sally hugged.
+88 Sally hugged John.
+272 Sally hugged John.
+340 John and Sally embraced.
+384 Sally hugged John.
+478 Sally and John embraced.
+###
+@ Sally cried
+77 Sally's eyes welled up with tears.
+87 Sally started to cry.
+193 Sally teared up.
+198 Sally cried some more.
+258 Sally cried.
+349 Sally began to cry.
+391 Sally burst into tears.
+419 Sally cried.
+474 Sally cried.
+###
+@ kiss
+11 John and Sally kissed.
+90 Sally and John kissed.
+132 John kissed Sally.
+274 John kissed Sally.
+286 John and Sally kissed.
+312 John and Sally kissed.
+316 John gave Sally a kiss on the lips.
+325 Sally then kissed John again.
+353 John kissed Sally.
+385 John kissed Sally.
+422 Sally and John kissed.
+468 John kissed Sally.
+###
+@ sad
+219 Sally and John were unhappy.
+174 John looked sad.
+196 John was upset.
+210 John was sad.
+219 Sally and John were unhappy.
+###
+@ happy
+22 Sally was happy.
+23 John was happy.
+380 Sally was happy.
+120 Sally was super happy.
+383 John was happy.
+394 John was elated.
+###
+@ spread blanket
+4 John spread a picnic blanket.
+266 Sally helped spread out the blanket.
+###
+@ Sally blushed
+19 Sally blushed.
+244 Sally blushed.
+347 Sally blushed.
+435 Sally blushed slightly.
+###
+@ Sally screamed
+283 Sally screamed.
+351 Sally screamed in excitement.
+###
+@ John ordered food
+291 John ordered food.
+293 John ordered dessert.
+355 John ordered a steak for dinner.
+430 John ordered steak.
+444 John and Sally ordered a meal.
+###
+@ smile
+99 Sally smiled at John.
+126 Sally smiled.
+127 John smiled.
+138 John smiled at Sally.
+167 John smiled at Sally.
+304 Sally smiled at John.
+344 Sally smiled.
+###

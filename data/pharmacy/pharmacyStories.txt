@@ -1,0 +1,936 @@
+0 John felt sick.
+1 John needed medicine.
+2 John slowly walked into the pharmacy.
+3 Sally greeted John.
+4 John gave Sally his prescription.
+5 Sally retrieved the medicine.
+6 Sally handed John the medicine.
+7 John asked Sally about the medicine's instructions.
+8 Sally explained how to use the medicine.
+9 John thanked Sally for helping him.
+10 John paid for the medicine.
+11 John slowly walked out of the pharmacy.
+###
+12 John entered the store.
+13 John headed over to the pharmacy counter.
+14 John and Sally greeted each other.
+15 John requested his blood pressure medication.
+16 John handed over his prescription to Sally for verification.
+17 Sally turned around.
+18 Sally walked to the back.
+19 Sally quickly located his medication.
+20 Sally walked back to the counter.
+21 Sally handed John his medication.
+22 John was pleased to see his medication.
+23 John and Sally both said goodbye.
+24 John walked out of the store.
+###
+25 John took a pill.
+26 John needed a refill.
+27 John called his doctor.
+28 John grabbed his keys.
+29 John left the house.
+30 John parked his car.
+31 John entered the pharmacy.
+32 John approached the counter.
+33 Sally acknowledged John.
+34 Sally called the doctor.
+35 Sally filled the prescription.
+36 John paid for the prescription.
+37 Sally handed John the prescription.
+###
+38 John walked to the pharmacy down the street.
+39 John  entered the pharmacy.
+40 Sally, the pharmacist, filled prescriptions.
+41 John walked to the back of the store.
+42 John asked Sally if his prescription was ready.
+43 Sally checked the prescription bins.
+44 Sally found John's prescription.
+45 Sally rang up the total on the cash register.
+46 Sally told John the total.
+47 John took out his wallet.
+48 John paid for the prescription.
+49 Sally handed John the prescription.
+50 John thanked Sally.
+51 John left the store.
+###
+52 John approached the pharmacy desk.
+53 Sally greeted John.
+54 John handed Sally his prescription.
+55 Sally read John's prescription.
+56 Sally retrieved the medication on John's prescription.
+57 Sally told John the price of the medication.
+58 John gave Sally his debit card.
+59 Sally processed the debit card transaction.
+60 John entered his PIN to complete the transaction.
+61 Sally gave John his medication.
+62 John left.
+###
+63 John walked into the pharmacy.
+64 John handed Sally his prescription.
+65 Sally read the prescription.
+66 Sally counted the correct number of pills.
+67 Sally put the pills in a pill bottle.
+68 Sally handed the pill bottle to John.
+69 Sally checked John out at the cash register.
+70 John handed Sally money.
+71 Sally handed John his change.
+72 John left the pharmacy.
+###
+73 John walked into the pharmacy.
+74 John read the aisle labels.
+75 John found the cold medicine aisle.
+76 John entered aisle 9.
+77 John found the cold medicine.
+78 John took the medicine to the front of the pharmacy.
+79 Sally scanned the medicine.
+80 Sally told John the merchandise total.
+81 John gave Sally twenty dollars.
+82 Sally gave John his change.
+83 Sally gave John his receipt.
+84 John took his bag.
+85 John left the pharmacy.
+###
+86 John walked through the pharmacy door.
+87 John walked up to the pharmacy desk.
+88 John asked the pharmacist for his prescription.
+89 Sally walked to the back.
+90 Sally looked through the prescriptions.
+91 Sally found John's prescription.
+92 Sally walked back to the desk.
+93 Sally handed John his prescription.
+94 Sally rang John up.
+95 John swiped his credit card.
+96 Sally waved goodbye.
+97 John walked back to his car.
+###
+98 John approached the pharmacy counter.
+99 John asked Sally for medicine.
+100 John gave Sally the medicine prescription.
+101 Sally read the prescription.
+102 Sally went to the computer.
+103 Sally found John's records.
+104 Sally checked John's records for drug interactions.
+105 Sally went to the medicine storage.
+106 Sally measured the medicine.
+107 Sally put the correct amount in a bottle.
+108 Sally labeled the medicine bottle.
+109 Sally told John about the medicine.
+110 Sally returned the prescription to John.
+111 John paid for the medicine.
+###
+112 John entered the pharmacy.
+113 John walked to the pharmacist counter.
+114 Sally asked John for the prescription.
+115 John handed her the doctor's note.
+116 Sally went into the inventory room.
+117 Sally filled a bottle with pills.
+118 Sally brought the bottle to the register.
+119 Sally told John the price of the pills.
+120 Sally explained the side effects.
+121 John swiped his debit card.
+122 Sally bagged the prescription.
+123 John took the bag from Sally.
+124 John exited the pharmacy.
+###
+125 John walked into the pharmacy.
+126 John approached the pharmacy counter.
+127 Sally stood behind the counter.
+128 Sally greeted John.
+129 Sally took John's prescription.
+130 Sally walked back into another room.
+131 Sally returned later with the medicine.
+132 John paid Sally for the medicine.
+133 Sally gave John a receipt.
+134 John departed from the pharmacy.
+###
+135 John walked into the pharmacy.
+136 John walked up to the pharmacy counter.
+137 Sally greeted John warmly.
+138 John presented his prescription.
+139 Sally asked John for an insurance card.
+140 John presented Sally with an insurance card.
+141 Sally verified the insurance card.
+142 Sally counted the prescription medication.
+143 Sally put the medication into a container.
+144 Sally gave the prescription to John.
+145 Sally thanked John.
+146 John thanked Sally.
+147 John picked up the container with the medicine inside.
+148 John left the pharmacy.
+###
+149 John got sick.
+150 John needed medicine.
+151 John drove to the pharmacy.
+152 John walked in to the pharmacy.
+153 John approached the pharmacy counter.
+154 Sally asked him what he needed.
+155 John told Sally he was sick.
+156 Sally told John to buy aspirin.
+157 John asked Sally what brand.
+158 Sally told John to buy Bayer.
+159 John walked to the shelf.
+160 John picked up the aspirin.
+161 John walked back to Sally.
+162 John gave Sally the aspirin and money.
+###
+163 John drove his car to the pharmacy.
+164 John waited in line at the pharmacy.
+165 John gave his prescription slip to Sally.
+166 Sally requested John's identification.
+167 John handed Sally his driver's license.
+168 Sally asked John for his phone number.
+169 John told Sally his phone number.
+170 Sally looked for John's file on the computer.
+171 Sally went to the back room of the pharmacy.
+172 Sally returned to John with his prescription.
+173 John thanked Sally for his medication.
+174 Sally greeted the next customer in line.
+###
+175 John drove to the pharmacy.
+176 John walked to the pharmacy counter.
+177 Sally greeted John.
+178 John gave Sally the prescription.
+179 Sally asked John to wait 20 minutes.
+180 John thanked Sally.
+181 John browsed the store.
+182 John came back to the counter.
+183 Sally brought his medicine to the counter.
+184 Sally rang up the prescription.
+185 John paid Sally.
+186 John thanked Sally again.
+187 John left the store.
+###
+188 John drove to the pharmacy.
+189 John opened the car door.
+190 John coughed.
+191 John walked to the pharmacy counter.
+192 Sally greeted John.
+193 John coughed again.
+194 John asked Sally for cough medicine.
+195 Sally grabbed a box of medicine from behind the counter.
+196 John paid for the medicine.
+197 John drove home.
+###
+198 John walked into the pharmacy.
+199 John was feeling sick.
+200 John was looking for flu medication.
+201 John could not find the right medicine.
+202 John asked Sally, the pharmacist, for help.
+203 Sally asked John his symptoms.
+204 Sally suggested a medicine to take.
+205 John thanked Sally for her help.
+206 John waited in line to purchase his medicine.
+207 John paid for his medicine.
+208 John left the pharmacy.
+###
+209 John entered the pharmacy.
+210 John walked to the back of the pharmacy.
+211 John waited in line.
+212 John gave Sally his prescription.
+213 John waited for his prescription.
+214 Sally reviewed the prescription.
+215 Sally filled the prescription.
+216 Sally handed John the prescription.
+217 Sally asked John if he has any questions.
+218 John shook his head.
+219 John paid for his prescription.
+220 John exited the pharmacy.
+###
+221 John chose his medicine from the aisle.
+222 John waited in line at the pharmacy desk.
+223 Sally greeted John.
+224 John placed his medicine on the counter.
+225 Sally scanned the medicine bar code.
+226 Sally told John the cost of the medicine.
+227 John handed Sally cash.
+228 Sally processed the transaction.
+229 Sally gave John his change.
+230 John thanked Sally.
+231 Sally bid John farewell.
+###
+232 John entered the store.
+233 John approached the pharmacy counter.
+234 John handed Sally the prescription.
+235 Sally looked at the prescription.
+236 Sally walked to the medicine shelves.
+237 Sally removed the medicine from the shelf.
+238 Sally typed up the label.
+239 Sally pasted the label onto the medicine bottle.
+240 Sally put the medicine into a bag.
+241 John took money out of his pocket.
+242 John handed the money to Sally.
+243 Sally stapled the receipt onto the bag.
+244 Sally handed the bag to John.
+245 John walked out of the store.
+###
+246 John drove to the pharmacy.
+247 John entered the pharmacy.
+248 John searched for the medicine aisle.
+249 John found the medicine.
+250 John studied the medicine labels.
+251 John chose a bottle.
+252 John took the medicine to the counter.
+253 Sally greeted John.
+254 John asked Sally about the medicine.
+255 Sally approved of the medicine.
+256 John bought the medicine.
+257 Sally thanked John.
+258 John exited the pharmacy.
+259 John drove home.
+###
+260 John walked into the pharmacy.
+261 John looked for the pharmacy desk.
+262 John walked to the pharmacy desk.
+263 John waited in line.
+264 John greeted the pharmacist by her name, Sally.
+265 Sally returned the greetings.
+266 John requested his medicine.
+267 Sally requested that John wait.
+268 Sally walked to her inventory room.
+269 Sally picked the requested medicine.
+270 Sally returned to John.
+271 Sally packaged the medicine.
+272 John received the medicine.
+273 John paid for medicine.
+###
+274 John walked into the store.
+275 John walked down the aisle to look for medicine.
+276 John saw Sally behind the customer service counter.
+277 John walked towards Sally.
+278 John requested medicine from Sally.
+279 Sally walked to the back.
+280 Sally came back with John's medicine.
+281 Sally rang up John's medicine order.
+282 John paid with cash.
+283 John thanked Sally for the great customer service.
+284 John left the store.
+###
+285 John arrived at the pharmacy line.
+286 John waited for Sally's help.
+287 John presented his prescription to Sally.
+288 Sally requested his medical information.
+289 John provided medical information to Sally.
+290 Sally confirmed the doctor's prescription.
+291 Sally began filling the prescription.
+292 John waited for the prescription in the waiting area.
+293 John listened for his name on the speaker.
+294 Sally completed John's prescription.
+295 Sally called for John on the speaker.
+296 John grabbed his completed prescription.
+297 John paid for his prescription.
+298 John left the pharmacy.
+###
+299 John entered the drug store.
+300 John walked up to the pharmacy counter.
+301 John waited at the counter.
+302 Sally came to the counter.
+303 John handed Sally his prescription note.
+304 Sally read the note.
+305 Sally got the medicine.
+306 Sally put the medicine in a bottle.
+307 Sally put the bottle in a bag.
+308 Sally told John the price for the medicine.
+309 John paid for the medicine.
+310 Sally gave the bag to John.
+311 John left the store.
+###
+312 John walked to the pharmacy.
+313 John entered the pharmacy.
+314 John approached the pharmacy counter.
+315 Sally greeted John.
+316 John asked Sally for the medication.
+317 Sally asked John to wait.
+318 Sally went to the back of the pharmacy.
+319 Sally found John's medication.
+320 Sally carried the medication to John.
+321 Sally asked John for payment.
+322 John gave money to Sally.
+323 Sally took John's payment.
+324 Sally put John's medication into a bag.
+325 John took the bag with his medication.
+###
+326 John drove to the drugstore to purchase medication.
+327 John entered the pharmacy that Sally worked in.
+328 Sally greeted John with a smile.
+329 John asked Sally for his medicine.
+330 Sally reached behind the counter where John's medicine was sitting.
+331 Sally put the medicine in a bag.
+332 Sally handed John the bag.
+333 John removed the appropriate change.
+334 John handed Sally the money for the transaction.
+335 Sally gave John his change.
+336 John put the change in his pocket.
+337 John thanked sally for the fast service.
+338 John left the pharmacy with his medicine.
+###
+339 John entered the pharmacy.
+340 John walked to the counter.
+341 Sally greeted John.
+342 John handed the prescription to Sally.
+343 Sally read the prescription.
+344 Sally walked to the back room.
+345 Sally picked up the medication.
+346 Sally walked back to the counter.
+347 John paid for the medication.
+348 Sally placed the medication in a bag.
+349 Sally gave the medication to John.
+350 John thanked Sally.
+351 Sally thanked John.
+352 John left the pharmacy.
+###
+353 John entered the pharmacy.
+354 John walked up to the counter.
+355 John asked Sally to fill a prescription.
+356 Sally entered the prescription into the computer.
+357 John paid for the medicine.
+358 Sally selected the medicine from the cabinet.
+359 Sally explained the medicine's dosage to John.
+360 Sally put the medicine into a bag.
+361 Sally gave the bag and the receipt to John.
+362 John thanked Sally.
+363 John left the pharmacy with the medicine.
+###
+364 John entered the pharmacy.
+365 John greeted Sally, the pharmacist.
+366 John wanted a medicine.
+367 Sally looked for the medicine.
+368 Sally found the medicine.
+369 John bought the medicine.
+370 John tasted the medicine.
+371 John hated the medicine.
+372 John returned the medicine.
+373 John left the pharmacy without the medicine.
+###
+374 John entered the pharmacy.
+375 John approached Sally.
+376 Sally greeted John.
+377 John handed Sally the prescription.
+378 John requested Sally fill the prescription.
+379 Sally examined John's prescription.
+380 Sally noted John's prescription was expired.
+381 Sally informed John the prescription was expired.
+382 John agreed the prescription was expired.
+383 Sally suggested over-the-counter medication instead.
+384 John purchased the over-the-counter medication.
+385 John thanked Sally for the suggestion.
+386 Sally bid John farewell.
+387 John skipped away gaily.
+###
+388 John walked to the pharmacy.
+389 John entered the pharmacy.
+390 John walked to the back of the pharmacy.
+391 Sally filled prescriptions in the back of the pharmacy.
+392 John requested a prescription.
+393 Sally filled the prescription.
+394 Sally rang up the price on the register.
+395 John prepared to pay.
+396 John did not have any money.
+397 John left the pharmacy.
+###
+398 John walked into the pharmacy.
+399 Sally greeted John.
+400 John showed Sally his prescription.
+401 Sally looked at the paper from John's doctor.
+402 Sally asked John to wait a few minutes.
+403 John waited.
+404 Sally filled John's prescription.
+405 Sally gave John information about his medicine.
+406 John paid for his medicine.
+407 Sally gave John his receipt.
+408 John told Sally thank you.
+409 John left the pharmacy.
+###
+410 John ran out of his medicine.
+411 John drove to the neighborhood pharmacy.
+412 John entered the pharmacy.
+413 John walked up to the counter.
+414 John rang the bell.
+415 Sally came out of the back room.
+416 Sally asked John for his name and prescription.
+417 John gave Sally the information.
+418 Sally thanked John.
+419 Sally walked away.
+420 Sally came back with a small bag.
+421 Sally gave John his medicine.
+422 John paid for his medicine.
+423 John went home.
+###
+424 John went to the doctor's office.
+425 John left the doctor's office after his appointment.
+426 John walked down the street to the pharmacy.
+427 John entered the pharmacy.
+428 John walked towards the back of the store.
+429 John placed his prescription on the counter.
+430 Sally picked up the prescription.
+431 Sally prepared John's medicine.
+432 Sally called out to John.
+433 John paid for his medicine.
+434 John talked to Sally.
+435 John walked out of the pharmacy.
+436 John walked down the street to his home.
+###
+437 John entered the pharmacy.
+438 John saw Sally.
+439 John walked to Sally.
+440 Sally greeted John.
+441 John requested medicine.
+442 Sally accepted his request.
+443 Sally got the medicine.
+444 John gave Sally money.
+445 Sally gave John the medicine.
+446 John waved to Sally.
+447 John left the pharmacy.
+###
+448 John entered the pharmacy.
+449 John stood in line at the pharmacy window.
+450 Pharmacist Sally offered John help.
+451 John requested medicine from Sally.
+452 John handed Sally a prescription.
+453 Sally called John's doctor about the medicine.
+454 Sally then called John's insurance provider about the medicine.
+455 Sally asked John for money.
+456 John removed money from his wallet.
+457 John gave the money to Sally.
+458 Sally gave John his medicine.
+459 John left the pharmacy.
+###
+460 John drove to the pharmacy.
+461 John walked inside the pharmacy.
+462 John walked to the counter.
+463 John gave his prescription to Sally.
+464 Sally took the prescription from John.
+465 Sally put the prescription in the computer.
+466 Sally prepared the medicine.
+467 Sally put the medicine in the bag.
+468 Sally gave the medicine to John.
+469 Sally told him how to use it.
+470 John drove home.
+###
+471 John entered the drug store.
+472 John proceeded towards the pharmacy.
+473 Sally worked as the pharmacist.
+474 John needed a product for sinus pressure.
+475 John grabbed a card for a nasal congestion product.
+476 Sally asked John what symptoms needed to be treated.
+477 John gave Sally information about his sinus pressure.
+478 Sally allowed the sale.
+479 Sally requested John's driving license.
+480 John signed for the purchase.
+481 Sally accepted John's payment.
+482 Sally thanked John.
+483 John left the drug store.
+###
+484 John entered the pharmacy.
+485 John looked for an allergy medicine.
+486 Sally suggested two different medicines.
+487 John chose the allergy medicine in the green box.
+488 Sally rang up the medicine.
+489 John paid for the medicine with cash.
+490 Sally put the medicine in a small bag.
+491 Sally gave John his change and the bag.
+492 John requested his receipt.
+493 Sally gave him his receipt.
+494 Sally thanked John for his purchase.
+495 John left the pharmacy.
+###
+496 John got an infection.
+497 John went to the pharmacy.
+498 John gave Sally his prescription.
+499 Sally filled a bottle with antibiotic pills.
+500 John gave her his credit card.
+501 Sally swiped the card.
+502 John was over the credit limit.
+503 John had to pay with cash instead.
+504 John handed Sally a $20 bill.
+505 Sally handed John his medicine, receipt, and $4.50.
+506 John left the pharmacy.
+###
+507 John entered the pharmacy.
+508 John had a prescription that needed to be filled.
+509 Sally the pharmacist stood at the counter.
+510 John wandered through the aisles of the pharmacy.
+511 John reached the counter.
+512 Sally greeted John.
+513 John handed Sally the prescription form.
+514 Sally entered John's form into the computer.
+515 Sally told John to wait patiently.
+516 Sally began to fill John's prescription.
+517 John waited while Sally worked.
+518 Sally finished filling John's prescription.
+519 John paid Sally for the medicine.
+520 John left the pharmacy.
+###
+521 John woke up early.
+522 John had a sore throat.
+523 John got dressed.
+524 John drove to the pharmacy.
+525 John stood in line.
+526 John greeted the pharmacist, Sally.
+527 John told Sally his symptoms.
+528 Sally wrote them down.
+529 Sally looked on the shelves for medicine.
+530 Sally returned with a box.
+531 Sally scanned the medicine.
+532 John paid for the medicine.
+533 Sally handed John his receipt.
+534 John went home.
+###
+535 John was sick.
+536 John walked to the pharmacy.
+537 Sally worked at the pharmacy.
+538 Sally greeted John.
+539 Sally asked how she could help John.
+540 John said he had a cough.
+541 Sally recommended cough syrup.
+542 John paid for the medicine.
+543 Sally put the medicine in a bag.
+544 Sally gave the medicine to John.
+###
+545 John felt nauseous.
+546 John went to the pharmacy counter.
+547 Sally greeted John.
+548 John described the symptoms.
+549 Sally recommended a medicine.
+550 John obtained the medicine.
+551 John returned to the counter.
+552 Sally asked for payment.
+553 John offered some cash.
+554 Sally accepted the payment.
+555 Sally thanked John.
+556 John left the pharmacy.
+###
+557 John entered the pharmacy.
+558 Sally was working in the pharmacy.
+559 John looked around.
+560 Sally asked John if she could help him.
+561 John replied that he was looking for the allergy medicines.
+562 Sally took John to the correct section of the store.
+563 John selected his allergy medicine.
+564 John carried the medicine to the counter.
+565 John removed his wallet from his pocket.
+566 Sally told him the cost of the medicine.
+567 John counted out the correct money.
+568 John handed the money to Sally.
+569 Sally thanked John.
+570 John left the pharmacy.
+###
+571 John walked to the pharmacy.
+572 John entered the pharmacy.
+573 John searched for the medicine aisle.
+574 John found the medicine.
+575 John selected a bottle of medicine.
+576 John noticed the medicine's high price.
+577 John took the medicine to the counter.
+578 Sally greeted John.
+579 John asked the medicine's price.
+580 Sally checked the price.
+581 Sally confirmed the price.
+582 John thanked Sally.
+583 John placed the medicine back on the shelf.
+584 John exited the pharmacy.
+###
+585 John needed medication for acid reflux.
+586 John brought a prescription to the pharmacy.
+587 Sally, the pharmacist, looked at John's prescription.
+588 John also gave Sally John's insurance card.
+589 Sally looked up the prescription on the pharmacy's computer.
+590 The information from the computer revealed a problem.
+591 John could not buy the prescription with John's insurance.
+592 Sally told John about the problem.
+593 John expressed disappointment to Sally.
+594 John had previously bought the medicine with insurance.
+595 Sally told John about the new insurance company rules.
+596 John's insurance company now blocked payment for this medicine.
+597 John could not afford the prescription without insurance.
+598 John left the pharmacy without the medicine.
+###
+599 John walked in to the pharmacy.
+600 John rang the bell on the counter.
+601 Sally walked to the counter area.
+602 Sally greeted John.
+603 John described his medicine.
+604 Sally got the medicine from the shelf.
+605 Sally scanned the medicine at the register.
+606 Sally told John the price of the medicine.
+607 John took his wallet out of his pocket.
+608 John opened his wallet.
+609 John saw his wallet was empty.
+610 John apologized to Sally.
+611 John walked out of the pharmacy.
+###
+612 John entered the Pharmacy.
+613 John went presented the prescription to the Sally, the Pharmacist.
+614 Sally looked at the prescription.
+615 Sally inspected the prescription carefully.
+616 Sally refused to accept the prescription.
+617 Sally told John that the prescription was invalid.
+618 John asked Sally why it was invalid.
+619 Sally explained that the main body and the signature were filled out using different inks.
+620 She told John to go back to the doctor.
+621 She told him to get a properly completed prescription.
+622 John left the Pharmacy without his medicine.
+###
+623 John took a pill.
+624 John needed a refill.
+625 John decided to leave.
+626 John grabbed his keys.
+627 John left the house.
+628 John parked his car.
+629 John entered the pharmacy.
+630 John approached the counter.
+631 Sally acknowledged John.
+632 Sally checked the prescription.
+633 The prescription was expired.
+634 Sally apologized to John.
+635 John left the pharmacy.
+###
+636 John felt sick.
+637 John needed medicine.
+638 John drove to the pharmacy.
+639 Sally worked at the pharmacy.
+640 Sally is a pharmacist.
+641 Sally was working.
+642 John waited in line.
+643 John felt terrible.
+644 Sally was glad to see John.
+645 John told Sally the symptoms.
+646 Sally listened.
+647 Sally checked her computer.
+648 Sally told John no.
+649 John needed a prescription.
+###
+650 John woke up.
+651 John had a sore throat.
+652 John got dressed.
+653 John drove to the pharmacy.
+654 John stood in line.
+655 John told Sally, the pharmacist, his symptoms.
+656 Sally went to the shelves.
+657 Sally looked for medicine.
+658 Sally came back.
+659 Sally told John the medicine was sold out.
+660 Sally told John to return in a few days.
+661 John understood.
+662 John went home.
+###
+663 John walked into his local pharmacy.
+664 John approached the pharmacy counter with his prescription.
+665 John stood in line for 5 minutes until it was his turn.
+666 Sally greeted John.
+667 Sally took his prescription.
+668 Sally walked over to her computer.
+669 Sally came back to John at the counter.
+670 Sally told John that his insurance will not cover his medication.
+671 John asked if a generic was available.
+672 Sally told him there was not one.
+673 Sally rang up the medication at $200.
+674 John asked for his prescription back.
+675 John left the store.
+###
+676 John needed to buy his medicine.
+677 John went to the drugstore.
+678 John walked to the pharmacy.
+679 Sally greeted John.
+680 John asked Sally for his medicine.
+681 Sally advised John that the medicine cost $500.
+682 John looked in his wallet.
+683 John did not have $500.
+684 John became angry with Sally.
+685 Sally explained that John's insurance was expired.
+686 John left the pharmacy without his medicine.
+###
+687 John entered the pharmacy.
+688 John approached the counter.
+689 John  handed over a prescription.
+690 Sally took the prescription from John.
+691 John sat in the waiting room.
+692 Sally entered in the prescription into a computer.
+693 Sally called John back to the counter.
+694 Sally told John the medicine is thirty dollars.
+695 John swiped a credit card.
+696 Sally told John that the credit card was declined.
+697 John tried the credit card again.
+698 Sally repeated the declined message.
+699 John left the pharmacy without his medicine.
+###
+700 John walked into the pharmacy.
+701 John approached the counter.
+702 Sally greeted John.
+703 John presented his prescription.
+704 Sally took the prescription.
+705 Sally asked for an insurance card.
+706 John produced an insurance card.
+707 Sally verified the insurance card.
+708 Sally returned the insurance card to John.
+709 Sally requested John's co-pay.
+710 John reached into his empty wallet.
+711 Sally shook her head.
+712 John left the pharmacy.
+###
+713 John entered the pharmacy.
+714 John walked to the counter.
+715 Sally greeted John.
+716 John requested the medication.
+717 Sally read the prescription.
+718 Sally walked to the shelf.
+719 Sally found the medication.
+720 Sally walked to the register.
+721 Sally asked for payment.
+722 John reached for his wallet.
+723 John forgot his wallet.
+724 John apologized to Sally.
+725 Sally returned the medication to the shelf.
+726 John left the pharmacy.
+###
+727 John walked into the pharmacy.
+728 John waited in line.
+729 John was in the front of the line.
+730 Sally greeted John at the counter.
+731 John asked Sally if he could purchase medicine.
+732 Sally got the medicine.
+733 John paid for the medicine.
+734 John walked out of the pharmacy.
+###
+735 John walked inside the pharmacy.
+736 John stopped at the counter.
+737 Sally served at the counter.
+738 John handed the medicine's name to Sally.
+739 Sally took a look at the name.
+740 Sally looked for the medicine inside the pharmacy.
+741 Sally found the medicine.
+742 Sally showed the medicine to John.
+743 Sally scanned the medicine.
+744 Sally told John the total cost.
+745 John paid the medicine.
+746 John picked up the medicine.
+747 John walked out of the pharmacy.
+###
+748 John walked into the pharmacy.
+749 John walked to the counter where Sally was working as a pharmacist.
+750 John handed Sally a prescription for cold medicine.
+751 Sally walked to the back of the pharmacy.
+752 Sally poured pills from a large bottle into a small bottle.
+753 Sally brought the small bottle to the front counter.
+754 John walked to the front counter.
+755 John gave Sally a credit card.
+756 Sally swiped the credit card.
+757 John thanked Sally for her help.
+758 Sally wished John a good evening.
+759 John walked out of the store.
+###
+760 John walked into the pharmacy.
+761 John walked to the pharmacy counter.
+762 John handed his prescription to Sally, the pharmacist.
+763 Sally took the prescription from John.
+764 Sally read the prescription.
+765 John sat in a chair to wait.
+766 Sally filled John's prescription.
+767 Sally walked to the register.
+768 John walked to the register.
+769 Sally handed the prescription to John.
+770 John handed money to Sally.
+771 Sally took John's money.
+772 John walked out of the pharmacy.
+###
+773 John approached the pharmacy counter.
+774 Sally asked what she could help John with.
+775 John stated he needed to buy some medicine.
+776 Sally asked what medicine John needed.
+777 John gave Sally the name and quantity of the medicine he wanted.
+778 Sally confirmed the medicine details.
+779 Sally asked John to wait while she retrieved the medicine.
+780 John sat down in the waiting area.
+781 Sally returned to the pharmacy counter ten minutes later.
+782 Sally called John back to the counter.
+783 Sally explained to John the proper dosage and usage of the medicine.
+784 Sally rang up the medicine on the cash register.
+785 John paid for the medicine.
+786 John left the pharmacy counter.
+###
+787 John entered the pharmacy.
+788 Sally was the pharmacist.
+789 Sally greeted John.
+790 John asked for medicine.
+791 Sally answered the phone.
+792 John waited for Sally.
+793 Sally apologized to John.
+794 John asked Sally for medicine.
+795 Sally located the medicine.
+796 Sally asked John to pay.
+797 John paid for the medicine.
+798 Sally thanked John.
+799 John thanked Sally.
+800 John left the pharmacy.
+###
+801 John got out of his car.
+802 John walked into the door of the pharmacy.
+803 John walked to the pharmacy line.
+804 John stood in line for fifteen minutes.
+805 John picked up his prescription from the pharmacist, Sally.
+806 Sally rang up the total on the cash register.
+807 Sally told John the total.
+808 John paid for the medicine with cash.
+809 Sally put the medicine into a paper bag.
+810 Sally gave John his change and receipt.
+811 John took the bag from Sally.
+812 John thanked Sally.
+813 John exited the store.
+814 John left in his car.
+###
+815 John walked into the pharmacy.
+816 Sally, the pharmacist was working behind the counter.
+817 John handed Sally his prescription.
+818 Sally accepted the prescription.
+819 John waited for the prescription.
+820 Sally filled the prescription for John.
+821 Sally told John his prescription was ready.
+822 John stood up.
+823 John walked over to the counter.
+824 Sally rang up the prescription.
+825 John paid Sally for the prescription.
+826 John took his prescription.
+827 John walked out of the pharmacy.
+828 John drove home with his prescription.
+###
+829 John entered the pharmacy.
+830 John smiled at the pharmacist Sally.
+831 John handed a prescription to Sally.
+832 Sally entered the prescription on the computer.
+833 Sally filled the prescription.
+834 Sally placed the medicine container in a plastic bag.
+835 Sally handed the plastic bag to John.
+836 John took the plastic bag.
+837 Sally attached a signature sticker on her notepad.
+838 John signed the signature sticker.
+839 John turned around.
+840 John exited the pharmacy.
+###
+841 John walked to the pharmacy.
+842 John entered the pharmacy.
+843 Sally was dispensing medicine.
+844 John asked Sally for medicine.
+845 Sally asked john to wait.
+846 John waited for the medicine.
+847 John tired of waiting.
+848 John called a friend.
+849 Sally gave the medicine to John.
+850 John paid Sally.
+851 Sally thanked John.
+852 John left the pharmacy.
+###
+853 John drove to the store.
+854 John parked his car.
+855 John walked into the store.
+856 John walked up to the pharmacy window.
+857 John handed a prescription to Sally.
+858 Sally read the prescription.
+859 Sally gave John a time estimate.
+860 John waited by the window.
+861 Sally filled the prescription.
+862 John walked up to the cash register.
+863 Sally rang up the prescription.
+864 John paid for the prescription.
+865 John walked to his car.
+866 John went home with his prescription.
+###

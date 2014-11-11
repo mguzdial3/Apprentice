@@ -18,7 +18,7 @@ package utils {
     }
 
     def clusterMinusStory() {
-      val configFile = "configAffairs.txt"
+      val configFile = "configProposal.txt"
         
       val properties = new SuperProperties()
       val in = new FileInputStream(configFile)

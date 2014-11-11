@@ -10,7 +10,7 @@ import java.util.Properties
 object TurkFileProcessor {
 
   def main(args: Array[String]) {
-    val pathString = "E:/Code/MTurk Data/Pharmacy/p1"
+    val pathString = """C:\Users\Albert\Desktop\Proposal"""
     val directory = new File(pathString)
     val dataFiles = directory.listFiles(new FilenameFilter {
       def accept(dir: File, name: String) =
@@ -36,7 +36,7 @@ object TurkFileProcessor {
   
   def printTo(pw:PrintWriter, record:Properties)
   {    
-    for (i <- 1 to 14)
+    for (i <- 1 to 20)
     {
       val key = "Answer.Event" + i
       val value = record.getProperty(key).trim
@@ -52,16 +52,19 @@ object TurkFileProcessor {
     println("reading file " + file.getName())
     val table = CSVProcessor2.readCSV(file)
     val headings = table(0)
-    //println("headings = " + headings.mkString(", "))
+    println("headings = " + headings.mkString(", "))
     val records = Array.ofDim[Properties](table.length - 1)
     for (i <- 1 until table.length)
     {
       val property = new Properties()
       //println("processing line " + i)
-      for (j <- 0 until headings.length)
+      for (j <- 0 until table(i).length)
       {
+//        println(i)
+//        println(j)
+        println(table(i).mkString)
         property.setProperty(headings(j), table(i)(j))
-        //println(headings(j) + " = " + table(i)(j))
+        println(headings(j) + " = " + table(i)(j))
       }
       //property.list(System.out)
       records(i-1) = property

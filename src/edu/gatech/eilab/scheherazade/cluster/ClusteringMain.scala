@@ -24,7 +24,7 @@ package cluster {
   object ClusteringMain {
 
     def main(args: Array[String]) {
-      clusterDataSet("Coffee")
+      clusterDataSet("Proposal")
 
     }
 
@@ -147,13 +147,13 @@ package cluster {
         println("min = " + semanticMatrix.min)
         println("max = " + semanticMatrix.max)
 
-        val filter = 0.1 // robbery: 0.1, movie: 0.25-0.3 
+        val filter = 0.15 // robbery: 0.1, movie: 0.25-0.3, pharmacy:0.2
         val locM = locationMatrix.map(x => if (x < filter) 0 else x)
 
         println("size 1: " + locM.rows + " " + locM.cols)
         println("size 2: " + semanticMatrix.rows + " " + semanticMatrix.cols)
 
-        locM * 0.3 + semanticMatrix // robbery: 0.3. movie: 0.6
+        locM * 0.0 + semanticMatrix // robbery: 0.3. movie: 0.6, pharmacy: 0.3, affairs=0.1
       }(Global.allFile)
 
       var dense = getMatrix()
@@ -182,7 +182,7 @@ package cluster {
 
       val generatedClusters = cluster(stories, minCluster)
       ClusterMetric.evaluate(generatedClusters, gold)
-
+      println("gold size = " + gold.size)
     }
 
     def spectralCluster(dataset: String) {

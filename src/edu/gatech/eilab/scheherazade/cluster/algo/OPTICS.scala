@@ -231,13 +231,14 @@ package edu.gatech.eilab.scheherazade {
         //    list = list.head :: list.tail.filter(_.reachability < cutoff)
         //println(list.size)
 
-        /*
+        
         println("**************************")
         for (p <- list) {
+          print(sentences(p.id) + " ")
           println(p.reachability)
         }
         println("**************************")
-         */
+         
         val larray = list.toArray
 
         if (visualized) {
@@ -309,15 +310,16 @@ package edu.gatech.eilab.scheherazade {
 
             val reach = pts.map(_.reachability)
 
-            val valid =
-              reach.sliding(minClusterSize).exists(l => l.head * 0.9 > l.tail.min) && // head is greater than min movie = 0.98, robbery = 0.9, aiport = 0.98
-                reach.sliding(minClusterSize-1).exists(l => l.max < l.min * 1.05) // a relative flat area bestRobbery = 1.05, best movie = 1.4, airport = 1.05
-
+            val valid = 
+              reach.sliding(minClusterSize+10).exists(l => l.head * 0.98 > l.tail.min) //&& // head is greater than min movie = 0.98, robbery = 0.9, aiport = 0.98, pharmacy=0.9, affairs=0.99
+                reach.sliding(minClusterSize-1).exists(l => l.max < l.min * 1.4) // a relative flat area bestRobbery = 1.05, best movie = 1.4, airport = 1.05, pharmacy=1.2, affairs=1.4
+              println(valid)
             if (valid) {
               val max = reach.max
               val min = reach.min
               
-              var goodPortion = pts.filter { x => x.reachability < (min + (max - min) * 0.35) }.toList // 0.5(in acs paper)-0.6 for movie 0.3-0.4 for robbery, airport = 0.3
+              var goodPortion = pts.filter { x => x.reachability < (min + (max - min) * 0.25) }.toList 
+              // 0.5(in acs paper)-0.6 for movie 0.3-0.4 for robbery, airport = 0.3,pharmacy=0.25,affairs=0.25
               // divide the portions into continuous parts
               var additional = List[Point]()
               var separation = List[(Int, Int)]()
@@ -344,8 +346,8 @@ package edu.gatech.eilab.scheherazade {
                 var height = goodPortion(s._1).reachability
 
                 if (endPt != null && startPt != null && startPt.reachability > goodPortion(s._1).reachability &&
-                  ((endPt.reachability * 1.4 > startPt.reachability &&
-                    endPt.reachability * 0.8 < startPt.reachability) || startPt.reachability == UNDEFINED)) {
+                  ((endPt.reachability * 1.2 > startPt.reachability && //1.4, 0.8
+                    endPt.reachability * 0.9 < startPt.reachability) || startPt.reachability == UNDEFINED)) {
                   //println("end = " + endPt.reachability + ", start = " + startPt.reachability + " thre = " + endPt.reachability * 1.3)
                   additional = startPt :: additional
                   height = startPt.reachability
@@ -369,7 +371,12 @@ package edu.gatech.eilab.scheherazade {
               goodPortion = additional ::: goodPortion
               regions = goodPortion.distinct :: regions
             }
-          } else r.children.foreach(findLeaves(_))
+          } else 
+            {
+        	  println("current node = " + r)
+        	  println("children = " + r.children )
+        	  r.children.foreach(findLeaves(_))
+            }
         }
         //println(minClusterSize)
         findLeaves(root)
@@ -534,8 +541,8 @@ package edu.gatech.eilab.scheherazade {
             if (maxima) {
               localMaxima += ((idx, point))
               point.localMaximum = true
-              //println("****\n" + (nbLeft ++ nbRight).map(_.reachability).mkString("\n"))
-              //println("lm: " + array(i).reachability + "****\n")
+//              println("****\n" + (nbLeft ++ nbRight).map(_.reachability).mkString("\n"))
+//              println("lm: " + rArray(idx).reachability + "****\n")
             }
           }
 

@@ -165,8 +165,8 @@ object Main {
 //        val lp = leastProbEval(c).maxBy(p => p._2)._1
 //        println("LP: " + lp.toText)
 //
-//        val mid = MIDEval(c).maxBy(p => p._2)._1
-//        println("MID: " + mid.toText)
+        val mid = MIDEval(c).maxBy(p => p._2)._1
+        println("MID: " + mid.toText)
 //        
 //        val mid2 = MID2Eval(c).maxBy(p => p._2)._1
 //        println("MID2: " + mid2.toText)
