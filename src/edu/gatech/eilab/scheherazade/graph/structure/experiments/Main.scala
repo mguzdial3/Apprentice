@@ -7,35 +7,99 @@ import scala.collection.mutable.ListBuffer
 import edu.gatech.eilab.scheherazade.generation._
 import edu.gatech.eilab.scheherazade.main.Global
 import java.io._
+import scala.actors.Actor
+
+class Ping(id: Int, iter: Int, pong: Pong) extends Actor {
+  def act() {
+    receive {
+      case "Start" =>
+        println(id + " started")
+        val tuple = Main.compute(iter)
+        pong ! tuple
+    }
+  }
+}
+
+class Pong(t: Int) extends Actor {
+
+  var totalWrong = 0
+  var totalSim = 0
+  var totalOriginal = 0
+  var totalNewTime = 0.0
+  var totalOldTime = 0.0
+
+  var count = 0
+
+  def act() {
+    while (count < t) {
+      receive {
+        case (wrong: Int, used: Int, total: Int, newTime: Double, oldTime: Double) =>
+          println("received data " + count)
+          totalWrong += wrong
+          totalSim += used
+          totalOriginal += total
+          totalNewTime = newTime
+          totalOldTime = oldTime
+          count += 1
+      }
+    }
+
+    println("wrong " + totalWrong)
+    println("seq ratio " + (totalSim * 1.0 / totalOriginal))
+    println("time ratio " + totalNewTime / totalOldTime)
+  }
+
+}
 
 object Main {
 
   def main(args: Array[String]) {
-    val totalRuns = 10000
+    val total = 10000
+    val number = 8
+    val pong = new Pong(number)
+    pong.start
+
+    for (i <- 1 to number) {
+      val ping = new Ping(i, total / number, pong)
+      ping.start
+      ping ! "Start"
+    }
+
+  }
+
+  def compute(totalRuns: Int) = {
 
     var i = 1
     var noMistake = true
     var total = 0
+    var totalOldTime = 0.0
+    var totalNewTime = 0.0
     var used = 0
     var wrong = 0
     while (i < totalRuns && noMistake) {
 
       i += 1
-      val graph = SampleGraph.randomDAG(10, 30, 4)
+      val graph = SampleGraph.randomDAG(16, 70, 6)
       val (background, queryCluster) = generateQuery(graph)
-      val (oldTotal, oldValid, newTotal, newValid, correct) = testGraph(graph, background, queryCluster)
-      if (correct) {
-        total += oldTotal
-        used += newTotal
-      } else {
-        wrong += 1
-//        printTestCase(graph, background, queryCluster)
-//        System.exit(1)
+      try {
+        val (oldTotal, oldValid, newTotal, newValid, correct, oldTime, newTime) = testGraph(graph, background, queryCluster)
+
+        if (correct) {
+          total += oldTotal
+          used += newTotal
+          totalOldTime += oldTime / 1000.0
+          totalNewTime += newTime / 1000.0
+        } else {
+          wrong += 1
+          //        printTestCase(graph, background, queryCluster)
+          //        System.exit(1)
+        }
+      } catch {
+        case ex: Exception => wrong += 1
       }
     }
 
-    println("wrong " + wrong)
-    println("all ratio " + (used * 1.0 / total))
+    (wrong, used, total, totalNewTime, totalOldTime)
   }
 
   def printTestCase(graph: Graph, bgList: List[Cluster], q: Cluster) {
@@ -66,19 +130,29 @@ object Main {
   }
 
   def testGraph(graph: Graph, bgList: List[Cluster], q: Cluster) = {
+    var time1 = System.currentTimeMillis()
     val oldSeqs = ExhaustiveSeqGen.generate(graph)
+    var time2 = System.currentTimeMillis()
+    val oldTime = time2 - time1
     val oldValid = oldSeqs.filter(seq => bgList.forall(seq.contains))
     val oldQueried = oldValid.filter(seq => seq.contains(q))
     val oldRatio = oldQueried.size * 1.0 / oldValid.size
-    println("# old seqs " + oldSeqs.size + " ratio = " + oldRatio)
+    //println("# old seqs " + oldSeqs.size + " ratio = " + oldRatio)
 
+    time1 = System.currentTimeMillis()
     val (newGraph, newSeqs) = Main.performAnalysis(graph, bgList, q)
+    time2 = System.currentTimeMillis()
+    val newTime = time2 - time1
     val newValid = newSeqs.filter(seq => bgList.forall(seq.contains))
     val newQueried = newValid.filter(seq => seq.contains(q))
     val newRatio = newQueried.size * 1.0 / newValid.size
-    println("# new seqs " + newSeqs.size + " ratio = " + newRatio)
+    //println("# new seqs " + newSeqs.size + " ratio = " + newRatio)
 
-    (oldSeqs.size, oldValid, newSeqs.size, newValid, oldRatio == newRatio)
+    val correct =
+      {
+        (oldRatio.isNaN() && newRatio.isNaN()) || oldRatio == newRatio
+      }
+    (oldSeqs.size, oldValid, newSeqs.size, newValid, correct, oldTime, newTime)
     //    if (newRatio != oldRatio) {
     //
     //      graph.graphWithOptionalsAndSkips.draw("mutex-old")
@@ -103,10 +177,10 @@ object Main {
     val realGraph = graph // regularize(graph)
 
     val (cfrMap1, raceConds, condPrec, cfList) = CfRComputer2.processGraph(realGraph)
-    println(cfrMap1)
-    println(raceConds)
-    println(condPrec)
-    println(cfList)
+    //    println(cfrMap1)
+    //    println(raceConds)
+    //    println(condPrec)
+    //    println(cfList)
 
     val cfrMap = cfrMap1 //HashMap[Cluster, List[CauseForRemoval]]()
     //    val g = graph.graphWithOptionalsAndSkips
@@ -142,11 +216,11 @@ object Main {
     //val conditionsToTest = condPrec.filter(_.before.size > 1)
     val (realBg, rList) = findRemoved(cfrMap, raceConds, backgrounds)
 
-    val linksToAdd = realCond.filter(x => x.before.size == 1)// && realBg.contains(x.before.head))
+    val linksToAdd = realCond.filter(x => x.before.size == 1) // && realBg.contains(x.before.head))
     val conditionsToTest = realCond.filter(_.before.size > 1)
 
     //val rList = removals.filterNot(noRemovals.contains)
-    
+
     //*** Must respect the ordering of deletion for CfRs
 
     val newGraph = makeNewGraph(graph, rList, linksToAdd, Nil)

@@ -101,7 +101,7 @@ object CfRComputer2 {
    * returns a list of CauseForRemoval and a list of RaceConditions
    *
    */
-  def mergeParentsCfR(focus: Cluster, parentList: List[Cluster], cfrMap: HashMap[Cluster, List[CauseForRemoval]], graph: Graph): (List[CauseForRemoval], List[RaceCondition]) =
+  protected def mergeParentsCfR(focus: Cluster, parentList: List[Cluster], cfrMap: HashMap[Cluster, List[CauseForRemoval]], graph: Graph): (List[CauseForRemoval], List[RaceCondition]) =
     {
       //      if (focus.name == "i") {
       //        println("processing i")
@@ -178,7 +178,7 @@ object CfRComputer2 {
         val cCfRList = cfrMap.getOrElse(c, Nil)
 
         val parents = graph.parentsOf(c)
-        for (p <- parents if cfrMap.contains(p)) // a parent that can be removed
+        for (p <- parents if cfrMap.contains(p))// && !graph.conditionals.contains(p) && !graph.optionals.contains(p)) // a parent that can be removed
         {
 //          println(p)
           var temporals = List[ConditionalPrec]()
@@ -252,9 +252,9 @@ object CfRComputer2 {
       var allRaceConditions = List[RaceCondition]()
       for (c <- order if graph.parentsOf(c) != Nil && cfrMap.contains(c)) // it has some parents and it may be removed from the graph
       {
-        if (c.name == "C8") {
-          println("C8")
-        }
+//        if (c.name == "C8") {
+//          println("C8")
+//        }
         val mutexList = mutexMap.getOrElse(c, Nil)
         val selfCfRs = cfrMap(c)
         // first, the CfR does not remove c directly. That is, it works by removing all of its parents. 
@@ -345,7 +345,7 @@ object CfRComputer2 {
       val answer = processCfR(g, order, mutexMap)
       val cfrMap = answer._1
       val moreRace = findRacesForCatB(g, cfrMap, order, mutexMap)
-      println("more races: " + moreRace)
+      //println("more races: " + moreRace)
       val (condPrec, race2) = findTemporalLinks(g, cfrMap, order, mutexMap)
       val raceConditions = race2 ::: answer._2 ::: moreRace
 
