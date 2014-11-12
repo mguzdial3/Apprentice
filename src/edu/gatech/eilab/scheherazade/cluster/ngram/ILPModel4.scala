@@ -18,7 +18,7 @@ object ILPModel4 {
   var DESIRED_DIMENSION = 150
   val SMALL = 1E-5
 
-  val numClusters = 130
+  val numClusters = 23
 
   //val pw = new PrintWriter(new BufferedOutputStream(new FileOutputStream("model.log")))
 
@@ -126,7 +126,7 @@ object ILPModel4 {
     /** random initialization **/
     // Each sentence has a Y variable, which selects a cluster
     var y = DenseVector.rand(numSents, Rand.randInt(numClusters))
-
+    println("size of y  =" + y.size)
     // parameter for Dirichlet
     var theta = generateFullDirichlet(DIMENSION, numClusters).toArray
     //theta(numClusters - 1) = optimize(corpus.vectors.values.toList, theta(numClusters - 1))
@@ -216,6 +216,7 @@ object ILPModel4 {
 
       /** evaluation **/
       val foundClusters = NGramizer.peelClusters(y, sents)
+      println("head size = " + foundClusters.head.size)
       val noGarbage = foundClusters.filterNot(_.members.size < 4)
       val (p1, r1, p2, r2, purity) = ClusterMetric.evaluate(noGarbage, gold.filterNot(_.members.size < 4))
 

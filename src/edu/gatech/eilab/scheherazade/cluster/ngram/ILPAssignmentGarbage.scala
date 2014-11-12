@@ -36,7 +36,7 @@ class ILPAssignmentGarbage(probs: Array[Array[Double]]) {
     
     // each cluster can contain only one sentence
     // except for the garbage cluster
-    for (j <- 0 until cols-1) {
+    for (j <- 0 until cols) {
       val constraint = new Linear()
       for (i <- 0 until rows) {
         val variable = "z" + i + "c" + j

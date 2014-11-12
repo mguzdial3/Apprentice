@@ -41,7 +41,7 @@ package cluster.ngram {
 
       val ngramDB: NGramStore = new NGramMemory()
 
-      Global.switchDataSet("Coffee")
+      Global.switchDataSet("Restaurant")
       val configFile = Global.configFile
       val parseFile = Global.parseFile
 
@@ -54,6 +54,7 @@ package cluster.ngram {
 
       stories = parser()
       val sents = stories.flatMap(_.members)
+      println("sents size = " + sents.size)
 
       def ngramFunc() = CachedOperation {
 
@@ -67,6 +68,7 @@ package cluster.ngram {
               sentence =>
 
                 val ngrams = ngramize(sentence, ngramDB)
+                println(sentence.id)
                 (sentence.id, ngrams) //.map(x.filterNot(z => z.word == "John" || z.word == "Sally" || z.word == "and"))
             }
         }
@@ -119,7 +121,7 @@ package cluster.ngram {
 
         new NGramCorpus(ngramsArray, map.toMap, sentIdMap)
 
-      }(new File("CoffeeNgram.lzma"))
+      }(new File("RestaurantNgram.lzma"))
 
       println("reading ngram data...")
 
@@ -196,7 +198,7 @@ package cluster.ngram {
 
     def cluster(sents: List[Sentence], corpus: NGramCorpus, gold: List[Cluster]): List[Cluster] = {
 
-      //val clustering = HMMModel2.train(corpus, sents, gold)
+      //val clustering = HMMModelFix.train(corpus)
       val clustering = ILPModel4.train(corpus, sents, gold)
       peelClusters(clustering, sents, true)
     }
