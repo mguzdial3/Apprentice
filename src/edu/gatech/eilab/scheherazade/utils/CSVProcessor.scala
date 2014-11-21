@@ -14,7 +14,7 @@ object CSVProcessor {
   }
 
   def readCSV(filename: String): Array[Array[String]] = {
-    val text = scala.io.Source.fromFile(filename)(io.Codec("ASCII")).mkString
+    val text = scala.io.Source.fromFile(filename)(io.Codec("CP1252")).mkString
 
     val lines = text.split("\n")
     val buffer = ArrayBuffer[Array[String]]()

@@ -20,7 +20,7 @@ package graph {
     }
 
     def countClusterFreq() {
-      val reader = new ConfigReader("configAffairs.txt")
+      val reader = new ConfigReader("configAffairsBest.txt")
       val (stories, clusters) = reader.initDataFiltered()
       val sorted = clusters.sortWith((a, b) => a.members.length > b.members.length)
       val text = sorted.map(x => x.name + ": " + x.members.length).mkString("\n")
@@ -32,7 +32,7 @@ package graph {
      *  The results are summarized in the summary.csv file
      */
     def generateGraphs() {
-      val reader = new ConfigReader("configGas.txt")
+      val reader = new ConfigReader("configAffairsBest.txt")
       val (stories, clusters) = reader.initData()
       //val (stories, clusters) = reader.initDataFiltered()
 

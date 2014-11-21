@@ -20,8 +20,8 @@ package generation {
     }
 
     def genStory(): List[Cluster] = {
-      val reader = new ConfigReader("configRobBest.txt")
-      var (stories, clusters) = reader.initDataFiltered()
+      val reader = new ConfigReader("configAffairsBest.txt")
+      var (stories, clusters) = reader.initData()
 
       val para = reader.properties.allParameters()(0)
 
@@ -37,7 +37,8 @@ package generation {
 
       //Walk.debug = true
       //for (i <- 0 to 10)
-      LFFWalk(walk)
+      //LFFWalk(walk)
+      randomWalk(walk)
     }
 
     /**
@@ -84,8 +85,10 @@ package generation {
       trace.reverse
     }
 
-    def randomWalk(firstWalk: AbstractPassage) {
-      println(); println()
+    def randomWalk(firstWalk: AbstractPassage):List[Cluster] = {
+      //println(); println()
+      var story = List[Cluster]()
+      
       var walk = firstWalk
 
       while (walk.hasMoreSteps) {
@@ -93,9 +96,11 @@ package generation {
         val i = math.floor(math.random * fringe.size).toInt
         val step = fringe(i)
 
-        println(step.name)
+        story = step :: story
+        
         walk = walk.forward(step)
       }
+      story.reverse
     }
 
     def bruteSearch(firstWalk: AbstractPassage) {

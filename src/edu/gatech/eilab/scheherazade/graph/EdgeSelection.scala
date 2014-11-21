@@ -49,7 +49,7 @@ object EdgeIntegerProblem {
         val yVar = model.addVar(0.0, 1.0, 0.0, GRB.INTEGER, yName) // add the variable
         //println("adding " + yName)
         y(i - 1)(j - 1) = yVar
-        objective.addTerm(math.log(link.confidence), yVar) // add term to the objective. Changed Sep 1 2014: summation of logs
+        objective.addTerm(- math.log(0.5) + math.log(link.confidence), yVar) // add term to the objective. Changed Sep 1 2014: summation of logs
       }
 
       //println("number of variables = " + edges.size)
@@ -130,7 +130,7 @@ object EdgeIntegerProblem {
         val yVar = model.addVar(0.0, 1.0, 0.0, GRB.INTEGER, yName) // add the variable
         //println("adding " + yName)
         y(i - 1)(j - 1) = yVar
-        objective.addTerm(link.confidence, yVar) // add term to the objective
+        objective.addTerm(math.log(1+link.confidence), yVar) // add term to the objective
       }
 
       //println("number of variables = " + edges.size)

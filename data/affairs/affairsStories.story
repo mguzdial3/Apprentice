@@ -792,7 +792,7 @@
 743 Sally saw John and Amy naked on the bed.
 744 John and Amy were making love on the bed.
 745 Sally screamed at John and Amy.
-746 John and Amy keept making love.
+746 John and Amy kept making love.
 747 Sally ran out of the house.
 748 Sally jumped in her car.
 749 Sally drove off to cool down.

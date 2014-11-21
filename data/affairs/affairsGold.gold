@@ -1,4 +1,4 @@
-@ Sally notices something strange
+@ Sally noticed something strange
 0 Sally noticed an unusual amount of text between John's number and another number on the phone bill.
 926 John had acted oddly.
 846 Sally felt John had been acting strangely.
@@ -150,14 +150,6 @@
 1126 Sally saw John's car in the driveway.
 1175 Sally saw Amy's car at their home.
 ###
-@ Sally opened house door
-234 Sally opened the front door.
-300 Sally opened the door to the house.
-588 Sally opened the door to her house.
-546 Sally opened the door to the house.
-725 Sally opened the door to the house.
-1061 Sally opened the door to the house.
-###
 @ Sally entered front door
 795 Sally walked in the front door.
 ###
@@ -184,7 +176,7 @@
 1 Sally looked through the phone history and logs.
 188 Sally decided to check the phone.
 ###
-@ Sally saw text message
+@ Sally saw some text messages
 0 Sally noticed an unusual amount of text between John's number and another number on the phone bill.
 189 Sally read a message from Amy to John.
 868 Sally looked at texts made by another woman.
@@ -221,7 +213,7 @@
 1130 Sally climbed the stairs to her bedroom.
 1147 Sally climbed the stairs to investigate.
 ###
-@ John Amy kissed
+@ John and Amy kissed
 183 John kissed Amy.
 278 John kissed Amy.
 347 John kissed Amy.
@@ -234,7 +226,7 @@
 1087 John kissed Sally.
 1163 Amy kissed John on the lips.
 ###
-@ Jumping off bed
+@ John or Amy jumped off bed
 71 John jumped out of the bed.
 72 Amy fell off the side of the bed.
 369 John jumped out of bed.
@@ -250,7 +242,7 @@
 1102 John got off the bed quickly.
 1116 John and Amy both jumped out of bed.
 ###
-@ Sally smelled something
+@ Sally smelled perfume or sweat
 274 Sally smelled sweat.
 285 Sally smelled unfamiliar perfume.
 301 Sally smelled a woman's perfume.
@@ -258,7 +250,7 @@
 864 Sally smelled the scent of a woman's perfume on John's dress shirt.
 884 Sally smelled strange perfume on John.
 ###
-@ John Amy asleep
+@ John and Amy were asleep
 706 Amy and John were sleeping.
 1075 Amy and John fell asleep.
 1111 John and Amy were already sleeping.
@@ -326,23 +318,20 @@
 1064 Sally walked to the bedroom.
 1115 Sally went to the bedroom quickly.
 ###
-@ Sally opened door
+@ Sally opened house door
 148 Sally opened the door.
+234 Sally opened the front door.
+300 Sally opened the door to the house.
+420 Sally quietly opened the door.
+588 Sally opened the door to her house.
+546 Sally opened the door to the house.
+725 Sally opened the door to the house.
+1061 Sally opened the door to the house.
+###
+@ Sally opened door
 577 Sally opened the door.
-615 Sally opened the door.
-627 Sally opened the door.
-835 Sally opened the door.
-900 Sally opened the door.
-913 Sally burst through the door.
-954 Sally opened the door.
-1052 Sally opened the door slowly.
-1054 Sally kicked open the door.
-1134 Sally slowly opened the door.
-1137 Sally threw open the door.
 1078 Sally opened the door quietly.
 1086 Sally opened the door.
-420 Sally quietly opened the door.
-649 Sally threw open the door in rage.
 ###
 @ Sally opened bedroom door
 24 Sally opened the bedroom door.
@@ -354,22 +343,32 @@
 306 Sally opened the door to the bedroom.
 395 Sally threw open her bedroom door.
 424 Sally flung open the bedroom door.
+615 Sally opened the door.
+627 Sally opened the door.
+649 Sally threw open the door in rage.
 668 Sally opened the bedroom door.
 684 Sally opened the bedroom door.
 742 Sally opened the bedroom door slowly.
 755 Sally opened the bedroom door.
 797 Sally opened the bedroom door.
 809 Sally opened the bedroom door.
+835 Sally opened the door.
+900 Sally opened the door.
 947 Sally opened the bedroom door.
+954 Sally opened the door.
 1012 Sally opened the bedroom door.
+1052 Sally opened the door slowly.
+1054 Sally kicked open the door.
 1065 Sally opened the door to the bedroom.
+1134 Sally slowly opened the door.
+1137 Sally threw open the door.
 ###
 @ Sally entered bedroom
 522 Sally walked into the bedroom.
 937 Sally entered the bedroom.
 1098 Sally walked into the bedroom.
 ###
-@ Sally caught John
+@ Sally caught John having an affair
 171 Sally caught John.
 98 Sally caught John and Amy together.
 214 Sally caught John in an extra-marital affair.
@@ -389,7 +388,7 @@
 710 Sally walked into bedroom.
 728 Sally walked into the bedroom.
 ###
-@ Sally shocked
+@ Sally was shocked
 110 Sally stared back at John and Amy with a mixture of confusion, surprise, hurt, anger and sadness.
 410 Sally felt dumbfounded.
 556 Sally was shocked.
@@ -467,7 +466,7 @@
 482 Sally slapped Amy across the face.
 655 Sally punched Amy without hesitation.
 ###
-@ Sally called lawyer
+@ Sally called a lawyer
 54 Sally called a divorce lawyer.
 779 Sally called her lawyer.
 ###
@@ -477,7 +476,7 @@
 120 Sally divorced John after a couple of months.
 644 Sally divorced John.
 ###
-@ Sally asked for divorce
+@ Sally asked for a divorce
 138 Sally asked for a divorce.
 119 Sally filed for a divorce from John, immediately.
 503 Sally wanted a divorce.
@@ -489,7 +488,7 @@
 1092 Sally asked for a divorce.
 1180 Sally filed for divorce afterwards.
 ###
-@ John Amy surprised
+@ John and Amy were surprised
 255 John sat up, startled.
 425 Amy was shocked.
 524 John and Amy were surprised.
@@ -507,7 +506,7 @@
 881 John stood in stunned silence.
 108 John and Amy both froze.
 ###
-@ John Amy took cover in sheets
+@ John and Amy took cover in sheets
 222 John and Amy scrambled to cover themselves up.
 256 Amy pulled the sheets up to cover herself.
 371 John covered himself with a blanket.
@@ -518,7 +517,7 @@
 949 Amy pulled up the covers.
 1138 John covered himself with a blanket.
 ###
-@ putting on clothes
+@ John and Amy put on clothes
 64 John put on his clothes.
 133 Amy threw her clothes on.
 157 Amy and John rushed to put on their clothes.
@@ -576,7 +575,7 @@
 1151 Sally began to cry.
 1166 Sally cried.
 ###
-@ John had sex with Amy
+@ John and Amy were having sex
 27 John was having sex with Amy.
 50 John and Amy were having sex.
 96 Amy and John had sex.
@@ -592,14 +591,14 @@
 591 John engaged in intercourse with Amy.
 730 John and Amy were having sex.
 744 John and Amy were making love on the bed.
-746 John and Amy keept making love.
+746 John and Amy kept making love.
 790 Amy was having sex with John.
 798 John and Amy were having sex on the bed.
 1067 John and Amy were having sex.
 1074 Amy and John had sex.
 1100 Amy and John were having sex.
 ###
-@ Sally becomes angry
+@ Sally became angry
 51 Sally became very angry.
 561 Sally was angry.
 860 Sally was angry.
@@ -624,7 +623,7 @@
 995 Sally saw Amy and John together.
 1066 Sally saw John and Amy in the bedroom.
 ###
-@ Sally saw John Amy in bed
+@ Sally saw John and Amy in bed
 25 Sally saw John in bed.
 26 Sally saw Amy in bed.
 61 Sally saw John and Amy in bed together.
@@ -655,7 +654,7 @@
 @ John saw Sally
 1152 John noticed Sally.
 ###
-@ John Amy in bed
+@ John and Amy were in bed
 238 John was in bed with Amy.
 423 John and Amy were laying in bed.
 757 Sally's husband John was in the bed with Amy.
@@ -716,7 +715,7 @@
 1055 Amy ran to the bathroom.
 1139 Amy ran to the bathroom.
 ###
-@ cursing
+@ Mutual cursing
 414 Sally cursed John and Amy.
 426 John cursed at Sally.
 459 Sally cursed John.
@@ -724,9 +723,8 @@
 496 John started cursing.
 662 Sally cursed her husband.
 1105 Sally insulted John.
-
 ###
-@ John explained
+@ John tried to explain
 401 John attempted to explain.
 539 John tried to explain.
 652 John attempted to explain.
@@ -764,13 +762,13 @@
 412 Amy apologized to Sally.
 654 Amy apologized repeatedly.
 ###
-@ confession
+@ John or Amy confessed
 895 Amy confessed the affair to Sally.
 100 John confessed to Sally.
 295 John admitted to the affair.
 1082 John told Sally the truth.
 ###
-@ Sally threw things
+@ Sally threw things at John
 693 Sally threw everything in site at John.
 715 Sally threw a lamp at John.
 1119 Sally threw a lamp at John.
@@ -779,7 +777,6 @@
 428 Sally threw a lamp at Amy.
 447 Sally threw a can of tomatoes at John's big head.
 484 Sally threw the rest of the clothes at John.
-78 Sally broke plates in the kitchen.
 ###
 @ John chased Sally
 16 John chased after Sally.
@@ -796,7 +793,7 @@
 65 Sally ran downstairs.
 843 Sally ran downstairs.
 ###
-@ Amy crying
+@ Amy cried
 81 Amy started crying.
 1042 Amy cried.
 905 Amy cried apologetically.
@@ -861,7 +858,7 @@
 @ John locked out
 362 Sally locked John out of the house.
 ###
-@ confrontation
+@ Sally confronted John
 99 Sally confronted John and Amy.
 294 Sally confronted John.
 873 Sally confronted John with the lipstick on the collar.
@@ -893,14 +890,14 @@
 844 John yelled to Sally.
 657 John shouted.
 ###
-@ John Amy naked
+@ John and Amy were naked
 769 John and Amy got undressed.
 939 John and Amy were both naked.
 642 John and Amy were naked.
 364 John laid naked on the bed.
 368 Amy stood naked in the closet.
 ###
-@ John Amy went upstairs
+@ John and Amy went upstairs
 57 John and Amy went upstairs to the bedroom.
 511 John was upstairs in his and Sally's bedroom.
 768 John and Amy went upstairs.

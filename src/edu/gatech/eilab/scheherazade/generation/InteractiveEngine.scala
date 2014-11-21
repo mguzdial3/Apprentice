@@ -35,7 +35,7 @@ package generation {
 
     def main(args: Array[String]) {
 
-      loadData("robbery")
+      loadData("movie")
 
       var (stories, clusters) = reader.initDataFiltered()
 
