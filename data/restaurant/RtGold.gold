@@ -1,0 +1,259 @@
+@ eat food
+68 Sally ate it .
+50 John ate his food .
+57 Sally ate her food .
+44 Sally ate her food .
+122 Sally ate her food there .
+62 John ate .
+30 Sally ate her food .
+37 John ate .
+116 John ate .
+12 Sally ate her food .
+5 John ate his food .
+144 John ate .
+165 Sally ate her food .
+185 Sally ate her food .
+176 John ate his food .
+204 John ate his food .
+218 John ate his food .
+157 John ate his food .
+81 Sally ate her food .
+88 John ate his food .
+95 Sally enjoyed her delicious meal .
+###
+@ choose restaurant
+15 John decided on a fast food restaurant .
+84 John decided where to eat .
+101 Sally decided on a restaurant .
+199 John picked a restaurant that had that food .
+24 Sally chose a restaurant that served that type of food .
+160 Sally decided where to go that served that food .
+133 Sally decided what restaurant Sally wanted to go to .
+145 Sally decided on the type of restaurant Sally wanted to go to .
+186 John considered fast food restaurant option .
+52 Sally chose a restaurant that served it .
+###
+@ choose menu item
+117 Sally thought about what Sally wanted .
+1 John ordered his food .
+7 Sally chose item from the menu .
+18 John decided on what John would like to eat .
+159 Sally decided what Sally wanted to ate .
+198 John decided what John was hungry for .
+23 Sally decided on the type of food Sally wanted.
+124 Sally decided what Sally wanted to eat .
+51 Sally decided on what kind of food Sally wanted .
+32 John chose what John wanted to eat .
+189 John picked the safest menu option .
+40 Sally decided what Sally wanted .
+75 Sally decided what to order .
+47 John decided what to order .
+104 Sally selected what Sally wanted to order .
+148 Sally selected item to order .
+171 John chose something from the menu .
+139 John made a selection .
+162 Sally decided on what Sally wanted to eat off the menu .
+54 Sally found the item Sally wanted on the menu .
+85 John viewed the menu to decide what to order .
+###
+@ read menu
+59 John looked at the menu .
+90 Sally looked over menu .
+69 John looked at the menu .
+0 John pulled out his wallet .
+31 John looked over the menu .
+147 Sally looked at the menu .
+170 John looked at the menu .
+123 Sally looked at the menu .
+128 John looked at the menu .
+178 Sally looked at the menu .
+212 John looked at the menu .
+138 John looked at the menu .
+39 Sally examined the menu .
+###
+@ get food
+3 John got his food .
+21 John got his food .
+43 Sally received her food .
+209 Sally received her food .
+215 John got his food .
+137 Sally got the food .
+10 Sally received her food .
+132 John grabbed the food .
+183 Sally picked up her meal .
+72 John got the food from the clerk .
+115 John got his food .
+174 John grabbed his food when it was ready .
+93 Sally received her food .
+151 Sally collected her food .
+99 John got his food .
+108 Sally got her order .
+###
+@ place order
+19 John placed his order .
+64 Sally ordered her food .
+55 Sally ordered food .
+70 John ordered some food .
+77 Sally ordered what Sally decided earlier .
+33 John told the cashier what John wanted to order .
+60 John placed his order .
+86 John ordered his food .
+91 Sally ordered her food .
+135 Sally ordered food .
+41 Sally ordered her food .
+48 John ordered .
+27 Sally ordered her food .
+140 John ordered .
+179 Sally ordered food .
+190 John ordered food .
+201 John ordered .
+207 Sally placed her order .
+163 Sally ordered her food .
+154 John ordered food .
+97 John ordered his food .
+119 Sally ordered food .
+111 John placed his order .
+129 John ordered the food John wanted .
+149 Sally placed her order .
+126 Sally ordered her food .
+105 Sally ordered her food .
+###
+@ walk or go into restaurant
+38 Sally went to the restaurant .
+45 John walked inside the restaurant .
+74 Sally walked into the restaurant .
+6 Sally walked into the restaurant .
+134 Sally went to the restaurant .
+53 Sally traveled to the restaurant .
+169 John entered the restaurant .
+195 Sally entered the restaurant .
+211 John went inside the restaurant .
+###
+@ wait in line
+76 Sally waited in line .
+196 Sally waited in line .
+46 John stood in line .
+8 Sally waited in line .
+103 Sally stood in line .
+63 Sally stood in line .
+188 John waited in line .
+213 John got in line .
+125 Sally stood in line .
+###
+@ find a table
+143 John found a table .
+216 John found a table .
+155 John found a seat .
+109 Sally found a place to sit and eat .
+184 Sally found a seat .
+11 Sally found a table .
+94 Sally found a table .
+79 Sally took her food to her table .
+###
+@ sit down
+156 John sat down .
+175 John sat down .
+217 John sat down .
+67 Sally sat down .
+61 John sat down .
+80 Sally sat down .
+36 John sat down at a table .
+4 John sat down .
+###
+@ take out wallet
+191 John took out his wallet .
+180 Sally pulled out her wallet .
+161 Sally got her wallet .
+###
+@ wait for food
+78 Sally waited for her food .
+193 John waited until his order was filled .
+182 Sally waited for her meal .
+107 Sally waited for her order .
+173 John waited for his food .
+121 Sally waited for food .
+131 John waited for the food to be given to him .
+142 John waited for the food .
+66 Sally waited for her food .
+35 John waited for his food to be given to him .
+###
+@ drive to restaurant
+102 Sally drove to the restaurant .
+58 John drove to the restaurant .
+153 John drove to restaurant .
+168 John drove to the restaurant .
+187 John drove to the restaurant .
+194 Sally drove to the fast food restaurant .
+200 John drove to the restaurant .
+146 Sally drove to the restaurant .
+25 Sally drove to the restaurant .
+16 John drove to the restaurant .
+205 Sally drove to the restaurant .
+73 Sally drove to the restaurant .
+118 Sally drove to nearest location .
+###
+@ drive home
+203 John drove away .
+177 John drove off .
+210 Sally drove home .
+83 Sally drove home .
+158 John went home .
+22 John drove away .
+29 Sally drove home .
+152 Sally drove back to home .
+###
+@ pay for food
+106 Sally paid for her food .
+127 Sally paid for her food .
+56 Sally paid for her food .
+197 Sally purchased her food .
+202 John paid .
+192 John paid for his food .
+208 Sally paid .
+214 John paid for his food .
+181 Sally paid for food .
+172 John paid money for the food .
+164 Sally paid for her food .
+113 John paid for his food .
+130 John paid for his food .
+150 Sally paid for her food .
+141 John paid .
+136 Sally paid for the food .
+34 John paid for his food .
+42 Sally paid for her food .
+71 John paid for the food .
+92 Sally paid for her food .
+49 John paid for his food .
+65 Sally paid for her food .
+2 John paid for his food .
+9 Sally paid for her food .
+20 John paid the cashier .
+28 Sally paid for her food at the first window .
+87 John paid for his food .
+98 John paid at the window .
+120 Sally paid for her food .
+###
+@ clear trash
+166 Sally throwed her trash away .
+219 John throwed his trash away .
+13 Sally throwed out her garbage .
+82 Sally throwed away her trash .
+89 John disposed of his trash .
+###
+@ leave restaurant
+14 Sally left the restaurant .
+220 John left the restaurant .
+167 Sally left .
+100 John left the restaurant .
+###
+@ drive to window
+110 John drove up to the fast food ordering window .
+112 John drove to the next window .
+114 John drove to the last window .
+###
+@ drive to drive thru
+17 John drove into the drive-thru .
+206 Sally pulled into the drive thru .
+96 John pulled up to the speaker at the drive thru .
+26 Sally pulled up to drive-thru .
+###

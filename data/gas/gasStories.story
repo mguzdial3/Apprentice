@@ -357,7 +357,7 @@
 332 John decided to fill the gas tank.
 333 John pulled out his credit card.
 334 John got out of the car.
-335 John paid  for the gas at the pump.
+335 John paid for the gas at the pump.
 336 John picked up the nozzle.
 337 John inserted the nozzle into the car.
 338 John pulled the lever.
@@ -692,209 +692,209 @@
 646 John waited patiently.
 647 John watched the numbers turn on the screen indicating how many gallons he was pumping.
 648 The pump automatically shut off.
-649 John pulled the pump nozzle out of his gas tank. 
-840 John placed the pump nozzle back into place.
-650 John pressed a button at the pump.
-651 John took the receipt from the printer.
-652 John carefully put the lid back on his gas tank.
-653 John jumped back into his vehicle and drove away.
+649 John pulled the pump nozzle out of his gas tank.
+650 John placed the pump nozzle back into place.
+651 John pressed a button at the pump.
+652 John took the receipt from the printer.
+653 John carefully put the lid back on his gas tank.
+654 John jumped back into his vehicle and drove away.
 ###
-654 John parked next to a gas pump.
-655 John turned off his car.
-656 John pushed the gas-door button in his car.
-657 John swiped his credit card at the gas pump.
-658 John selected the appropriate fuel type.
-659 John unscrewed the gas cap on his car.
-660 John removed the fuel nozzle.
-661 John inserted the fuel nozzle into his car.
-662 John compressed the fuel switch on the nozzle.
-663 John filled his gas tank.
-664 John replaced the fuel nozzle in its holder.
-665 John replaced the gas cap on his car.
-666 John closed the gas door.
-667 John took his receipt.
-668 John got back into his car.
+655 John parked next to a gas pump.
+656 John turned off his car.
+657 John pushed the gas-door button in his car.
+658 John swiped his credit card at the gas pump.
+659 John selected the appropriate fuel type.
+660 John unscrewed the gas cap on his car.
+661 John removed the fuel nozzle.
+662 John inserted the fuel nozzle into his car.
+663 John compressed the fuel switch on the nozzle.
+664 John filled his gas tank.
+665 John replaced the fuel nozzle in its holder.
+666 John replaced the gas cap on his car.
+667 John closed the gas door.
+668 John took his receipt.
+669 John got back into his car.
 ###
-669 John drove to the gas station.
-670 John parked the car.
-671 John paid for gas.
-672 John unscrewed the gas cap.
-673 John removed the gas nozzle.
-674 John pumped gas.
-675 John bought 10 gallons.
-676 John replaced the gas cap.
-677 John got in his car.
-678 John left the gas station.
+670 John drove to the gas station.
+671 John parked the car.
+672 John paid for gas.
+673 John unscrewed the gas cap.
+674 John removed the gas nozzle.
+675 John pumped gas.
+676 John bought 10 gallons.
+677 John replaced the gas cap.
+678 John got in his car.
+679 John left the gas station.
 ###
-679 John drove his car to the gas station.
-680 John pulled up to the first empty gas pump.
-681 John stopped his car.
-682 John stepped out of his car.
-683 John unscrewed his gas cap.
-684 John picked up the gas pump nozzle.
-685 John put the nozzle into his car.
-686 John swiped his credit card at the gas pump machine.
-687 John pushed the button for regular octane gas.
-688 John pressed the trigger on the gasoline nozzle.
-689 John dispensed gas into his car.
-690 John waited.
-691 John heard the gas pump shut off.
-692 John removed the gas nozzle from his car.
-693 John replaced the gas nozzle on the gas pump.
-694 John screwed the gas cap onto his car.
-695 John took his receipt.
-696 John returned to his car.
+680 John drove his car to the gas station.
+681 John pulled up to the first empty gas pump.
+682 John stopped his car.
+683 John stepped out of his car.
+684 John unscrewed his gas cap.
+685 John picked up the gas pump nozzle.
+686 John put the nozzle into his car.
+687 John swiped his credit card at the gas pump machine.
+688 John pushed the button for regular octane gas.
+689 John pressed the trigger on the gasoline nozzle.
+690 John dispensed gas into his car.
+691 John waited.
+692 John heard the gas pump shut off.
+693 John removed the gas nozzle from his car.
+694 John replaced the gas nozzle on the gas pump.
+695 John screwed the gas cap onto his car.
+696 John took his receipt.
+697 John returned to his car.
 ###
-697 John parked next to the gas pump.
-698 John opened the gas tank.
-699 John got out of the car.
-700 John inserted his credit card into the pump.
-701 John selected pay at the pump.
-702 John removed the gas pump nozzle.
-703 John selected the grade off gas.
-704 John removed the gas tank cap.
-705 John inserted the nozzle into the car's fill tube.
-706 John depressed the gas pump nozzle handle.
-707 John waited for the tank to be full.
-708 John removed the nozzle from the tank.
-709 John replaced the nozzle on to the pump.
-710 John screwed in the gas cap.
-711 John closed the gas tank cover.
+698 John parked next to the gas pump.
+699 John opened the gas tank.
+700 John got out of the car.
+701 John inserted his credit card into the pump.
+702 John selected pay at the pump.
+703 John removed the gas pump nozzle.
+704 John selected the grade off gas.
+705 John removed the gas tank cap.
+706 John inserted the nozzle into the car's fill tube.
+707 John depressed the gas pump nozzle handle.
+708 John waited for the tank to be full.
+709 John removed the nozzle from the tank.
+710 John replaced the nozzle on to the pump.
+711 John screwed in the gas cap.
+712 John closed the gas tank cover.
 ###
-712 John pulled into the gas station.
-713 John turned the car off.
-714 John opened his door.
-715 John stepped out of the car.
-716 John reached for the gas pump.
-717 John filled up his gas tank.
-718 John replaced the gas pump.
-719 John paid the cashier.
-720 John walked back to his car.
-721 John sat down.
-722 John shut the door.
-723 John started the engine.
-724 John drove away from the gas station.
+713 John pulled into the gas station.
+714 John turned the car off.
+715 John opened his door.
+716 John stepped out of the car.
+717 John reached for the gas pump.
+718 John filled up his gas tank.
+719 John replaced the gas pump.
+720 John paid the cashier.
+721 John walked back to his car.
+722 John sat down.
+723 John shut the door.
+724 John started the engine.
+725 John drove away from the gas station.
 ###
-725 John pulled up to the gas pump.
-726 John turned off his engine.
-727 John pressed the open gas lever.
-728 John got out of his car.
-729 John walked over to the pump.
-730 John swiped his debit card.
-731 John entered his pin number into the credit card machine.
-732 John opened his gas tank.
-733 John removed the gas pump.
-734 John pressed the gas pump.
-735 John pumped a sufficient amount of gas into his car.
-736 John closed the gas lid.
-737 John pressed no for his receipt.
-738 John left the gas station.
+726 John pulled up to the gas pump.
+727 John turned off his engine.
+728 John pressed the open gas lever.
+729 John got out of his car.
+730 John walked over to the pump.
+731 John swiped his debit card.
+732 John entered his pin number into the credit card machine.
+733 John opened his gas tank.
+734 John removed the gas pump.
+735 John pressed the gas pump.
+736 John pumped a sufficient amount of gas into his car.
+737 John closed the gas lid.
+738 John pressed no for his receipt.
+739 John left the gas station.
 ###
-739 John drove to the gas station.
-740 John pulled up to the gas pump.
-741 John turned off the car.
-742 John got out of the car.
-743 John walked to the gas pump.
-744 John selected a gasoline type.
-745 John put the hose into the gas tank.
-746 The gas pump stopped at 8 gallons of gas.
-747 John took the hose out of the gas tank.
-748 John walked to the cashier.
-749 John paid for the gas.
-750 John walked back to his car.
-751 John turned on the car.
-752 John drove away from the gas station.
+740 John drove to the gas station.
+741 John pulled up to the gas pump.
+742 John turned off the car.
+743 John got out of the car.
+744 John walked to the gas pump.
+745 John selected a gasoline type.
+746 John put the hose into the gas tank.
+747 The gas pump stopped at 8 gallons of gas.
+748 John took the hose out of the gas tank.
+749 John walked to the cashier.
+750 John paid for the gas.
+751 John walked back to his car.
+752 John turned on the car.
+753 John drove away from the gas station.
 ###
-753 John stopped at the gas station for a fill up.
-754 First, John parked next to the pump.
-755 Then John unscrewed the gas cap.
-756 Next, John grabbed his credit card from his wallet.
-757 John inserted the credit card into the card reader on the gas pump.
-758 John then inserted the gas into his car.
-759 While the gas was pumping, John sat in the car.
-760 John listened to the radio.
-761 Finally, John removed the gas pump from his car.
-762 John put his gas cap back in place.
-763 John retrieved his receipt.
-764 Finally, John left the gas station with a full tank of gas.
+754 John stopped at the gas station for a fill up.
+755 First, John parked next to the pump.
+756 Then John unscrewed the gas cap.
+757 Next, John grabbed his credit card from his wallet.
+758 John inserted the credit card into the card reader on the gas pump.
+759 John then inserted the gas into his car.
+760 While the gas was pumping, John sat in the car.
+761 John listened to the radio.
+762 Finally, John removed the gas pump from his car.
+763 John put his gas cap back in place.
+764 John retrieved his receipt.
+765 Finally, John left the gas station with a full tank of gas.
 ###
-765 John parked his car next to an available gas pump.
-766 John stopped his car's engine.
-767 John exited his car.
-768 John selected the type of gas he wanted to purchase.
-769 John removed the gas pump nozzle from the gas pump.
-770 John removed the gas cap from his car's gas tank.
-771 John inserted the gas pump nozzle into the gas tank.
-772 John pushed the trigger that started the flow of gas.
-773 John waited for the gas pump nozzle to release the trigger when the gas tank was full.
-774 John removed the gas pump nozzle from the gas tank.
-775 John replaced the gas pump nozzle on the gas pump.
-776 John replaced the gas cap on his car.
-777 John selected his method of payment.
-778 John completed his payment.
-779 John entered his car.
-780 John started his car.
-781 John drove away from the gas station.
+766 John parked his car next to an available gas pump.
+767 John stopped his car's engine.
+768 John exited his car.
+769 John selected the type of gas he wanted to purchase.
+770 John removed the gas pump nozzle from the gas pump.
+771 John removed the gas cap from his car's gas tank.
+772 John inserted the gas pump nozzle into the gas tank.
+773 John pushed the trigger that started the flow of gas.
+774 John waited for the gas pump nozzle to release the trigger when the gas tank was full.
+775 John removed the gas pump nozzle from the gas tank.
+776 John replaced the gas pump nozzle on the gas pump.
+777 John replaced the gas cap on his car.
+778 John selected his method of payment.
+779 John completed his payment.
+780 John entered his car.
+781 John started his car.
+782 John drove away from the gas station.
 ###
-782 John drove to the gas station.
-783 John turned off the car.
-784 John got out of the car.
-785 John entered his credit card into the machine.
-786 John selected the type of gas he wanted.
-787 John removed the pump.
-788 John put the pump into his car.
-789 John waited for the car to fill.
-790 John removed the pump from his car.
-791 John put the pump back into the machine.
-792 John closed his gas cap.
-793 John got his receipt.
-794 John got back into his car.
-795 John drove away.
+783 John drove to the gas station.
+784 John turned off the car.
+785 John got out of the car.
+786 John entered his credit card into the machine.
+787 John selected the type of gas he wanted.
+788 John removed the pump.
+789 John put the pump into his car.
+790 John waited for the car to fill.
+791 John removed the pump from his car.
+792 John put the pump back into the machine.
+793 John closed his gas cap.
+794 John got his receipt.
+795 John got back into his car.
+796 John drove away.
 ###
-796 John drove to the gas station.
-797 John's gas tank was on the driver's side.
-798 John pulled up next to gas pump 4.
-799 John exited his car.
-800 John went inside the gas station.
-801 John asked the station attendant to put $40 on pump 4.
-802 John paid $40 with a credit card.
-803 John returned to his car.
-804 John opened his gas tank cover.
-805 John unscrewed the gas tank lid.
-806 John went to the gas pump.
-807 John lifted the pump nozzle from the gas pump.
-808 John put the pump nozzle into his gas tank.
-809 John selected the button for "regular unleaded" gas.
-810 John squeezed the handle on the pump nozzle.
-811 John filled his gas tank.
-812 John returned the pump nozzle to the gas pump.
-813 John screwed his gas tank lid back on.
-814 John closed his gas tank cover.
-815 John exited the gas station.
+797 John drove to the gas station.
+798 John's gas tank was on the driver's side.
+799 John pulled up next to gas pump 4.
+800 John exited his car.
+801 John went inside the gas station.
+802 John asked the station attendant to put $40 on pump 4.
+803 John paid $40 with a credit card.
+804 John returned to his car.
+805 John opened his gas tank cover.
+806 John unscrewed the gas tank lid.
+807 John went to the gas pump.
+808 John lifted the pump nozzle from the gas pump.
+809 John put the pump nozzle into his gas tank.
+810 John selected the button for "regular unleaded" gas.
+811 John squeezed the handle on the pump nozzle.
+812 John filled his gas tank.
+813 John returned the pump nozzle to the gas pump.
+814 John screwed his gas tank lid back on.
+815 John closed his gas tank cover.
+816 John exited the gas station.
 ###
-816 John drove his car up to the gas pump.
-817 John stepped out of the car.
-818 John opened the car's gas tank.
-819 John selected the type of gas.
-820 John removed the nozzle from the pump.
-821 John placed the nozzle into the gas tank.
-822 John pumped the gas into the gas tank.
-823 John filled the gas tank completely.
-824 John paid for the gas.
-825 John returned the nozzle to the pump.
+817 John drove his car up to the gas pump.
+818 John stepped out of the car.
+819 John opened the car's gas tank.
+820 John selected the type of gas.
+821 John removed the nozzle from the pump.
+822 John placed the nozzle into the gas tank.
+823 John pumped the gas into the gas tank.
+824 John filled the gas tank completely.
+825 John paid for the gas.
+826 John returned the nozzle to the pump.
 ###
-826 John pulled his car up next to a pump.
-827 John turned off the engine.
-828 John pressed the button to open the gas tank on his car.
-829 John stepped out of the car.
-830 John put his credit card into the card reader.
-831 John waited for authorization.
-832 John lifted up the gas nozzle.
-833 John put the gas nozzle into his tank.
-834 John selected the gas grade.
-835 John pumped $20 of gas.
-836 John took the gas nozzle out of the tank.
-837 John hung the gas nozzle up.
-838 John got into his car.
-839 John drove away.
+827 John pulled his car up next to a pump.
+828 John turned off the engine.
+829 John pressed the button to open the gas tank on his car.
+830 John stepped out of the car.
+831 John put his credit card into the card reader.
+832 John waited for authorization.
+833 John lifted up the gas nozzle.
+834 John put the gas nozzle into his tank.
+835 John selected the gas grade.
+836 John pumped $20 of gas.
+837 John took the gas nozzle out of the tank.
+838 John hung the gas nozzle up.
+839 John got into his car.
+840 John drove away.
 ###
